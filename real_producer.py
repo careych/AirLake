@@ -1,5 +1,11 @@
 # real_producer.py   |   python real_producer.py [giây_nghỉ_mỗi_2000_dòng]
-import gzip, csv, glob, json, time, sys
+import csv
+import glob
+import gzip
+import json
+import sys
+import time
+
 from confluent_kafka import Producer
 
 SPEED = float(sys.argv[1]) if len(sys.argv) > 1 else 0
@@ -12,7 +18,9 @@ for fp in files:
     with gzip.open(fp, "rt", encoding="utf-8") as f:
         for row in csv.DictReader(f):
             key = f"{row['location_id']}:{row['sensors_id']}"
-            p.produce("aq_measurements", key=key, value=json.dumps(row, ensure_ascii=False))
+            p.produce(
+                "aq_measurements", key=key, value=json.dumps(row, ensure_ascii=False)
+            )
             sent += 1
             if sent % 2000 == 0:
                 p.poll(0)
