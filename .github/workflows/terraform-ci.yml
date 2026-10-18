@@ -1,0 +1,46 @@
+name: terraform-ci
+on:
+  pull_request:
+    paths: ["infra/**", ".github/workflows/terraform-ci.yml"]
+permissions:
+  contents: read
+concurrency:
+  group: tf-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: [00-bootstrap, 10-foundation, 20-compute]   # bỏ stack nào chưa có mã
+    defaults:
+      run:
+        working-directory: infra/${{ matrix.stack }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.11.x
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false -input=false
+      - run: terraform validate
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: terraform-linters/setup-tflint@v4
+      - run: tflint --init
+      - run: tflint --recursive
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: infra
+          framework: terraform
+          soft_fail: true
