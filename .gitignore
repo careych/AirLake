@@ -1,7 +1,11 @@
 .terraform/
-*.tfstate*
-terraform.tfvars
+*.tfstate
+*.tfstate.*
+*.tfplan
 tfplan
+plan.txt
+terraform.tfvars
+trust.json
 # ============================================================
 # Python
 # ============================================================
@@ -65,3 +69,5 @@ env/
 
 /data/
 /location-*.csv.gz
+*~
+*.bak
