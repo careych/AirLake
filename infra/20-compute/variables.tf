@@ -17,3 +17,8 @@ variable "spark_instance_type" {
   type    = string
   default = "m7i-flex.large"
 }
+
+variable "trino_instance_type" {
+  type    = string
+  default = "m7i-flex.large"
+}

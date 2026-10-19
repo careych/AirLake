@@ -3,13 +3,15 @@ import csv
 import glob
 import gzip
 import json
+import os
 import sys
 import time
 
 from confluent_kafka import Producer
 
 SPEED = float(sys.argv[1]) if len(sys.argv) > 1 else 0
-p = Producer({"bootstrap.servers": "localhost:9092"})
+BOOTSTRAP_SERVERS = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+p = Producer({"bootstrap.servers": BOOTSTRAP_SERVERS})
 files = sorted(glob.glob("data/raw/*/*/*/*.csv.gz"))
 print(f"Tìm thấy {len(files)} file")
 

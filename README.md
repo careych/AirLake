@@ -91,6 +91,10 @@ freshness_report.py
 Reports the age of recent measurements for selected locations and sensors.
 uv run python freshness_report.py
 
+freshness_poller.py
+Polls latest PM2.5 measurements for active Hanoi stations, computes sensor age in hours, and publishes `SensorAgeHours` metrics to AWS CloudWatch (Namespace `AirLake`). Supports standalone CLI (`--dry-run`), periodic cron, and AWS Lambda handler.
+uv run python freshness_poller.py --dry-run
+
 probe_locations.py
 Probes selected locations and PM2.5 sensor measurements.
 uv run python probe_locations.py
@@ -102,6 +106,9 @@ data/raw/
 and publishes the measurements to Apache Kafka.
 The current default Kafka broker is:
 localhost:9092
+
+To publish to the AWS EC2 Kafka cluster, set:
+export KAFKA_BOOTSTRAP_SERVERS="10.0.0.11:9092,10.0.1.12:9092,10.0.0.13:9092"
 
 The producer writes to:
 aq_measurements

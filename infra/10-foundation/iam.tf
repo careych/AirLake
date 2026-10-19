@@ -75,3 +75,30 @@ resource "aws_iam_role_policy" "spark" {
   role   = aws_iam_role.ec2["spark"].id
   policy = data.aws_iam_policy_document.spark.json
 }
+
+# Trino: đọc lake S3 và metadata Iceberg từ AWS Glue Catalog
+data "aws_iam_policy_document" "trino" {
+  statement {
+    actions = ["s3:GetObject", "s3:ListBucket", "s3:GetBucketLocation"]
+    resources = [
+      aws_s3_bucket.this["lake"].arn,
+      "${aws_s3_bucket.this["lake"].arn}/*",
+    ]
+  }
+  statement {
+    actions = [
+      "glue:GetDatabase", "glue:GetDatabases", "glue:GetTable", "glue:GetTables", "glue:GetPartitions",
+    ]
+    resources = [
+      "arn:aws:glue:${var.region}:${local.acct}:catalog",
+      "arn:aws:glue:${var.region}:${local.acct}:database/airlake_*",
+      "arn:aws:glue:${var.region}:${local.acct}:table/airlake_*/*",
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "trino" {
+  name   = "trino-data-access"
+  role   = aws_iam_role.ec2["trino"].id
+  policy = data.aws_iam_policy_document.trino.json
+}
