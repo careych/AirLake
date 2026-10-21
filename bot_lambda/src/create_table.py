@@ -2,7 +2,7 @@ import boto3
 
 def create_subscription_table():
     # Khởi tạo kết nối DynamoDB
-    dynamodb = boto3.client('dynamodb', region_name='ap-southeast-1')
+    dynamodb = boto3.client('dynamodb', region_name='ap-southeast-2')
     
     try:
         response = dynamodb.create_table(
