@@ -1,63 +1,61 @@
-# ============================================================
-# Python
-# ============================================================
-
+# Python environments and caches
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
-
-# Virtual environments
 .venv/
 venv/
 env/
-
-# ============================================================
-# Environment variables / secrets
-# ============================================================
-
-.env
-.env.*
-!.env.example
-
-# ============================================================
-# macOS
-# ============================================================
-
-.DS_Store
-
-# ============================================================
-# IDE / Editor
-# ============================================================
-
-.idea/
-.vscode/
-
-# ============================================================
-# Jupyter
-# ============================================================
-
-.ipynb_checkpoints/
-
-# ============================================================
-# Python tooling caches
-# ============================================================
-
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.ipynb_checkpoints/
 
-# ============================================================
-# Project-generated diagnostic outputs
-# ============================================================
+# Local credentials; publish placeholders only
+.env
+.env.*
+!.env.example
+.aws/
 
+# Terraform runtime state and private inputs; retain provider lockfiles
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfplan.*
+tfplan
+plan.txt
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+*.tfvars.*
+!*.tfvars.example
+!*.tfvars.json.example
+
+# Editor and operating-system state
+.DS_Store
+.idea/
+.vscode/
+
+# Local source data and lakehouse runtime state
+/data/
+/location-*.csv.gz
+/warehouse/
+/checkpoints/
+/metastore_db/
+/derby.log
+/derby.log.*
+/spark-warehouse/
+/spark-events/
+/.sparkStaging/
+/artifacts/
+/spark-????????-????-????-????-????????????/
+
+# Generated reports; curated tests/evidence files stay publishable
 /result.txt
 /freshness_result.txt
 /probe_result.txt
-
-# ============================================================
-# Local / raw datasets
-# ============================================================
-
-/data/
-/location-*.csv.gz
+/test-artifacts/
+/htmlcov/
+.coverage
+.coverage.*
+coverage.xml
