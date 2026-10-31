@@ -12,7 +12,7 @@ from confluent_kafka import KafkaException, Producer
 from confluent_kafka.admin import AdminClient
 
 SPEED = float(sys.argv[1]) if len(sys.argv) > 1 else 0
-BOOTSTRAP_SERVERS = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+BOOTSTRAP_SERVERS = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:19092")
 p = Producer({"bootstrap.servers": BOOTSTRAP_SERVERS})
 files = sorted(glob.glob("data/raw/*/*/*/*.csv.gz"))
 print(f"Tìm thấy {len(files)} file")
