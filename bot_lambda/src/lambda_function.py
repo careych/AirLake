@@ -19,6 +19,23 @@ def send_telegram_message(chat_id, text):
         print(f"Lỗi gửi tin nhắn: {e}")
 
 def lambda_handler(event, context):
+    body_str = event.get('body', '{}')
+    
+    try:
+        payload = json.loads(body_str)
+        
+        # 2. Kiểm tra nếu pm25 bị âm (giống dữ liệu rác k6 đang gửi) thì ném lỗi 400
+        if 'pm25' in payload and float(payload['pm25']) < 0:
+            return {
+                'statusCode': 400,
+                'body': json.dumps({'error': 'Bad Request: Invalid PM25 value'})
+            }
+    except Exception as e:
+        # Trả về 400 nếu payload không phải là JSON hợp lệ
+        return {
+            'statusCode': 400,
+            'body': json.dumps({'error': 'Invalid JSON format'})
+        }
     try:
         # LUỒNG 1: Xử lý cảnh báo từ SQS (do hệ thống SNS gửi tới)
         if 'Records' in event:
