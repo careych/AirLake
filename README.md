@@ -134,6 +134,21 @@ requires an approved setup environment with network access:
 .venv/bin/spark-submit --master 'local[2]' --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.9,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.12.0 scripts/bronze_local.py
 ```
 
+On Windows, local Spark also needs Hadoop's `winutils.exe`. The attached startup
+failure (`HADOOP_HOME and hadoop.home.dir are unset`) occurs while Spark initializes,
+before Bronze connects to Kafka. Install a Hadoop Windows utility compatible with
+the Hadoop client bundled with PySpark, set `HADOOP_HOME` to its root folder (which
+must contain `bin\winutils.exe`), then start Bronze from PowerShell:
+
+```powershell
+$env:HADOOP_HOME = 'C:\path\to\hadoop'
+uv run spark-submit --master 'local[2]' --packages 'org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.9,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.12.0' scripts/bronze_local.py
+```
+
+`scripts/bronze_local.py` checks this prerequisite before launching the JVM and
+reports a direct setup error when it is missing. The `winutils.exe` file is a
+machine-level prerequisite and is not bundled in this repository.
+
 For an offline run, use `--jars` with preinstalled Iceberg, the Kafka connector and
 all of its transitive JARs instead of `--packages`.
 

@@ -5,9 +5,9 @@
   "git_branch": "feat/local-lakehouse",
   "git_head": "00cdcb700647f63d8dad170b26a5fb13c51f21b1",
   "source_sha256": {
-    "scripts/gold_batch.py": "222ea9dc4e2bb2e6299fa92b641b581145c0215e536470c45ce5a195c205e729",
-    "tests/gold_p0_integration.py": "7bebab7d58750bc539b8907d76393c9e2cb204cb19a1264fc744d683b3f52a77",
-    "tests/test_gold_p0_orchestration.py": "d57959b7511b6efc1352cecc666b5fb66fa863a79d59b578c2ed16cc056a0a5f"
+    "scripts/gold_batch.py": "8457bd27f501e4a024661ed2cbe3d7e96f0c8ed388ed836845131ee984e1e116",
+    "tests/gold_p0_integration.py": "e33885e1579802f5c0488401260acdfc05aa7a01c07c2fe58b490447dc13845a",
+    "tests/test_gold_p0_orchestration.py": "eb307ce074984a4307b3225125206d961b8846440c7c0881fa9c24a4ddf83dce"
   },
   "environment": {
     "python": "3.12.15",

@@ -1,3 +1,15 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+plan.txt
+terraform.tfvars
+trust.json
+# ============================================================
+# Python
+# ============================================================
+
 # Python environments and caches
 __pycache__/
 *.py[cod]
@@ -54,6 +66,23 @@ crash.*.log
 /result.txt
 /freshness_result.txt
 /probe_result.txt
+
+# ============================================================
+# Local / raw datasets
+# ============================================================
+
+/data/
+/location-*.csv.gz
+*~
+*.bak
+
+# ============================================================
+# Personal / internal reference documents (Timeline & Reports)
+# ============================================================
+
+*.pdf
+/AirLake.pdf
+/AirLake Timeline & Role Assignment - Timeline.pdf
 /test-artifacts/
 /htmlcov/
 .coverage
