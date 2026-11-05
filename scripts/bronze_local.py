@@ -1,3 +1,7 @@
+import os
+import platform
+from pathlib import Path
+
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, from_json
 
@@ -21,6 +25,19 @@ SOURCE_SCHEMA = """
 
 
 def main():
+    # Hadoop's Windows filesystem code requires winutils.exe even for local Spark.
+    # Fail before starting the JVM so the setup problem is clear to the operator.
+    if platform.system() == "Windows":
+        hadoop_home = os.environ.get("HADOOP_HOME") or os.environ.get("hadoop.home.dir")
+        winutils = Path(hadoop_home, "bin", "winutils.exe") if hadoop_home else None
+        if winutils is None or not winutils.is_file():
+            raise RuntimeError(
+                "Local Spark on Windows requires winutils.exe. Install a Hadoop "
+                "Windows utility matching the Hadoop version bundled with Spark, "
+                "then set HADOOP_HOME to its root directory (the directory that "
+                "contains bin\\winutils.exe)."
+            )
+
     spark = (
         SparkSession.builder.appName("AirLake-Bronze-Streaming")
         .config(

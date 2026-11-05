@@ -856,7 +856,9 @@ def main():
         return _worker(sys.argv[2], jar)
     if len(sys.argv) != 1:
         raise SystemExit("Unexpected integration-runner arguments")
-    with tempfile.TemporaryDirectory(prefix="airlake-gold-p0-") as temporary:
+    with tempfile.TemporaryDirectory(
+        prefix="airlake-gold-p0-", ignore_cleanup_errors=True
+    ) as temporary:
         root = Path(temporary).resolve()
         if root.is_relative_to(REPOSITORY):
             raise SystemExit("Temporary directory must be outside the repository")
@@ -867,12 +869,15 @@ def main():
             for name in (
                 "PATH",
                 "HOME",
+                "HADOOP_HOME",
                 "JAVA_HOME",
                 "LANG",
                 "LC_ALL",
                 "LC_CTYPE",
                 "TZ",
                 "SYSTEMROOT",
+                "TEMP",
+                "TMP",
                 "WINDIR",
             )
             if name in os.environ
