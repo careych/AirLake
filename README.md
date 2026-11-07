@@ -63,6 +63,16 @@ sensor health, alert thresholds/delivery/deduplication, dashboards and load/faul
 acceptance. The existing SNS/SQS/Lambda/Telegram deployment is not validated by
 this batch and was not modified.
 
+## Gold-to-Telegram application slice
+
+The [alert integration guide](docs/gold-to-telegram.md) describes the locally
+implemented evaluator, SNS publisher and teammate-derived SQS/Telegram consumer.
+Offline tests use retained Gold values, explicit fixture-only rules and mocked
+services. This application slice has not been deployed or tested with live SNS,
+SQS, DynamoDB or Telegram. Gold tables, calculations and prior acceptance records
+are unchanged. Live Athena submission and production alert rules remain separate
+integration/deployment decisions.
+
 ## Local setup
 
 Run commands from the repository root. Python 3.12, uv, Java 17 and Docker Compose
