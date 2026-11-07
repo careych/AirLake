@@ -1,0 +1,1605 @@
+{
+  "run_id": "20261106_f3b3b3e0677d4a6790e4a54faf68e4aa",
+  "topic": "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa",
+  "selection": {
+    "rule": "Lexicographic station-4946812 file path, physical CSV data-row order; first compatible PM2.5 rows, no synthesis",
+    "limit": 200,
+    "source_files": [
+      {
+        "path": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "sha256": "3163411c1016c12b010c98b6beb4b7279f16542dd25fc08a07d77cbdcca6f074"
+      },
+      {
+        "path": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "sha256": "69ca2a4ae2738ac1e0e4339f073112081b304a4e1f59d71382ab1af38814fdda"
+      }
+    ],
+    "scanned_rows": 491,
+    "excluded_non_pm25": 291,
+    "rejected_pm25_by_reason": {},
+    "selected_rows": 200,
+    "selected_sha256": "a7f25e24d09033a15afef5e861d69176212480ffd655e303996f6dd883b01b77",
+    "row_provenance": [
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "data_row": 18
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "data_row": 19
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "data_row": 20
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "data_row": 21
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "data_row": 22
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "data_row": 23
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "data_row": 24
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "data_row": 25
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "data_row": 26
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "data_row": 27
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "data_row": 28
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "data_row": 29
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "data_row": 30
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "data_row": 31
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "data_row": 32
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "data_row": 33
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "data_row": 34
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 212
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 213
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 214
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 215
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 216
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 217
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 218
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 219
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 220
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 221
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 222
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 223
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 224
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 225
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 226
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 227
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 228
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 229
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 230
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 231
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 232
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 233
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 234
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 235
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 236
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 237
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 238
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 239
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 240
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 241
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 242
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 243
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 244
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 245
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 246
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 247
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 248
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 249
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 250
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 251
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 252
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 253
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 254
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 255
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 256
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 257
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 258
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 259
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 260
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 261
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 262
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 263
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 264
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 265
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 266
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 267
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 268
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 269
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 270
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 271
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 272
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 273
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 274
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 275
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 276
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 277
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 278
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 279
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 280
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 281
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 282
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 283
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 284
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 285
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 286
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 287
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 288
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 289
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 290
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 291
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 292
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 293
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 294
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 295
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 296
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 297
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 298
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 299
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 300
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 301
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 302
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 303
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 304
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 305
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 306
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 307
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 308
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 309
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 310
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 311
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 312
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 313
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 314
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 315
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 316
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 317
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 318
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 319
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 320
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 321
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 322
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 323
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 324
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 325
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 326
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 327
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 328
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 329
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 330
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 331
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 332
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 333
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 334
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 335
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 336
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 337
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 338
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 339
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 340
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 341
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 342
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 343
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 344
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 345
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 346
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 347
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 348
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 349
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 350
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 351
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 352
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 353
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 354
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 355
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 356
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 357
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 358
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 359
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 360
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 361
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 362
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 363
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 364
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 365
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 366
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 367
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 368
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 369
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 370
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 371
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 372
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 373
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 374
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 375
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 376
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 377
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 378
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 379
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 380
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 381
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 382
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 383
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 384
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 385
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 386
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 387
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 388
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 389
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 390
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 391
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 392
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 393
+      },
+      {
+        "source": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "data_row": 394
+      }
+    ]
+  },
+  "status": "PASS_REAL_KAFKA_BRONZE_SILVER_GOLD",
+  "source_sha256": {
+    "real_producer.py": "43da589f9ed1eb239c9f519c053256b8cd3fc0f68e7bb92e836e1ce3bbd813da",
+    "scripts/real_batch.py": "b2df6c92d117344bdc0068f8886761d4197b30f9873db5f0ee8b32a70dc4e221",
+    "scripts/pipeline_config.py": "9c1648b41622891e18e84c82f5d00b0259ad39b60727ef63f673d2e50d733d8a",
+    "scripts/bronze_local.py": "f7ec6cc4adb273b6250e6b6da3f04d03f36c9cb64366efbea6936a0604fc7b63",
+    "scripts/silver_batch.py": "71f9a2cc800e8ebde7987afea4c490c1ca9765ec41253e32766f0d1e48c12259",
+    "scripts/gold_batch.py": "f11d7e954b8e40765f95833f5c76ee013d2bb6a44f9c97a4f79ad3b06dd45836"
+  },
+  "producer": {
+    "submitted": 200,
+    "delivered": 200,
+    "failed": 0,
+    "queued": 0
+  },
+  "kafka": {
+    "partition": 0,
+    "low_offset": 0,
+    "high_offset": 200,
+    "verified_messages": 200
+  },
+  "jars_sha256": {
+    "org.apache.iceberg_iceberg-spark-runtime-3.5_2.12-1.12.0.jar": "8dd8c90e54ed1a20f2461309d047a255ee56382eb7c0a46162b27a4936fd86dc",
+    "org.apache.spark_spark-sql-kafka-0-10_2.12-3.5.9.jar": "fed393dcc3ef70611fe3d4f35ae78a8ea7c55301fd4cdd66c5dc97fcfaa5a00f",
+    "org.apache.spark_spark-token-provider-kafka-0-10_2.12-3.5.9.jar": "e82612e6070438c5ea48b08c74f367a6d214a390bdf6dcf3ff316dca592ddda5",
+    "org.apache.kafka_kafka-clients-3.4.1.jar": "9d0a9058c8ede79db6e54ae378ed16fe8d1bead2894635a4aa6aa0b7981668c6",
+    "org.apache.commons_commons-pool2-2.11.1.jar": "ea0505ee7515e58b1ac0e686e4d1a5d9f7d808e251a61bc371aa0595b9963f83",
+    "com.google.code.findbugs_jsr305-3.0.0.jar": "bec0b24dcb23f9670172724826584802b80ae6cbdaba03bdebdef9327b962f6a"
+  },
+  "tables": {
+    "BRONZE_TABLE": "it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa.bronze.aq_measurements",
+    "SILVER_TABLE": "it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa.silver.aq_measurements",
+    "BREAKPOINT_TABLE": "it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa.silver.aqi_breakpoints",
+    "DIMENSION_TABLE": "it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa.gold.dim_location",
+    "HOURLY_TABLE": "it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa.gold.pm25_aqi_hourly"
+  },
+  "bronze": {
+    "input_rows": 200,
+    "output_rows": 200
+  },
+  "silver": {
+    "source_count": 200,
+    "valid_count": 200,
+    "rejected_count": 0,
+    "duplicate_rows_removed": 0,
+    "deduplicated_source_count": 200,
+    "new_records_count": 200,
+    "source_keys_already_present": 0,
+    "output_count": 200,
+    "null_key_count": 0,
+    "duplicate_key_count": 0,
+    "null_value_count": 0,
+    "negative_value_count": 0,
+    "null_ingested_at_count": 0,
+    "null_parameter_count": 0,
+    "null_units_count": 0
+  },
+  "gold": {
+    "silver_source_count": 200,
+    "pm25_source_count": 200,
+    "non_pm25_source_count": 0,
+    "valid_pm25_count": 200,
+    "hourly_output_count": 23,
+    "invalid_pm25_count": 0,
+    "duplicate_hourly_key_count": 0,
+    "dimension_source_count": 1,
+    "dimension_output_count": 1,
+    "dimension_new_count": 1,
+    "dimension_changed_count": 0,
+    "hourly_new_count": 23,
+    "hourly_changed_count": 0,
+    "null_dimension_key_count": 0,
+    "null_hourly_key_count": 0,
+    "duplicate_dimension_key_count": 0,
+    "orphan_location_count": 0,
+    "invalid_hourly_output_count": 0,
+    "dimension_sha256": "0348c4b141fd8f518cee3a0e7e2354a55238f555b4a5062a2af0275556fc327a",
+    "hourly_sha256": "82a38b97e0d0230ba7799592754d50f1ad6d7405080c7444e3a09b6f14653583"
+  },
+  "bronze_rerun": {
+    "input_rows": 0,
+    "output_rows": 200
+  },
+  "silver_rerun": {
+    "source_count": 200,
+    "valid_count": 200,
+    "rejected_count": 0,
+    "duplicate_rows_removed": 0,
+    "deduplicated_source_count": 200,
+    "new_records_count": 0,
+    "source_keys_already_present": 200,
+    "output_count": 200,
+    "null_key_count": 0,
+    "duplicate_key_count": 0,
+    "null_value_count": 0,
+    "negative_value_count": 0,
+    "null_ingested_at_count": 0,
+    "null_parameter_count": 0,
+    "null_units_count": 0
+  },
+  "gold_rerun": {
+    "silver_source_count": 200,
+    "pm25_source_count": 200,
+    "non_pm25_source_count": 0,
+    "valid_pm25_count": 200,
+    "hourly_output_count": 23,
+    "invalid_pm25_count": 0,
+    "duplicate_hourly_key_count": 0,
+    "dimension_source_count": 1,
+    "dimension_output_count": 1,
+    "dimension_new_count": 0,
+    "dimension_changed_count": 0,
+    "hourly_new_count": 0,
+    "hourly_changed_count": 0,
+    "null_dimension_key_count": 0,
+    "null_hourly_key_count": 0,
+    "duplicate_dimension_key_count": 0,
+    "orphan_location_count": 0,
+    "invalid_hourly_output_count": 0,
+    "dimension_sha256": "0348c4b141fd8f518cee3a0e7e2354a55238f555b4a5062a2af0275556fc327a",
+    "hourly_sha256": "82a38b97e0d0230ba7799592754d50f1ad6d7405080c7444e3a09b6f14653583"
+  },
+  "unchanged_rerun": {
+    "rows_and_snapshots_equal": true,
+    "snapshot_ids": {
+      "it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa.bronze.aq_measurements": [
+        6952547278825413935
+      ],
+      "it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa.silver.aq_measurements": [
+        3341814591105242295
+      ],
+      "it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa.silver.aqi_breakpoints": [
+        2039880547633846857
+      ],
+      "it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa.gold.dim_location": [
+        8328726168098364150
+      ],
+      "it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa.gold.pm25_aqi_hourly": [
+        3702661318954316818
+      ]
+    }
+  },
+  "hourly_rows": [
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-03T15:00:00.000Z",
+      "pm25_avg": 21.7875,
+      "aqi": 44
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-03T16:00:00.000Z",
+      "pm25_avg": 21.923333333333332,
+      "aqi": 44
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-03T17:00:00.000Z",
+      "pm25_avg": 20.531999999999996,
+      "aqi": 41
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-03T18:00:00.000Z",
+      "pm25_avg": 27.507272727272724,
+      "aqi": 55
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-03T19:00:00.000Z",
+      "pm25_avg": 27.28875,
+      "aqi": 55
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-03T20:00:00.000Z",
+      "pm25_avg": 23.85111111111111,
+      "aqi": 48
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-03T21:00:00.000Z",
+      "pm25_avg": 25.508999999999997,
+      "aqi": 51
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-03T22:00:00.000Z",
+      "pm25_avg": 28.762999999999998,
+      "aqi": 58
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-03T23:00:00.000Z",
+      "pm25_avg": 32.87636363636364,
+      "aqi": 66
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-04T00:00:00.000Z",
+      "pm25_avg": 33.75625,
+      "aqi": 68
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-04T01:00:00.000Z",
+      "pm25_avg": 38.7175,
+      "aqi": 77
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-04T02:00:00.000Z",
+      "pm25_avg": 40.498000000000005,
+      "aqi": 81
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-04T03:00:00.000Z",
+      "pm25_avg": 33.07625,
+      "aqi": 66
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-04T04:00:00.000Z",
+      "pm25_avg": 19.994444444444447,
+      "aqi": 40
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-04T05:00:00.000Z",
+      "pm25_avg": 38.177499999999995,
+      "aqi": 76
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-04T06:00:00.000Z",
+      "pm25_avg": 32.59444444444445,
+      "aqi": 65
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-04T07:00:00.000Z",
+      "pm25_avg": 28.592499999999998,
+      "aqi": 57
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-04T08:00:00.000Z",
+      "pm25_avg": 30.610000000000003,
+      "aqi": 61
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-04T09:00:00.000Z",
+      "pm25_avg": 31.321666666666662,
+      "aqi": 63
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-04T10:00:00.000Z",
+      "pm25_avg": 26.34272727272727,
+      "aqi": 53
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-04T11:00:00.000Z",
+      "pm25_avg": 27.5225,
+      "aqi": 55
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-04T12:00:00.000Z",
+      "pm25_avg": 26.272222222222222,
+      "aqi": 53
+    },
+    {
+      "location_id": 4946812,
+      "hour_start": "2025-07-04T13:00:00.000Z",
+      "pm25_avg": 24.301666666666666,
+      "aqi": 49
+    }
+  ],
+  "dimension_rows": [
+    {
+      "location_id": 4946812,
+      "name": "Công viên hồ điều hòa Nhân Chính, Khuất Duy Tiến-4916745",
+      "lat": 21.0031,
+      "lon": 105.79470000000002,
+      "station_type": "reference"
+    }
+  ],
+  "schemas": {
+    "BRONZE_TABLE": "struct<location_id:string,sensors_id:string,location:string,datetime:string,lat:string,lon:string,parameter:string,units:string,value:string,kafka_ts:timestamp>",
+    "SILVER_TABLE": "struct<location_id:int,sensors_id:int,parameter:string,value:double,units:string,measured_at:timestamp,ingested_at:timestamp>",
+    "BREAKPOINT_TABLE": "struct<parameter:string,aqi_lo:int,aqi_hi:int,conc_lo:double,conc_hi:double,source:string,effective_from:date,effective_to:date,is_current:boolean>",
+    "DIMENSION_TABLE": "struct<location_id:int,name:string,lat:double,lon:double,station_type:string>",
+    "HOURLY_TABLE": "struct<location_id:int,hour_start:timestamp,pm25_avg:double,aqi:int>"
+  },
+  "verification_date": "2026-11-06",
+  "git_branch": "feat/local-lakehouse",
+  "git_head": "e54c8e0bfec675dc91ece02334e70c686fc10b02",
+  "source_state": "Uncommitted local implementation; source_sha256 identifies actually executed files",
+  "actual_data": {
+    "kind": "Existing historical OpenAQ measurements; no synthetic measurements in the acceptance replay",
+    "utc_start": "2025-07-03T15:40:00+00:00",
+    "utc_end": "2025-07-04T13:50:00+00:00",
+    "pm25_sum": 5746.71,
+    "units": "µg/m³",
+    "original_file_provenance_and_physical_row_numbers": true
+  },
+  "validation_method": {
+    "kafka": "Independent consumer verifies partition watermarks, keys, original payloads and record count",
+    "bronze": "Streaming input progress, direct table count, all original string fields and Kafka epoch milliseconds checked",
+    "silver": "Collected business-field tuples compared against independently parsed/deduplicated source records",
+    "gold": "Collected schema/dimension/hourly rows checked; UTC means via Python math.fsum and MVP AQI via seed interpolation/half-up rounding",
+    "rerun": "Actual collected row strings and snapshot arrays compared before/after for all five tables; final arrays retained above, not metadata-derived row counts"
+  },
+  "gold_regression": {
+    "tests_run": 48,
+    "failure_count": 0,
+    "error_count": 0,
+    "skipped_count": 0,
+    "results": [
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_absent_target_key_with_complete_metadata_is_created_safely",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_all_three_mapped_stations_are_supported",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_blank_source_name_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_blank_target_names_are_rejected_without_automatic_repair",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_conflicting_source_coordinates_are_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_conflicting_source_names_are_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_duplicate_dimension_key_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_duplicate_fact_key_cannot_leave_partial_dimension_write",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_empty_silver_cannot_hide_unrepairable_null_name",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_existing_infinite_aggregate_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_existing_nan_aggregate_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_existing_orphan_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_existing_valid_name_and_payload_are_preserved",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_finite_inputs_with_nonfinite_aggregate_are_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_finite_positive_measurements_are_accepted",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_first_run_without_gold_or_breakpoint_tables",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_identical_bronze_metadata_allows_name_repair",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_existing_fact_value_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_fact_target_does_not_initialize_breakpoints",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_legacy_station_mapping_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_legacy_target_coordinates_are_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_numeric_input_does_not_initialize_breakpoints",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_source_coordinates_are_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_largest_finite_single_measurement_is_accepted",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_legacy_null_name_absent_from_silver_is_repaired",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_legacy_null_name_with_empty_silver_is_repaired",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_legacy_null_name_without_metadata_rejects_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_legacy_repair_cannot_introduce_an_unsupported_station_mapping",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_legacy_repair_rejection_does_not_initialize_breakpoints",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_missing_bronze_metadata_is_rejected_by_real_builder",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_missing_metadata_and_absent_target_key_cannot_write_orphan",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_missing_metadata_does_not_initialize_breakpoints",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_mixed_valid_and_invalid_bronze_metadata_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_nan_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_negative_infinity_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_negative_measurement_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_dimension_key_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_fact_key_cannot_leave_partial_dimension_write",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_measurement_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_name_is_repaired_from_unique_bronze_metadata",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_name_with_missing_bronze_metadata_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_source_name_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_positive_infinity_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_unchanged_rerun_preserves_rows_and_snapshots",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_unknown_legacy_target_key_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_valid_bronze_metadata_covers_silver_location",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_valid_legacy_name_does_not_require_bronze_metadata",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_zero_is_accepted",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      }
+    ],
+    "unittest_seconds": 128.856
+  },
+  "gold_regression_sources_sha256": {
+    "scripts/gold_batch.py": "f11d7e954b8e40765f95833f5c76ee013d2bb6a44f9c97a4f79ad3b06dd45836",
+    "tests/gold_p0_integration.py": "7bebab7d58750bc539b8907d76393c9e2cb204cb19a1264fc744d683b3f52a77",
+    "tests/test_gold_p0_orchestration.py": "d57959b7511b6efc1352cecc666b5fb66fa863a79d59b578c2ed16cc056a0a5f"
+  },
+  "protected_runtime": {
+    "files_checked": 1501,
+    "changed": [],
+    "missing": [],
+    "new_production_runtime_files": [],
+    "method": "Data size/mtime, other runtime files SHA256+size/mtime, .env/derby.log size/mtime only; no .env contents read"
+  },
+  "preserved_artifacts_byte_identical": {
+    "scripts/aws_iceberg_smoke.py": true,
+    "tests/test_aws_iceberg_smoke.py": true,
+    "docs/aws-iceberg-smoke.md": true,
+    "tests/evidence/aws_iceberg_smoke_2026-10-29.json": true,
+    "tests/evidence/gold_dimension_name_repair_2026-10-25.json": true
+  },
+  "prior_attempts": [
+    {
+      "kind": "Local replay",
+      "status": "Stopped after 200 Kafka deliveries and 200 Bronze rows; assertion in timestamp reference checker before Silver",
+      "correction": "Use SQL epoch milliseconds and a UTC worker; source measurements and production transformations unchanged",
+      "retained": true
+    },
+    {
+      "kind": "Earlier successful local replay",
+      "status": "200 Bronze, 200 Silver, 1 dimension, 23 hours; unchanged rerun passed",
+      "retained": true
+    },
+    {
+      "kind": "Gold regression launcher",
+      "status": "Rejected Ivy-prefixed JAR basename before Spark or tests",
+      "correction": "Identical checksum-verified local JAR copy with the required artifact basename; no download"
+    },
+    {
+      "kind": "Additional passing local replay before final identifier guard",
+      "status": "200 Bronze, 200 Silver, 1 dimension, 23 hours; unchanged rerun passed",
+      "retained": true
+    }
+  ],
+  "cloud_execution": "NOT EXECUTED; exact new proposal is docs/plans/real_openaq_2026-11-06.json",
+  "cloud_operations_this_sprint": 0,
+  "athena_queries_this_sprint": 0,
+  "notification_publishes": 0,
+  "automatic_cleanup": false,
+  "limitations": [
+    "Single station and one bounded historical batch; not streaming HA or process-crash recovery",
+    "Same-checkpoint Bronze query restart and unchanged batch rerun verified within one Spark session",
+    "MVP hourly AQI, not official VN_AQI; completeness/NowCast/alert thresholds deferred",
+    "All failed/successful local topics and external run directories retained; no automatic resource deletion",
+    "Fresh AWS identity/IAM/SCP/empty-target checks and explicit approval still required",
+    "Existing deployed teammate infrastructure and Lambda versions were not freshly verified"
+  ],
+  "offline_validation": {
+    "pure_python": {
+      "passed": 102,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "command": ".venv/bin/python -B -m unittest discover -s tests -p 'test_*.py' -q"
+    },
+    "ruff_lint": {
+      "exit": 0,
+      "command": ".venv/bin/ruff check --no-cache real_producer.py scripts tests"
+    },
+    "ruff_format": {
+      "exit": 0,
+      "command": ".venv/bin/ruff format --check --no-cache real_producer.py scripts tests"
+    },
+    "ast_files": [
+      "scripts/pipeline_config.py",
+      "scripts/real_batch.py",
+      "scripts/bronze_local.py",
+      "scripts/silver_batch.py",
+      "scripts/gold_batch.py",
+      "tests/test_pipeline_config.py",
+      "tests/test_acceptance_evidence.py"
+    ],
+    "proposed_cloud_shell_syntax": "PASS via bash -n; cloud commands not executed",
+    "cloud_entrypoint_plans": "All three --plan invocations passed without Spark or AWS calls"
+  },
+  "gold_regression_command": "AIRLAKE_RUN_GOLD_P0_INTEGRATION=1 AIRLAKE_ICEBERG_RUNTIME_JAR=<verified-external-copy>/iceberg-spark-runtime-3.5_2.12-1.12.0.jar .venv/bin/python -B tests/gold_p0_integration.py",
+  "gold_regression_command_note": "External copy has the original verified runtime bytes; the launcher requires the artifact basename without the Ivy organization prefix",
+  "independent_fresh_run_gold_digests_equal_previous_success": true,
+  "offline_dependency_verification": [
+    {
+      "artifact": "org.apache.iceberg_iceberg-spark-runtime-3.5_2.12-1.12.0.jar",
+      "sha256": "8dd8c90e54ed1a20f2461309d047a255ee56382eb7c0a46162b27a4936fd86dc",
+      "required_classes_present": [
+        "org/apache/iceberg/aws/glue/GlueCatalog.class",
+        "org/apache/iceberg/aws/s3/S3FileIO.class"
+      ]
+    },
+    {
+      "artifact": "iceberg-aws-bundle-1.12.0.jar",
+      "sha256": "dd7e49ffa4ac9b215bed846581991259e3aec9bb2fa08d6cec029c46cd66d957",
+      "required_classes_present": [
+        "software/amazon/awssdk/services/s3/S3Client.class",
+        "software/amazon/awssdk/services/glue/GlueClient.class",
+        "software/amazon/awssdk/services/sts/StsClient.class",
+        "software/amazon/awssdk/auth/credentials/ProfileCredentialsProvider.class",
+        "software/amazon/awssdk/auth/credentials/ProcessCredentialsProvider.class",
+        "software/amazon/awssdk/http/apache5/Apache5HttpClient.class"
+      ]
+    }
+  ],
+  "selection_hash_definition": "SHA256 of UTF-8 newline-joined json.dumps(row, sort_keys=True, ensure_ascii=False), in selection order with no final newline; not the generated gzip or selected-rows.json byte hash. Source-file hashes cover original compressed bytes.",
+  "local_execution_totals": {
+    "attempts": 4,
+    "published_per_attempt": 200,
+    "published_total_to_four_isolated_topics": 800,
+    "acceptance_source_measurements": 200,
+    "successful_complete_runs": 3,
+    "checker_failure_before_silver": 1
+  },
+  "configuration_guard_development": "Two added tests first exposed identifier collisions/reserved catalog names (five failing subcases); both passed after validation was implemented, before this final real-data run"
+}

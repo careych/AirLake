@@ -1,0 +1,242 @@
+{
+  "status": "NOT_EXECUTED_REQUIRES_NEW_EXPLICIT_APPROVAL",
+  "run_id": "20261106_f3b3b3e0677d4a6790e4a54faf68e4aa",
+  "account": "701364614078",
+  "region": "ap-southeast-2",
+  "cli_profile": "airlake",
+  "java_profile": "airlake-spark",
+  "source_selection": {
+    "rule": "Lexicographic station-4946812 file path, physical CSV data-row order; first compatible PM2.5 rows, no synthesis",
+    "limit": 200,
+    "source_files": [
+      {
+        "path": "data/raw/4946812/year=2025/month=07/location-4946812-20250703.csv.gz",
+        "sha256": "3163411c1016c12b010c98b6beb4b7279f16542dd25fc08a07d77cbdcca6f074"
+      },
+      {
+        "path": "data/raw/4946812/year=2025/month=07/location-4946812-20250704.csv.gz",
+        "sha256": "69ca2a4ae2738ac1e0e4339f073112081b304a4e1f59d71382ab1af38814fdda"
+      }
+    ],
+    "scanned_rows": 491,
+    "excluded_non_pm25": 291,
+    "rejected_pm25_by_reason": {},
+    "selected_rows": 200,
+    "selected_sha256": "a7f25e24d09033a15afef5e861d69176212480ffd655e303996f6dd883b01b77"
+  },
+  "source_kafka_topic": "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa",
+  "catalog": "cloudreal",
+  "warehouse": "s3://airlake-701364614078-lake/integration-real/20261106_f3b3b3e0677d4a6790e4a54faf68e4aa/warehouse/",
+  "run_prefix": "s3://airlake-701364614078-lake/integration-real/20261106_f3b3b3e0677d4a6790e4a54faf68e4aa/",
+  "glue_databases": [
+    "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_bronze",
+    "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_silver",
+    "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold"
+  ],
+  "tables": {
+    "BRONZE_TABLE": "cloudreal.airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_bronze.aq_measurements",
+    "SILVER_TABLE": "cloudreal.airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_silver.aq_measurements",
+    "BREAKPOINT_TABLE": "cloudreal.airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_silver.aqi_breakpoints",
+    "DIMENSION_TABLE": "cloudreal.airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold.dim_location",
+    "HOURLY_TABLE": "cloudreal.airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold.pm25_aqi_hourly"
+  },
+  "spark_settings": {
+    "spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
+    "spark.sql.session.timeZone": "UTC",
+    "spark.sql.catalog.cloudreal": "org.apache.iceberg.spark.SparkCatalog",
+    "spark.sql.catalog.cloudreal.warehouse": "s3://airlake-701364614078-lake/integration-real/20261106_f3b3b3e0677d4a6790e4a54faf68e4aa/warehouse/",
+    "spark.sql.catalog.cloudreal.catalog-impl": "org.apache.iceberg.aws.glue.GlueCatalog",
+    "spark.sql.catalog.cloudreal.io-impl": "org.apache.iceberg.aws.s3.S3FileIO",
+    "spark.sql.catalog.cloudreal.glue.id": "701364614078",
+    "spark.sql.catalog.cloudreal.client.region": "ap-southeast-2",
+    "spark.sql.catalog.cloudreal.client.credentials-provider": "software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider",
+    "spark.sql.catalog.cloudreal.http-client.type": "apache",
+    "spark.sql.catalog.cloudreal.s3.retry.num-retries": "0",
+    "spark.sql.catalog.cloudreal.s3.crt.enabled": "false",
+    "spark.sql.catalog.cloudreal.s3.analytics-accelerator.enabled": "false",
+    "spark.sql.catalog.cloudreal.table-default.commit.retry.num-retries": "0",
+    "spark.sql.catalog.cloudreal.table-default.format-version": "2",
+    "spark.sql.catalog.cloudreal.table-default.write.format.default": "parquet",
+    "spark.master": "local[1]",
+    "spark.sql.catalogImplementation": "in-memory",
+    "spark.hadoop.fs.defaultFS": "file:///",
+    "spark.jars.packages": "",
+    "spark.driver.extraJavaOptions": "-Daws.profile=airlake-spark -Daws.region=ap-southeast-2 -Daws.maxAttempts=1"
+  },
+  "runtime_local_isolation": "Use the fixed retained local_working_directory outside the repository. Only its bronze-checkpoint child is allowed; bind to this topic/table/query, and do not create a new working directory for reruns.",
+  "commands_not_executed": {
+    "bronze": [
+      "$AIRLAKE_REPO/.venv/bin/python",
+      "-B",
+      "$AIRLAKE_REPO/scripts/bronze_local.py",
+      "--mode",
+      "glue",
+      "--catalog",
+      "cloudreal",
+      "--warehouse",
+      "s3://airlake-701364614078-lake/integration-real/20261106_f3b3b3e0677d4a6790e4a54faf68e4aa/warehouse/",
+      "--account",
+      "701364614078",
+      "--region",
+      "ap-southeast-2",
+      "--profile",
+      "airlake-spark",
+      "--bronze-namespace",
+      "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_bronze",
+      "--silver-namespace",
+      "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_silver",
+      "--gold-namespace",
+      "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold",
+      "--allow-cloud-write",
+      "--confirm-account",
+      "701364614078",
+      "--bootstrap-servers",
+      "localhost:19092",
+      "--topic",
+      "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa",
+      "--available-now",
+      "--checkpoint",
+      "$AIRLAKE_CLOUD_WORKDIR/bronze-checkpoint"
+    ],
+    "silver": [
+      "$AIRLAKE_REPO/.venv/bin/python",
+      "-B",
+      "$AIRLAKE_REPO/scripts/silver_batch.py",
+      "--mode",
+      "glue",
+      "--catalog",
+      "cloudreal",
+      "--warehouse",
+      "s3://airlake-701364614078-lake/integration-real/20261106_f3b3b3e0677d4a6790e4a54faf68e4aa/warehouse/",
+      "--account",
+      "701364614078",
+      "--region",
+      "ap-southeast-2",
+      "--profile",
+      "airlake-spark",
+      "--bronze-namespace",
+      "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_bronze",
+      "--silver-namespace",
+      "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_silver",
+      "--gold-namespace",
+      "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold",
+      "--allow-cloud-write",
+      "--confirm-account",
+      "701364614078"
+    ],
+    "gold": [
+      "$AIRLAKE_REPO/.venv/bin/python",
+      "-B",
+      "$AIRLAKE_REPO/scripts/gold_batch.py",
+      "--mode",
+      "glue",
+      "--catalog",
+      "cloudreal",
+      "--warehouse",
+      "s3://airlake-701364614078-lake/integration-real/20261106_f3b3b3e0677d4a6790e4a54faf68e4aa/warehouse/",
+      "--account",
+      "701364614078",
+      "--region",
+      "ap-southeast-2",
+      "--profile",
+      "airlake-spark",
+      "--bronze-namespace",
+      "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_bronze",
+      "--silver-namespace",
+      "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_silver",
+      "--gold-namespace",
+      "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold",
+      "--allow-cloud-write",
+      "--confirm-account",
+      "701364614078"
+    ]
+  },
+  "expected": {
+    "bronze_count": 200,
+    "silver_count": 200,
+    "silver_pm25_sum": 5746.71,
+    "dimension_count": 1,
+    "hourly_count": 23,
+    "duplicate_hourly_keys": 0,
+    "orphan_count": 0,
+    "hourly_reference": "tests/evidence/real_openaq_2026-11-06.json",
+    "float_comparison_absolute_tolerance": 1e-09,
+    "same_cloud_rerun": "No new source messages; all five table rows and snapshot-ID sets unchanged; compare within cloud, not against local snapshot IDs"
+  },
+  "athena": {
+    "status": "NOT_EXECUTED",
+    "workgroup": "airlake",
+    "enforced_result_bucket": "s3://airlake-701364614078-athena-results/",
+    "maximum_queries_planned": 2,
+    "counts_sql": "SELECT\n (SELECT count(*) FROM \"airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_bronze\".\"aq_measurements\") AS bronze_count,\n (SELECT count(*) FROM \"airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_silver\".\"aq_measurements\") AS silver_count,\n (SELECT sum(value) FROM \"airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_silver\".\"aq_measurements\") AS pm25_sum,\n (SELECT count(*) FROM \"airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold\".\"dim_location\") AS dimension_count,\n (SELECT count(*) FROM \"airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold\".\"pm25_aqi_hourly\") AS hourly_count,\n (SELECT count(*) FROM (SELECT location_id,hour_start FROM \"airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold\".\"pm25_aqi_hourly\" GROUP BY 1,2 HAVING count(*)>1)) AS duplicate_hourly_keys,\n (SELECT count(*) FROM \"airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold\".\"pm25_aqi_hourly\" h LEFT JOIN \"airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold\".\"dim_location\" d ON h.location_id=d.location_id WHERE d.location_id IS NULL) AS orphan_count",
+    "hourly_sql": "SELECT h.location_id,d.name,h.hour_start,h.pm25_avg,h.aqi FROM \"airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold\".\"pm25_aqi_hourly\" h JOIN \"airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold\".\"dim_location\" d ON h.location_id=d.location_id ORDER BY h.location_id,h.hour_start",
+    "record_after_execution": [
+      "query IDs",
+      "actual output locations and exact result-object keys",
+      "actual engine",
+      "reported bytes scanned",
+      "table snapshot IDs"
+    ]
+  },
+  "preflight_required": [
+    "Fresh CLI and Java caller identity for account and Sydney region; no credentials printed",
+    "Expected bucket owner/region and complete empty run prefix; denial is not absence",
+    "All three exact Glue databases absent; only EntityNotFoundException proves absence",
+    "Workgroup enabled, effective engine 3, enforced results bucket unchanged",
+    "Frozen input SHA256 and Kafka partition-0 offsets exactly 0..199, no other partitions or new source records",
+    "Verified pinned JARs; existing airlake-spark credential_process profile unchanged",
+    "Separate explicit approval before the first AWS write",
+    "Exact persistent local checkpoint path has no symlink escape and is either new/empty or bound to this same query; preserve it on every outcome"
+  ],
+  "operations_if_approved": [
+    "Create three disposable namespaces and five Iceberg v2/Parquet tables",
+    "One available-now Bronze ingestion with retained local checkpoint, one Silver batch and one Gold batch",
+    "Verify actual rows/schema/UTC aggregation and snapshot metadata",
+    "Unchanged rerun under the same checkpoint without republishing, if included in approval",
+    "At most two narrowly scoped Athena SELECTs"
+  ],
+  "cost_risks": [
+    "S3 puts/gets/list/storage, Glue catalog actions/storage and Athena scan minima/results",
+    "The 10-GiB workgroup per-query cutoff is not a spending cap",
+    "No EC2, EMR, Glue ETL, ALB or Terraform provisioning required; Spark stays on the Mac",
+    "Regional rates and current IAM/SCP permissions have not been refreshed in this sprint"
+  ],
+  "failure_recovery": [
+    "Stop at the first failed or ambiguous cloud write; do not automatically retry or delete",
+    "Record each operation before submitting it, then table metadata/snapshot and exact S3 scope where readable",
+    "Retain any successful earlier commits; Bronze/Silver/Gold are not one atomic transaction",
+    "Preserve the local checkpoint and binding together. Stop on incompatibility; do not delete them, reset offsets or silently select a fresh checkpoint against existing cloud targets."
+  ],
+  "cleanup_not_executed": [
+    "Inventory only this run prefix and these three exact databases/tables; review before deletion",
+    "After separate approval delete only five disposable table registrations and three namespaces; account for Glue archived table versions",
+    "Delete all enumerated Iceberg data/manifests/metadata objects only below this run prefix",
+    "Delete only actual result and ancillary keys recorded for the two new Athena query IDs; never clear the result bucket",
+    "If bucket versioning has changed, review versions/delete markers before deleting",
+    "Do not delete the previous integration-smoke prefix or production airlake_bronze/silver/gold resources",
+    "Retain the local checkpoint/binding/work directory until investigation and all approved reruns are finished; remove it only after separate explicit cleanup approval"
+  ],
+  "selection_hash_definition": "SHA256 of UTF-8 newline-joined json.dumps(row, sort_keys=True, ensure_ascii=False), in selection order with no final newline; not the generated gzip or selected-rows.json byte hash. Source-file hashes cover original compressed bytes.",
+  "local_working_directory": "$HOME/.local/share/airlake/runs/airlake-it2-cloud-20261106_f3b3b3e0677d4a6790e4a54faf68e4aa",
+  "local_checkpoint": {
+    "path": "$AIRLAKE_CLOUD_WORKDIR/bronze-checkpoint",
+    "binding": "$AIRLAKE_CLOUD_WORKDIR/bronze-checkpoint.binding.json",
+    "policy": "Retain both for matching reruns and partial-failure investigation; reject incompatible/unbound checkpoints and symlink escapes; never reset offsets",
+    "limitation": "Local Mac checkpoint for this bounded test only; not production cloud fault tolerance"
+  },
+  "runtime_classpath": {
+    "automatic_packages_resolution": false,
+    "cached_kafka_sha256": {
+      "org.apache.spark_spark-sql-kafka-0-10_2.12-3.5.9.jar": "fed393dcc3ef70611fe3d4f35ae78a8ea7c55301fd4cdd66c5dc97fcfaa5a00f",
+      "org.apache.spark_spark-token-provider-kafka-0-10_2.12-3.5.9.jar": "e82612e6070438c5ea48b08c74f367a6d214a390bdf6dcf3ff316dca592ddda5",
+      "org.apache.kafka_kafka-clients-3.4.1.jar": "9d0a9058c8ede79db6e54ae378ed16fe8d1bead2894635a4aa6aa0b7981668c6",
+      "org.apache.commons_commons-pool2-2.11.1.jar": "ea0505ee7515e58b1ac0e686e4d1a5d9f7d808e251a61bc371aa0595b9963f83",
+      "com.google.code.findbugs_jsr305-3.0.0.jar": "bec0b24dcb23f9670172724826584802b80ae6cbdaba03bdebdef9327b962f6a"
+    },
+    "iceberg_runtime_sha256": "8dd8c90e54ed1a20f2461309d047a255ee56382eb7c0a46162b27a4936fd86dc",
+    "iceberg_aws_bundle_sha256": "dd7e49ffa4ac9b215bed846581991259e3aec9bb2fa08d6cec029c46cd66d957",
+    "kafka_cached_directory": "$HOME/.ivy2/jars",
+    "jsr305_duplicate_policy": "Verify the cached artifact and the identical Spark-bundled JAR; load the bundled copy once, omitting the duplicate cache entry",
+    "checkpoint_filesystem": "local file; no Hadoop S3A dependencies"
+  }
+}
