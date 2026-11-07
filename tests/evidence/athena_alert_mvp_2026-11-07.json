@@ -1,0 +1,143 @@
+{
+  "verification_date": "2026-11-07",
+  "branch": "feat/athena-alert-runtime",
+  "base_main": "f3f86f8b2a22953a2e181c5705b8ea72ed7d48eb",
+  "scope": "Sprint 3A.3 callable MVP, offline acceptance; NOT cloud E2E acceptance",
+  "python_tests": {
+    "run": 223,
+    "passed": 223,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 0.685,
+    "command": "python -B -m unittest discover -s tests -p 'test_*.py' -v",
+    "mocks": "Athena/SNS/SQS/DynamoDB/Telegram; no live notifications or queries"
+  },
+  "checks": {
+    "ruff_lint": "PASS",
+    "ruff_format": "PASS: 37 files",
+    "ast_parse": "PASS",
+    "uv_lock_offline": "PASS: 16 packages",
+    "default_runtime": "PASS: no SDK construction or network",
+    "private_deployment_generation": "PASS with SYNTHETIC recipient/reference/principal; no commands executed",
+    "sdk_model_validation": "PASS; not live AWS service validation",
+    "targeted_security_scan": "PASS; no secret values or personal paths in proposed publication",
+    "git_diff_check": "PASS"
+  },
+  "artifact": {
+    "architecture": "pure-python; validate on target runtime",
+    "archive_bytes": 16736595,
+    "archive_sha256": "a4587ec1feabeceae690fd0b1743eaaaa89fcc3479bd707e0ca266d69ce1217b",
+    "dependencies": {
+      "boto3": "1.43.115",
+      "botocore": "1.43.115",
+      "jmespath": "1.1.0",
+      "python-dateutil": "2.9.0.post0",
+      "s3transfer": "0.19.3",
+      "six": "1.17.0",
+      "urllib3": "2.8.0"
+    },
+    "deployment_status": "NOT DEPLOYED",
+    "file_count": 2203,
+    "handler": "bot_lambda.src.lambda_function.lambda_handler",
+    "runtime": "python3.12",
+    "source_sha256": {
+      "alerts/__init__.py": "cef9abe0a57e76e68363c2ac6a900e927214ed04d072bb5428b635a88effa3c8",
+      "alerts/athena.py": "d61386177f4fd0fc19580e24e158b1fc1d8ed3dc417f02ccabf6037e854ecfd2",
+      "alerts/delivery.py": "1aa96a204b4b1c85938497b862c44c64ca8e767b9eeb90780d294d74204e0733",
+      "alerts/gold.py": "05ed22bdb93a8f6571b5e3b6f48794695ae1ece74900e695a8956a6dcc431513",
+      "alerts/preflight.py": "3cecc7c00abf3153784bc467a9b59ba921d6d16aace917ee367da80dd5a00b73",
+      "alerts/runtime.py": "59c596a25aacee1247808991d132e69794d8531a70fac78f5aa9e6d8d160016b",
+      "bot_lambda/src/create_table.py": "ae8fa63f8a93a32a27d16dd16c4dab71b3ead5ab76e4bf87205a55295bd70dd0",
+      "bot_lambda/src/lambda_function.py": "a058a54884fd2d1674bf0afc110d82c7c513058748728b53ec625fb71eefd4af"
+    },
+    "uv_lock_sha256": "daf23121b7b89b90c9de0cca6094314dfef36ab969d2bc6cb40757d8be976c5b",
+    "wheel_verification": "SHA-256 matched uv.lock"
+  },
+  "package_validation": {
+    "python": "3.12.15",
+    "import_test": "PASS: handler/runtime/preflight",
+    "sdk_request_models": "PASS: 12 deployment operations; NOT service authorization/acceptance",
+    "network_requests": 0,
+    "expanded_bytes": 23019718,
+    "dependencies": {
+      "boto3": "1.43.115",
+      "botocore": "1.43.115",
+      "jmespath": "1.1.0",
+      "s3transfer": "0.19.3",
+      "python-dateutil": "2.9.0.post0",
+      "six": "1.17.0",
+      "urllib3": "2.8.0"
+    }
+  },
+  "preflight": {
+    "execution_context": "User Terminal; receipt provided by user and inspected locally",
+    "exit_code": 1,
+    "receipt": {
+      "account": null,
+      "region": "ap-southeast-2",
+      "status": "BLOCKED",
+      "absence": {},
+      "snapshots": [],
+      "blocker": "STS identity failed: ExpiredSession",
+      "plan_sha256": "97c7f760a7f3b1bf38520e1a384d579433fca12a7eb95767167331618faa6e53"
+    },
+    "receipt_sha256": "d88a43b19b0980ce8effbfe03c297c207a3da8c408635ce05fc9c75ee83fcc51",
+    "agent_observation": "Same ExpiredSession under explicit config/credentials/cache paths; no further AWS inventory attempted",
+    "effective_permissions": "UNVERIFIED",
+    "staging_resource_absence": "UNVERIFIED",
+    "live_gold_snapshot_availability": "UNVERIFIED"
+  },
+  "cloud_decision": "NO-GO: expired login/preflight; owner/Khuê approval and private test-bot/recipient setup remain required",
+  "plan_sha256": "97c7f760a7f3b1bf38520e1a384d579433fca12a7eb95767167331618faa6e53",
+  "gold": {
+    "runtime_cases_retained": 48,
+    "rerun_this_sprint": false,
+    "reason": "Gold and P0 code unchanged; alert-only scope",
+    "protected_sha256": {
+      "scripts/bronze_local.py": "8f2229b0a8d81d20d9ee3d24d47c12b01771b4b46dd96369c7fddb23fd5a6dd4",
+      "scripts/silver_batch.py": "71f9a2cc800e8ebde7987afea4c490c1ca9765ec41253e32766f0d1e48c12259",
+      "scripts/gold_batch.py": "f11d7e954b8e40765f95833f5c76ee013d2bb6a44f9c97a4f79ad3b06dd45836",
+      "scripts/pipeline_config.py": "9c80bf359feb9ffcacfcf3edde04070765a6f63ab1f81b158673423025a456fc",
+      "tests/gold_p0_integration.py": "7bebab7d58750bc539b8907d76393c9e2cb204cb19a1264fc744d683b3f52a77",
+      "tests/test_gold_p0_orchestration.py": "d57959b7511b6efc1352cecc666b5fb66fa863a79d59b578c2ed16cc056a0a5f",
+      "tests/evidence/aws_iceberg_smoke_2026-10-29.json": "f8f47ac3258374b54e52137520c5b3c85bf23f7cbf2acebf8a526495ec67b3ae",
+      "tests/evidence/cloud_wiring_readiness.json": "85ac639c9cdd53b4b6616415d93cd3df6149fd79b33fff9aa41313697194009b",
+      "tests/evidence/gold_dimension_name_repair_2026-10-25.json": "0b17ebbbe33b762ebb6379278278f963b1929dc1e36270c5cbbe54ed2042182c",
+      "tests/evidence/gold_to_alert_local_2026-11-07.json": "658fc888c36e647b8b8ce973db5cd34468810506d13b416686467535808694db",
+      "tests/evidence/publication_validation_2026-11-07.json": "d53f6cdcbf872744205200f061c0e52d35b2b2a9e63695d2d8090ee173671bed",
+      "tests/evidence/real_openaq_2026-11-06.json": "f6124f921dd02c3dedd5a166558c65c922f52ed8ef0aa9def2e4f8ab6f83e6df",
+      "tests/evidence/real_openaq_cloud_2026-11-07.json": "4a4e9c2f5b24dc39a89c2a0eb629a6f47386caeaf1f2d668f1735005a00dd9bc"
+    },
+    "prior_sprint32_evidence_sha256": "767ad1064678630c118f7bda1a1fc38c1c2b00d38109934db39510fa2336ebd5"
+  },
+  "reviewed_file_sha256": {
+    "README.md": "c6de595c259f9f39b5139a77536fbb50ab85d74ff6520f122affb357748a4c56",
+    "alerts/athena.py": "d61386177f4fd0fc19580e24e158b1fc1d8ed3dc417f02ccabf6037e854ecfd2",
+    "alerts/delivery.py": "1aa96a204b4b1c85938497b862c44c64ca8e767b9eeb90780d294d74204e0733",
+    "alerts/preflight.py": "3cecc7c00abf3153784bc467a9b59ba921d6d16aace917ee367da80dd5a00b73",
+    "alerts/runtime.py": "59c596a25aacee1247808991d132e69794d8531a70fac78f5aa9e6d8d160016b",
+    "bot_lambda/src/lambda_function.py": "a058a54884fd2d1674bf0afc110d82c7c513058748728b53ec625fb71eefd4af",
+    "docs/athena-alert-runtime.md": "00946b642a5c25b2634261d4150b0acb48d7af504017314c8e33457408350c88",
+    "docs/athena-to-telegram-mvp.md": "077483ecce22a6649462a7c822755a4f63c267d8d359d1bd34c40df3ad1b7e09",
+    "docs/gold-to-telegram.md": "cf64c59d0d671583af1e492eec997ffdab0e8629f73461dd6553f2eedf9968d8",
+    "docs/plans/athena-alert-staging.json": "97c7f760a7f3b1bf38520e1a384d579433fca12a7eb95767167331618faa6e53",
+    "scripts/build_alert_lambda.py": "8edbd507a2c5edc6309e28c119f4b70efa1a1ebb67d6f73a74f56cf10cfcd789",
+    "scripts/prepare_alert_staging.py": "36a23006f559f42646a785a6b01d87fd98081bbd0dac82f2c7b112dfe5e2a664",
+    "tests/evidence/athena_alert_runtime_2026-11-07.json": "767ad1064678630c118f7bda1a1fc38c1c2b00d38109934db39510fa2336ebd5",
+    "tests/test_alert_package.py": "a8e1879debb4e958b8cad1ec43a6dbbed474ded99b6a37277a31ee01393ab972",
+    "tests/test_alert_preflight.py": "3a5cc743c103d1c38e8f614991bffa74a6248910188135d4c7426f80592d46ff",
+    "tests/test_alert_runtime.py": "f8a99eeb6fd0c5ad0b634baed1c9f843bd09fa052e256212ece1cc0112e5cff2",
+    "tests/test_athena_alerts.py": "3340c459fb0c5c9d22f9df2131183258e658aba4654512c2c4ab693d2c849c2f"
+  },
+  "not_performed": [
+    "AWS mutations/deployments",
+    "Athena SQL execution",
+    "SNS publication",
+    "Telegram API calls",
+    "Secret-value access",
+    "Terraform/EC2 operations",
+    "Gold/data/checkpoint changes"
+  ],
+  "publication_note": "Evidence captured from reviewed working tree before focused commits; source hashes identify actual bytes. GitHub commit/PR metadata is separate."
+}

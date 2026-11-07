@@ -70,8 +70,12 @@ implemented evaluator, SNS publisher and teammate-derived SQS/Telegram consumer.
 Offline tests use retained Gold values, explicit fixture-only rules and mocked
 services. This application slice has not been deployed or tested with live SNS,
 SQS, DynamoDB or Telegram. Gold tables, calculations and prior acceptance records
-are unchanged. Live Athena submission and production alert rules remain separate
-integration/deployment decisions.
+are unchanged. The [historical Athena-to-Telegram MVP](docs/athena-to-telegram-mvp.md)
+now provides a guarded Athena-to-SNS entrypoint, isolated deployment-command
+preparation and offline E2E tests. Its default invocation makes no AWS requests.
+Live deployment/query/notification execution and production alert rules still
+require separate approval; the latest staging preflight is blocked by an expired
+AWS login. No continuously deployed alert pipeline is claimed.
 
 ## Local setup
 
