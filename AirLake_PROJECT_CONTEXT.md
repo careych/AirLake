@@ -29,19 +29,30 @@ planning milestones, not statements that each phase has passed acceptance.
 | Area | Confirmed local implementation | Evidence / boundary |
 | --- | --- | --- |
 | Dependencies | Python 3.12, PySpark 3.5.9, locked Python packages | pyproject.toml and uv.lock; no dependency download during PR cleanup |
-| Producer | CLI-only broker configuration, test-topic default, 2,000-row cap, delivery accounting | Inert-client unit tests; no live producer run during cleanup |
-| Bronze | Kafka JSON -> Iceberg append stream | Source reviewed; drops null location IDs and malformed JSON; no lossless raw guarantee or new streaming/restart test |
-| Silver | UTC parsing, typed values, deterministic dedup, insert-only MERGE | Source reviewed; finite-value filtering, unit conversion, persistent rejects and sensor_health remain pending |
+| Producer | CLI-only broker configuration, test-topic default, 2,000-row cap, delivery accounting | 200 real records delivered and independently consumed in local acceptance, 2026-11-06 |
+| Bronze | Kafka JSON -> Iceberg append stream | 200 rows locally and on disposable AWS resources; unchanged checkpoint rerun verified; raw/reject and crash recovery remain pending |
+| Silver | UTC parsing, typed values, deterministic dedup, insert-only MERGE | 200-row local/cloud acceptance passed; uniform finite-value filtering, unit conversion, persistent rejects and sensor_health remain pending |
 | Gold | Location dimension, name repair, UTC hourly PM2.5 mean/AQI, preflight and no-op MERGE | 48 integration methods and 9 orchestration methods passed in retained 2026-10-25 evidence |
 | Smoke check | Deliberate dependency check with fresh child/temp catalog | Import/launcher checks and an isolated one-row write/read passed during PR preparation |
-| AWS/serving | Separate branch work | No AWS deployment acceptance established by this branch |
+| AWS data path | GlueCatalog/S3FileIO with explicit account, scope and write guards | Bounded 200-record pipeline and two Athena SELECTs passed 2026-11-07; no compute/serving deployment acceptance |
 
-The exact executed Gold sources are identified by hashes in
-[the acceptance record](tests/evidence/gold_dimension_name_repair_2026-10-25.json).
+The October 25 executed Gold sources are identified by hashes in
+[the historical acceptance record](tests/evidence/gold_dimension_name_repair_2026-10-25.json).
 The Git HEAD in that record is the base of a dirty working tree, not a commit
 containing those unpublished Gold files. See [tests/README.md](tests/README.md)
 for test scope, earlier failures and evidence interpretation. No temporary log is
 required to understand the retained record.
+
+## Current cloud handoff
+
+The [cloud record](tests/evidence/real_openaq_cloud_2026-11-07.json) reports 200
+Bronze, 200 Silver, one dimension and 23 hourly facts; all Gold values match the
+local reference. The unchanged rerun preserved rows, snapshots and metadata
+pointers. The [frozen plan](docs/plans/real_openaq_2026-11-06.json) remains an
+unchanged historical approval artifact; its resources now exist and must not be
+reused for a new run. Cloud recovery still relies on the Mac's retained local
+checkpoint. No production cloud recovery, full-regulatory AQI or alert delivery
+claim follows from this acceptance. No teammate branch or deployment was changed.
 
 ## Current local contracts
 
@@ -49,8 +60,9 @@ required to understand the retained record.
   the producer defaults to aq_measurements_test1 unless explicitly directed there.
   The local producer ignores KAFKA_BOOTSTRAP_SERVERS; nam's environment-based
   variant must be reconciled in an owner-reviewed integration change.
-- Run pipeline jobs from the repository root. They use ./warehouse and
-  ./checkpoints/bronze_aq. Preserve existing checkpoints on normal restarts.
+- Default local jobs run from the repository root and use ./warehouse and
+  ./checkpoints/bronze_aq. Configurable/cloud runs use explicitly isolated paths.
+  Preserve existing checkpoints on normal restarts.
 - Bronze keeps parsed measurement fields as strings and adds Kafka receive time,
   but currently drops null location IDs. Raw payload/partition/offset retention
   is not implemented. Do not describe it as preserving every source record.
@@ -82,7 +94,7 @@ The 2026-10-24 audit inspected these source revisions in the same GitHub reposit
 | nam | 7d4669c | khue ancestry plus monitoring, Kafka/Trino bootstrap, poller |
 | thinh | 3ee5975 | Bot/DynamoDB/Lambda source |
 
-The PR-preparation read-only branch-head check still found khue and nam at those
+The historical PR-preparation branch-head check found khue and nam at those
 heads, but thinh had advanced to 0cbac093. Its new content was not imported or
 reviewed here. Neither branch existence nor commit subjects verify live AWS state.
 
@@ -140,18 +152,21 @@ cutback order of WAF, then one query engine, then one Kafka broker. Account
 eligibility, actual costs, organization restrictions, region and resource lifecycle
 must be confirmed by B; old free-tier/price claims are not a current cost plan.
 
-Outstanding work includes a lossless Bronze/reject contract; isolated Bronze,
-producer-to-Kafka and Silver runtime tests; Silver finite-value/unit/correction
+Outstanding work includes a lossless Bronze/reject contract; broader Bronze,
+producer-to-Kafka and Silver boundary/crash-recovery tests beyond the accepted batch; Silver finite-value/unit/correction
 rules; sensor_health; regulatory AQI/completeness; breakpoint history policy;
 alert thresholds and consecutive-hour semantics; cache/dashboard/subscription
 interfaces; infrastructure security/deployment/scaling; and load/fault evidence.
 
 ## Publication boundary
 
-A potentially exposed Telegram token was committed in thinh's audited environment
-template. Revocation/rotation is unconfirmed until its owner provides confirmation,
-even if later source changes remove the value. This is an external security blocker.
-Do not copy the template or merge bot work as part of this local PR.
+A Telegram token was previously exposed in thinh's audited environment template.
+The bot owner, Nguyễn Phúc Thịnh, reports revoking the old token through BotFather
+and updating the replacement on AWS. Treat this as owner-reported revocation/rotation,
+not independent verification. Historical Git exposure remains a separate security
+follow-up; history has not been claimed purged. The secret-scanned Data Lakehouse
+PR may proceed independently and includes neither that branch nor its token.
+Do not copy the template or merge bot work as part of this PR.
 
 Publish source, contracts, locked dependencies, local configuration and curated
 acceptance evidence. Keep credentials, source datasets, warehouses, checkpoints,

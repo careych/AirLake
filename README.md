@@ -1,24 +1,31 @@
 # AirLake
 
 AirLake is a team air-quality lakehouse project using OpenAQ, Kafka, Spark and
-Apache Iceberg. This branch contains a local implementation; AWS deployment and
-serving features are separate team work.
+Apache Iceberg. This branch contains the local pipeline and an accepted, bounded Spark →
+Iceberg/S3 → Glue → Athena integration. Deployment infrastructure and serving
+features remain separate team work.
 
 ## Implementation and verification
 
 | Component | Local implementation | Verification status |
 | --- | --- | --- |
-| CSV replay producer | CLI broker/topic selection, row cap, delivery accounting | Mocked unit checks; no broker execution during PR preparation |
-| Bronze | Kafka JSON to an append-only Iceberg stream | Source reviewed; no streaming/restart acceptance run in this cleanup |
-| Silver | Typed, deduplicated, insert-only batch | Source reviewed; formatting only plus removal of an unreachable count guard; isolated runtime coverage still pending |
+| CSV replay producer | CLI broker/topic selection, row cap, delivery accounting | 2026-11-06 bounded real-data replay: 200 Kafka deliveries verified |
+| Bronze | Kafka JSON to an append-only Iceberg stream | Same replay: 200 rows; checkpoint rerun consumed zero new records |
+| Silver | Typed, deduplicated, insert-only batch | Same replay: 200 valid/deduplicated rows; unchanged rerun verified |
 | Gold | Location dimension and simplified hourly PM2.5 AQI | Retained 2026-10-25 acceptance: 48 integration methods and 9 orchestration methods passed |
-| Dependency smoke check | Opt-in Spark child with a disposable warehouse | Import/launcher checks and an isolated one-row write/read passed during PR preparation |
+| Dependency smoke check | Opt-in Spark child with a disposable warehouse | Retained local fixture check; separate three-row AWS probe passed 2026-10-29 |
 
-Gold source and its two P0 test files match the source hashes in the retained
-[acceptance record](tests/evidence/gold_dimension_name_repair_2026-10-25.json).
+The historical Gold [acceptance record](tests/evidence/gold_dimension_name_repair_2026-10-25.json)
+is preserved against the original publication commit. Catalog/namespace wiring
+has since changed; Gold business functions remain unchanged and all 48 integration
+cases passed again. The [real-data guide](docs/real-openaq-batch.md) records the
+200-row Kafka-to-Gold acceptance and its 23 UTC hourly facts. The separately
+approved cloud run passed on 2026-11-07; its original plan is retained unchanged
+as a historical approval artifact, not a reusable resource reservation. Entry points retain local defaults and accept `--plan` for offline catalog
+configuration inspection.
 [Tests and evidence](tests/README.md) distinguish real Spark/Iceberg results from
-mocked orchestration and historical claims. The complete Kafka-to-Gold pipeline
-has not been accepted by those Gold-only tests.
+mocked orchestration and historical claims. The bounded Kafka-to-Gold run has
+separate acceptance with documented single-station and streaming limitations.
 
 ```text
 Historical CSV.GZ files (local data/raw/)
@@ -31,6 +38,30 @@ Historical CSV.GZ files (local data/raw/)
   -> scripts/gold_batch.py
   -> local.gold.dim_location + local.gold.pm25_aqi_hourly
 ```
+
+## AWS result and handoff
+
+The [2026-11-07 cloud acceptance](tests/evidence/real_openaq_cloud_2026-11-07.json)
+verified 200 real OpenAQ measurements from location `4946812`, sensor `13502151`:
+Bronze **200**, Silver **200**, dimension **1**, hourly facts **23**. All hourly
+means, UTC timestamps and AQI values matched local acceptance; duplicates and
+orphans were zero. An unchanged rerun preserved all five tables' rows, snapshots,
+metadata pointers and the local checkpoint. Two Athena engine 3 SELECTs independently
+confirmed the counts, raw measurement sum (`5746.71`, tolerance `1e-9`) and all
+23 hourly results. This is hourly MVP AQI, not official VN_AQI.
+
+The Mac ran Spark; no AWS compute deployment was needed. Glue/S3 configuration
+is explicit and gated, while entrypoints still default to HadoopCatalog. The
+accepted disposable databases and S3 prefix remain occupied: **do not rerun the
+saved cloud commands or delete their resources without separate approval**.
+See the [batch guide](docs/real-openaq-batch.md) for setup, scope and recovery,
+and the [publication review](docs/reviews/sprint2-publication.md) for the proposed PR.
+
+Still unfinished: production cloud checkpoint recovery, long-running ingestion,
+Silver finite-value/unit/correction policies, regulatory AQI/completeness,
+sensor health, alert thresholds/delivery/deduplication, dashboards and load/fault
+acceptance. The existing SNS/SQS/Lambda/Telegram deployment is not validated by
+this batch and was not modified.
 
 ## Local setup
 
@@ -128,7 +159,8 @@ setup; tests use different disposable resources.
 
 Bronze needs the Spark Kafka connector and its dependencies as well as Iceberg.
 This invocation resolves pinned Maven dependencies if they are not cached, so it
-requires an approved setup environment with network access:
+requires an approved setup environment with network access (cloud execution instead
+uses the exact verified cached JAR set; see the batch guide):
 
 ```sh
 .venv/bin/spark-submit --master 'local[2]' --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.9,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.12.0 scripts/bronze_local.py
@@ -137,7 +169,7 @@ requires an approved setup environment with network access:
 For an offline run, use `--jars` with preinstalled Iceberg, the Kafka connector and
 all of its transitive JARs instead of `--packages`.
 
-Bronze uses the fixed local broker/topic above, `./warehouse` and
+Bronze defaults to the local broker/topic above, `./warehouse` and
 `./checkpoints/bronze_aq`. `startingOffsets=earliest` applies to a new query; an
 existing checkpoint controls restart progress. Keep the checkpoint on ordinary
 restarts. Replacing it changes replay behavior and is not a cleanup operation.
@@ -250,11 +282,13 @@ requirements as well as local data contracts. The [project context](AirLake_PROJ
 records ownership, verified status, historical surveys and pending decisions.
 
 Terraform/monitoring work is on `khue` and `nam`; bot work is on `thinh`.
-Their source is not merged into this branch, and AWS deployment was not verified
-by the local acceptance tests. Coordinate shared dependency/README/producer changes
-through separate reviews. A historically committed Telegram token on `thinh`
-remains an external publication blocker until its owner confirms revocation/rotation.
-Do not copy that branch's environment template into this PR.
+Their source is not merged into this branch, and their compute/serving deployments were not verified
+by this bounded cloud data test. Coordinate shared dependency/README/producer changes
+through separate reviews. The bot owner, Nguyễn Phúc Thịnh, reports revoking the old Telegram token via
+BotFather and configuring a new token on AWS. This is owner-reported rotation,
+not independent verification. Historical Git exposure remains a separate security
+follow-up; no history purge is claimed. This PR includes neither `thinh` nor its
+credential template.
 
 Runtime directories, private configuration, logs and caches are ignored. Curated
 `tests/evidence/` records and dependency lockfiles remain publishable. The PDF,

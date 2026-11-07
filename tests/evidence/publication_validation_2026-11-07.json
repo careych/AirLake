@@ -1,0 +1,520 @@
+{
+  "verification_date": "2026-11-07",
+  "completed_at_utc": "2026-11-07T05:52:48.862967+00:00",
+  "status": "PASS_OFFLINE_PUBLICATION_REGRESSION",
+  "scope": "Fresh offline publication checks; cloud acceptance was inspected from retained, hash-verified reports. No AWS API calls or cloud replay in this preparation.",
+  "git_branch": "feat/local-lakehouse",
+  "git_head": "e54c8e0bfec675dc91ece02334e70c686fc10b02",
+  "source_state": "Uncommitted publication candidates; this base commit does not contain the new files.",
+  "source_sha256": {
+    "real_producer.py": "43da589f9ed1eb239c9f519c053256b8cd3fc0f68e7bb92e836e1ce3bbd813da",
+    "scripts/aws_iceberg_smoke.py": "f05020843e15aeb7b1d41cc82a3935348de11812586a0c0adf5cd402e49a94da",
+    "scripts/bronze_local.py": "8f2229b0a8d81d20d9ee3d24d47c12b01771b4b46dd96369c7fddb23fd5a6dd4",
+    "scripts/gold_batch.py": "f11d7e954b8e40765f95833f5c76ee013d2bb6a44f9c97a4f79ad3b06dd45836",
+    "scripts/iceberg_smoke_test.py": "32ed0e03ad08497ac37a6bea55ad37e836f08bea98dec3e584ebb64a3250d46f",
+    "scripts/pipeline_config.py": "9c80bf359feb9ffcacfcf3edde04070765a6f63ab1f81b158673423025a456fc",
+    "scripts/real_batch.py": "b2df6c92d117344bdc0068f8886761d4197b30f9873db5f0ee8b32a70dc4e221",
+    "scripts/silver_batch.py": "71f9a2cc800e8ebde7987afea4c490c1ca9765ec41253e32766f0d1e48c12259",
+    "tests/cloud_wiring_integration.py": "152268e60192506abd51a9fb41429a0dbc55559b369d2298196afceb65a27fba",
+    "tests/gold_p0_integration.py": "7bebab7d58750bc539b8907d76393c9e2cb204cb19a1264fc744d683b3f52a77",
+    "tests/test_acceptance_evidence.py": "ecf71392ddb1eb06bc2a8301bcab08f434c0a52f82a8f9fad3627135b786a407",
+    "tests/test_aws_iceberg_smoke.py": "181fc54c0806e8f338d71e8fd3e4d29be5026e06b1dfd3cf55d44d854cc655d0",
+    "tests/test_cloud_acceptance_evidence.py": "6c362d82055a133cff02174d672723a53bb977c6cd3ea3333ebd4a1a7a3e3bfd",
+    "tests/test_cloud_wiring.py": "f8048df8837d8f80fcbed8cf051661c37b42f482f9aefec194d0d34785f54d10",
+    "tests/test_gold_p0_orchestration.py": "d57959b7511b6efc1352cecc666b5fb66fa863a79d59b578c2ed16cc056a0a5f",
+    "tests/test_pipeline_config.py": "87dea4b566d5c783a3355ba8ec5107557b5a18c3b198ed29be93641de6e6da5b",
+    "tests/test_real_producer.py": "11d201b7c5c243694a37f6483db9856e70dc53be51ec46a3c1c2d98d98738b56",
+    "tests/test_smoke_safety.py": "06b3fb5e36457f12b351a8ff164fb42f103d2a730e9cbca8e13ad2d9d2230cac"
+  },
+  "pure": {
+    "passed": 118,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 0.641
+  },
+  "checks": [
+    {
+      "command": [
+        ".venv/bin/ruff",
+        "check",
+        "--no-cache",
+        "real_producer.py",
+        "scripts",
+        "tests"
+      ],
+      "exit": 0
+    },
+    {
+      "command": [
+        ".venv/bin/ruff",
+        "format",
+        "--check",
+        "--no-cache",
+        "real_producer.py",
+        "scripts",
+        "tests"
+      ],
+      "exit": 0
+    },
+    {
+      "command": [
+        ".venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit": 0
+    },
+    {
+      "command": "Python ast.parse on real_producer.py, scripts/*.py and tests/*.py",
+      "files": 18,
+      "exit": 0
+    },
+    {
+      "command": [
+        ".venv/bin/python",
+        "-B",
+        "scripts/aws_iceberg_smoke.py"
+      ],
+      "exit": 0,
+      "mode": "dry_run_no_aws_no_spark",
+      "execution_gate": "signin_module_missing_use_reviewed_process_profile"
+    },
+    {
+      "command": [
+        ".venv/bin/python",
+        "-B",
+        "scripts/aws_iceberg_smoke.py",
+        "--spark-profile",
+        "airlake-spark"
+      ],
+      "exit": 0,
+      "mode": "dry_run_no_aws_no_spark",
+      "execution_gate": "local_checks_only_cloud_and_java_auth_not_verified"
+    },
+    {
+      "command": [
+        ".venv/bin/python",
+        "-B",
+        "scripts/bronze_local.py",
+        "--plan"
+      ],
+      "exit": 0,
+      "mode": "configuration_only_no_spark_no_aws"
+    },
+    {
+      "command": [
+        ".venv/bin/python",
+        "-B",
+        "scripts/silver_batch.py",
+        "--plan"
+      ],
+      "exit": 0,
+      "mode": "configuration_only_no_spark_no_aws"
+    },
+    {
+      "command": [
+        ".venv/bin/python",
+        "-B",
+        "scripts/gold_batch.py",
+        "--plan"
+      ],
+      "exit": 0,
+      "mode": "configuration_only_no_spark_no_aws"
+    },
+    {
+      "command": [
+        "bash",
+        "-n",
+        "scripts/use-java17.sh"
+      ],
+      "exit": 0
+    }
+  ],
+  "gold": {
+    "command": "AIRLAKE_RUN_GOLD_P0_INTEGRATION=1 .venv/bin/python -B tests/gold_p0_integration.py",
+    "prerequisites": "Java 17 and AIRLAKE_ICEBERG_RUNTIME_JAR set to a verified preinstalled file named iceberg-spark-runtime-3.5_2.12-1.12.0.jar outside the repository; no downloads",
+    "passed": 48,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "exit": 0,
+    "seconds": 124.638,
+    "method_results": [
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_absent_target_key_with_complete_metadata_is_created_safely",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_all_three_mapped_stations_are_supported",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_blank_source_name_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_blank_target_names_are_rejected_without_automatic_repair",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_conflicting_source_coordinates_are_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_conflicting_source_names_are_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_duplicate_dimension_key_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_duplicate_fact_key_cannot_leave_partial_dimension_write",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_empty_silver_cannot_hide_unrepairable_null_name",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_existing_infinite_aggregate_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_existing_nan_aggregate_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_existing_orphan_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_existing_valid_name_and_payload_are_preserved",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_finite_inputs_with_nonfinite_aggregate_are_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_finite_positive_measurements_are_accepted",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_first_run_without_gold_or_breakpoint_tables",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_identical_bronze_metadata_allows_name_repair",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_existing_fact_value_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_fact_target_does_not_initialize_breakpoints",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_legacy_station_mapping_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_legacy_target_coordinates_are_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_numeric_input_does_not_initialize_breakpoints",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_source_coordinates_are_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_largest_finite_single_measurement_is_accepted",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_legacy_null_name_absent_from_silver_is_repaired",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_legacy_null_name_with_empty_silver_is_repaired",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_legacy_null_name_without_metadata_rejects_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_legacy_repair_cannot_introduce_an_unsupported_station_mapping",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_legacy_repair_rejection_does_not_initialize_breakpoints",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_missing_bronze_metadata_is_rejected_by_real_builder",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_missing_metadata_and_absent_target_key_cannot_write_orphan",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_missing_metadata_does_not_initialize_breakpoints",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_mixed_valid_and_invalid_bronze_metadata_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_nan_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_negative_infinity_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_negative_measurement_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_dimension_key_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_fact_key_cannot_leave_partial_dimension_write",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_measurement_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_name_is_repaired_from_unique_bronze_metadata",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_name_with_missing_bronze_metadata_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_source_name_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_positive_infinity_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_unchanged_rerun_preserves_rows_and_snapshots",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_unknown_legacy_target_key_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_valid_bronze_metadata_covers_silver_location",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_valid_legacy_name_does_not_require_bronze_metadata",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_zero_is_accepted",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      }
+    ],
+    "write_safety_comparisons": 85,
+    "name_repair_scenarios": 4,
+    "isolation": "Fresh child and disposable random HadoopCatalog plus isolated local fallback; external temporary warehouses; in-memory metastore; no inherited AWS/Spark settings, production session factory, Kafka or Maven resolution"
+  },
+  "preservation": {
+    "protected_runtime_files": 1500,
+    "existing_runtime_unchanged": true,
+    "data_check": "Size/mtime manifests; original accepted gzip files separately verified against recorded source checksums",
+    "other_runtime_check": "Size/mtime and SHA-256",
+    "executed_production_source_unchanged": true,
+    "historical_evidence_sha256": {
+      "tests/evidence/gold_dimension_name_repair_2026-10-25.json": "0b17ebbbe33b762ebb6379278278f963b1929dc1e36270c5cbbe54ed2042182c",
+      "tests/evidence/cloud_wiring_readiness.json": "85ac639c9cdd53b4b6616415d93cd3df6149fd79b33fff9aa41313697194009b",
+      "tests/evidence/real_openaq_2026-11-06.json": "f6124f921dd02c3dedd5a166558c65c922f52ed8ef0aa9def2e4f8ab6f83e6df",
+      "tests/evidence/aws_iceberg_smoke_2026-10-29.json": "f8f47ac3258374b54e52137520c5b3c85bf23f7cbf2acebf8a526495ec67b3ae"
+    },
+    "historical_evidence_byte_identical": true
+  },
+  "cloud_evidence": {
+    "path": "tests/evidence/real_openaq_cloud_2026-11-07.json",
+    "sha256": "4a4e9c2f5b24dc39a89c2a0eb629a6f47386caeaf1f2d668f1735005a00dd9bc",
+    "inspection": "Private retained manifest verified all report hashes before curation; published record reconciles local reference, source/plan hashes, both Athena results and scoped resources."
+  },
+  "not_reexecuted": [
+    "200-record Kafka replay",
+    "Kafka-dependent cloud wiring integration (requires the retained topic and broker)",
+    "AWS smoke execution",
+    "Cloud Bronze/Silver/Gold",
+    "Athena queries"
+  ],
+  "git_publication": "No staging, commits, pushes, merges or PR creation",
+  "limitations": "Passing offline evidence checks validate retained records and current source consistency; they do not re-certify current live AWS resources. Timings are observations, not benchmarks."
+}

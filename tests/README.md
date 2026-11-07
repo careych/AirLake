@@ -1,4 +1,63 @@
-# Gold P0 regression tests
+# Pipeline regression tests and acceptance evidence
+
+## Bounded cloud acceptance: 2026-11-07
+
+The [sanitized cloud record](evidence/real_openaq_cloud_2026-11-07.json) reports
+200 Bronze rows, 200 Silver rows, seven breakpoints, one dimension and 23 hourly
+facts. Both Athena SELECTs succeeded; every hourly value, station name and UTC
+timestamp matched local evidence. All five cloud tables and the local checkpoint
+were unchanged on the approved rerun. It records query IDs, types, snapshots,
+source hashes and exact cleanup objects without credentials, personal paths,
+raw measurement rows or generated warehouse metadata.
+
+`test_cloud_acceptance_evidence.py` validates these retained observations offline.
+It does not rerun AWS or independently certify live resources on a new checkout.
+Iceberg `timestamptz` appears as Athena `timestamp with time zone`; parse explicit
+UTC values rather than relabeling a naive Python local-time datetime as UTC.
+The retained read timeout and temporary verifier corrections are disclosed in
+the record; no failed cloud write or repeated Athena query was hidden.
+
+Pure tests use synthetic temporary fixtures, not the private historical archive.
+Use a normal Git clone with history: historical hash/AST checks require commit
+`ba031316a1678c222da58e40c160e8e6e7f0f992`, so a source ZIP or shallow clone is
+insufficient. Spark/Kafka/Glue tests remain explicit opt-ins. Run default discovery
+without AWS credentials; it must not require a broker or start Spark.
+
+## Publication validation: 2026-11-07
+
+[Fresh offline validation](evidence/publication_validation_2026-11-07.json):
+118 pure-Python tests and all 48 isolated Gold integration methods passed, with
+zero failures, errors or skipped cases. The run retained 85 write-safety
+comparisons and four successful name-repair scenarios. Ruff lint/format, Python
+AST checks, default/process-profile dry-runs and entrypoint `--plan` checks passed.
+Existing runtime files and all four earlier evidence JSON files remained unchanged.
+Kafka replay, the Kafka-dependent wiring suite and AWS operations were not repeated
+for publication. These results supersede preparation-only test counts without
+rewriting historical evidence. Raw logs stay outside Git.
+
+## Integration Sprint 2: 2026-11-06
+
+The [real-data guide](../docs/real-openaq-batch.md) and
+[new acceptance record](evidence/real_openaq_2026-11-06.json) document a real
+200-row Kafka replay: Bronze 200, Silver 200, dimension 1 and hourly facts 23.
+The same-checkpoint rerun consumed zero new messages and preserved collected
+rows/snapshot-ID sets for all five tables. It is a bounded single-station result,
+not streaming HA, crash recovery or official VN_AQI acceptance. The later cloud
+run is recorded separately above; this local record remains unchanged.
+All 48 Gold integration cases passed again after catalog wiring changes.
+
+The October 25 Gold JSON remains byte-for-byte historical evidence.
+`test_acceptance_evidence.py` checks its source hashes against publication commit
+`ba031316`, rather than changing the old record to describe new configuration
+code. New configuration tests also compare Gold business-function ASTs with that
+baseline; they do not replace the real Spark regressions. Current execution
+hashes belong to the new Sprint 2 record.
+
+`test_pipeline_config.py` runs offline checks for catalog/table identifiers,
+cloud opt-in/account/region/scope guards, inherited settings, missing dependencies,
+bounded deterministic source selection and incompatible measurements. Synthetic
+unit fixtures are confined to temporary test directories; the acceptance replay
+uses only the original historical measurements.
 
 ## Local publication checks
 
@@ -20,14 +79,15 @@ only through its opt-in launcher. The modified smoke script also requires explic
 warehouse. Source review and a successful fixture check do not validate existing
 production-local tables.
 
-PR preparation ran 35 pure-Python tests (9 Gold orchestration, 13 producer,
+Original local publication preparation ran 35 pure-Python tests (9 Gold orchestration, 13 producer,
 7 smoke safety and 6 acceptance-record checks), all passing. The redesigned
 smoke command also completed one real isolated Spark/Iceberg fixture write/read
 with Java 17 and the preinstalled Iceberg JAR; its temporary directory was removed.
 Ruff, shell syntax, Compose parsing and the offline Python lock check passed.
-No producer/Kafka streaming or existing-warehouse job was run. The full 48-method
-Gold integration suite was not rerun for this cleanup: its production and two P0
-test source hashes remain unchanged and the acceptance-record checks still pass.
+During that PR cleanup, no producer/Kafka streaming or existing-warehouse job was
+run. The full 48-method Gold integration suite was not rerun then: its production
+and two P0 test source hashes were unchanged at that time. The later Sprint 2
+results above supersede that historical runtime status without rewriting it.
 
 ## Reading the retained acceptance record
 
@@ -167,7 +227,12 @@ invocation without explicit opt-in refuses before importing PySpark.
 
 Prerequisites: project PySpark 3.5.9, Java 17, and a preinstalled local
 `iceberg-spark-runtime-3.5_2.12-1.12.0.jar`. No dependencies are downloaded.
-Set `JAVA_HOME` and `AIRLAKE_ICEBERG_RUNTIME_JAR` to those installed resources, then:
+The Gold launcher requires the standard unprefixed JAR basename. An Ivy cache
+file named `org.apache.iceberg_iceberg-spark-runtime-3.5_2.12-1.12.0.jar` must be
+copied, with its SHA-256 checked, to a user-local directory outside Git under the
+standard `iceberg-spark-runtime-3.5_2.12-1.12.0.jar` name. Preserve the cached
+original. Set `JAVA_HOME` and `AIRLAKE_ICEBERG_RUNTIME_JAR` to those installed
+resources, then:
 
 ```sh
 AIRLAKE_RUN_GOLD_P0_INTEGRATION=1 .venv/bin/python -B tests/gold_p0_integration.py
