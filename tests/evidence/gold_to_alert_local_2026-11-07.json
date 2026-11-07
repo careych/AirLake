@@ -1,0 +1,103 @@
+{
+  "verification_date": "2026-11-07",
+  "scope": "LOCAL MOCKED GOLD-TO-TELEGRAM ONLY; no AWS or Telegram execution",
+  "status": "PASS_LOCAL_MOCKED_VERTICAL_SLICE",
+  "base_main": "5007ea503d427bd8bb75a303bc14b3b4905cea2a",
+  "branch": "feat/gold-to-alert",
+  "committed": false,
+  "teammate_refs": {
+    "khue": "b5a188d1ffdf1c00a01b2a4e925660b9c8c9314c",
+    "thinh": "8af4f39cdd7abc3b5f6deb26d644f665105599d3",
+    "nam": "7d4669c2604927eed3b6fb8875004d9d260e2694"
+  },
+  "source_sha256": {
+    "alerts/__init__.py": "cef9abe0a57e76e68363c2ac6a900e927214ed04d072bb5428b635a88effa3c8",
+    "alerts/athena.py": "cd3252270f77667f57b6fa4cb1b6f21fa0847c55f1c9c3e275726a27b6959851",
+    "alerts/delivery.py": "9e9b1f470b919ebca0780e1f3e06e187a3325caf517428524d92ff48a63eee71",
+    "alerts/gold.py": "05ed22bdb93a8f6571b5e3b6f48794695ae1ece74900e695a8956a6dcc431513",
+    "bot_lambda/src/create_table.py": "ae8fa63f8a93a32a27d16dd16c4dab71b3ead5ab76e4bf87205a55295bd70dd0",
+    "bot_lambda/src/lambda_function.py": "02fe6d882fc5d00a923a4b5475f551961fa35c5cf54fbb11980fbcfccbced5a8",
+    "tests/alert_fakes.py": "fc0ececf56bdd6f401435d64ea263f1e21eecc5a74f5fcb51628bf522411e18c",
+    "tests/test_alert_delivery.py": "7c29775ff212a896e6a805cdb9f9d1535ec219e0259decdef188e12a73c6662a",
+    "tests/test_gold_alerts.py": "e4dd93b141897c0c1e3b459996ac264ee5cddf865010839833b7a88b5b45f18c",
+    "tests/test_gold_to_telegram.py": "610cdb58c7c22e7688c52f7dff94e330772b620453df18be29582e304e0a4793",
+    "pyproject.toml": "793328b39f423c182515e2a0e8242d3cd622f2c7bcb47ea79c8d80b85b870330",
+    "uv.lock": "daf23121b7b89b90c9de0cca6094314dfef36ab969d2bc6cb40757d8be976c5b"
+  },
+  "python_tests": {
+    "passed": 168,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 0.588,
+    "command": "python -B -m unittest discover -s tests -p 'test_*.py' -v"
+  },
+  "new_test_methods": {
+    "test_gold_alerts": 19,
+    "test_alert_delivery": 27,
+    "test_gold_to_telegram": 4
+  },
+  "gold_p0": {
+    "passed": 48,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 125.698,
+    "command": "AIRLAKE_RUN_GOLD_P0_INTEGRATION=1 python -B tests/gold_p0_integration.py",
+    "isolation": "Fresh external temporary HadoopCatalog and local fallback; verified preinstalled Iceberg JAR; no Kafka/AWS or production warehouse"
+  },
+  "demo": {
+    "source_fixture": "tests/evidence/real_openaq_2026-11-06.json",
+    "fixture_sha256": "f6124f921dd02c3dedd5a166558c65c922f52ed8ef0aa9def2e4f8ab6f83e6df",
+    "fixture_kind": "Retained historical Gold observation; frozen test clock, not current live data",
+    "test_clock_utc": "2025-07-03T16:30:00+00:00",
+    "test_only_rule": {
+      "rule_id": "fixture-only",
+      "version": "test-v1",
+      "minimum_aqi": 40,
+      "maximum_age_seconds": 7200
+    },
+    "observation": {
+      "location_id": 4946812,
+      "hour_start": "2025-07-03T15:00:00.000Z",
+      "pm25_avg": 21.7875,
+      "aqi": 44,
+      "name": "Công viên hồ điều hòa Nhân Chính, Khuất Duy Tiến-4916745",
+      "units": "µg/m³",
+      "aqi_method": "simplified_hourly_mean_mvp",
+      "source_table": "cloudreal.airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold.pm25_aqi_hourly",
+      "source_snapshot_id": "1174385021871906125"
+    },
+    "event_id": "c94c4f816bc397e0072cb80f1fa384599e83b3e21cba547173658fa072192c6d",
+    "first_publish_result": [
+      "published"
+    ],
+    "unchanged_rerun_result": [
+      "duplicate"
+    ],
+    "sqs_response": {
+      "batchItemFailures": []
+    },
+    "mock_sns_publish_calls": 1,
+    "mock_telegram_deliveries": 1
+  },
+  "preservation": {
+    "original_worktree_tracked_files_unchanged": true,
+    "original_worktree_head_unchanged": true,
+    "main_pipeline_scripts_and_existing_evidence_byte_identical": true,
+    "gold_business_logic_changed": false,
+    "historical_acceptance_changed": false
+  },
+  "cloud_calls": 0,
+  "real_telegram_messages": 0,
+  "deployment_operations": 0,
+  "git_publication": false,
+  "limitations": [
+    "Injected service doubles do not verify live AWS conditional writes, IAM, mapping or Telegram behavior",
+    "Live Athena executor and deployment packaging remain unimplemented",
+    "No production rule defaults; no cross-hour cooldown, automatic retraction or newest-revision ordering",
+    "A-B-A content reversion is deduplicated; send-before-SENT ambiguity is at-least-once",
+    "TTL horizon and ReportBatchItemFailures mapping require deployment-owner confirmation",
+    "Legacy chat-only subscriptions retain all-configured-station opt-in; confirm before deployment"
+  ]
+}
