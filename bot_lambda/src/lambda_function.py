@@ -7,6 +7,7 @@ application; importing this module never initializes boto3 or sends a message.
 import base64
 import hmac
 import os
+import re
 from datetime import UTC, datetime
 
 from alerts.delivery import (
@@ -16,7 +17,15 @@ from alerts.delivery import (
     TelegramSender,
     chat_id,
 )
-from alerts.gold import Alert, InvalidAlert, Rule, integer, resource_arn, strict_json
+from alerts.gold import (
+    Alert,
+    InvalidAlert,
+    Rule,
+    integer,
+    resource_arn,
+    strict_json,
+    utc,
+)
 
 
 def validate_stations(stations):
@@ -35,6 +44,26 @@ def validate_stations(stations):
         raise InvalidAlert("Known station names must be configured")
 
 
+def test_recipient_policy(test_mode, recipient):
+    if type(test_mode) is not bool:
+        raise InvalidAlert("Recipient test mode must be explicit")
+    if test_mode:
+        return chat_id(recipient)
+    if recipient is not None:
+        raise InvalidAlert("Test recipient requires explicit test mode")
+    return None
+
+
+def observation_clock(test_mode, reference_time, live_clock):
+    """Historical replay changes observation age only, never delivery lease/TTL time."""
+    if reference_time is None:
+        return live_clock
+    if not test_mode:
+        raise InvalidAlert("Historical reference time requires one-recipient test mode")
+    reference = utc(reference_time)
+    return lambda: reference
+
+
 class Application:
     def __init__(
         self,
@@ -51,8 +80,17 @@ class Application:
         region,
         partial_batch,
         webhook_secret,
+        test_mode=False,
+        test_recipient=None,
+        historical_demo=False,
     ):
         validate_stations(stations)
+        self.test_recipient = test_recipient_policy(test_mode, test_recipient)
+        if type(historical_demo) is not bool or (historical_demo and not test_mode):
+            raise InvalidAlert(
+                "Historical delivery requires explicit recipient test mode"
+            )
+        self.historical_demo = historical_demo
         if type(partial_batch) is not bool:
             raise InvalidAlert("Partial-batch mode must be explicit")
         self.subscriptions, self.sender, self.ledger = subscriptions, sender, ledger
@@ -91,6 +129,9 @@ class Application:
     def deliver(self, record, remaining_ms=None):
         alert = self.parse_record(record)
         recipients = self.subscriptions.eligible(alert)
+        if self.test_recipient is not None:
+            # Eligibility remains required: the guard never creates a subscription.
+            recipients = [r for r in recipients if r == self.test_recipient]
         failed = False
         for recipient in recipients:
             if remaining_ms is not None and remaining_ms() < 60_000:
@@ -105,7 +146,13 @@ class Application:
                 failed = True
                 continue
             try:
-                self.sender.send(recipient, alert.text())
+                text = alert.text()
+                if self.historical_demo:
+                    text = (
+                        "HISTORICAL DEMONSTRATION — NOT A CURRENT AIR-QUALITY WARNING\n"
+                        + text
+                    )
+                self.sender.send(recipient, text)
             except Exception:  # noqa: BLE001 -- sanitize service errors and preserve retry state
                 self.ledger.retry(key, claim.owner)
                 failed = True
@@ -165,6 +212,8 @@ class Application:
             update_id = integer(update.get("update_id"), 0, 2**63 - 1)
             message = update["message"]
             recipient = chat_id(str(message["chat"]["id"]))
+            if self.test_recipient is not None and recipient != self.test_recipient:
+                return {"statusCode": 403, "body": "Recipient outside test scope"}
             text = message["text"]
             if not isinstance(text, str) or len(text) > 1000:
                 raise InvalidAlert("Invalid bot command")
@@ -254,13 +303,61 @@ def application_from_environment(context=None):
         "AIRLAKE_ALERT_QUEUE_ARN"
     ].endswith(".fifo"):
         raise InvalidAlert("Standard SNS/SQS resources are required")
-    sender = TelegramSender(os.environ["TELEGRAM_TOKEN"])
+    mode = os.environ.get("AIRLAKE_ALERT_TEST_MODE", "0")
+    if mode not in ("0", "1"):
+        raise InvalidAlert("Recipient test mode must be 0 or 1")
+    recipient = test_recipient_policy(
+        mode == "1", os.environ.get("AIRLAKE_ALERT_TEST_RECIPIENT")
+    )
+    alert_clock = observation_clock(
+        mode == "1",
+        os.environ.get("AIRLAKE_ALERT_TEST_REFERENCE_TIME"),
+        lambda: datetime.now(UTC),
+    )
+    secret_arn = os.environ.get("TELEGRAM_TOKEN_SECRET_ARN")
+    if mode == "1":
+        scope = os.environ.get("AIRLAKE_ALERT_STAGING_NAME", "")
+        if scope != "airlake-alert-staging-v1":
+            raise InvalidAlert("A dedicated staging scope is required")
+        expected = {
+            "AIRLAKE_ALERT_TOPIC_ARN": f"arn:aws:sns:{region}:{account}:{scope}",
+            "AIRLAKE_ALERT_QUEUE_ARN": f"arn:aws:sqs:{region}:{account}:{scope}",
+            "AIRLAKE_SUBSCRIPTION_TABLE": scope + "-subscriptions",
+            "AIRLAKE_DELIVERY_TABLE": scope + "-ledger",
+        }
+        if (
+            any(os.environ.get(k) != v for k, v in expected.items())
+            or not str(context.invoked_function_arn).startswith(prefix + scope + ":")
+            and str(context.invoked_function_arn) != prefix + scope
+        ):
+            raise InvalidAlert("Test delivery must use isolated staging resources")
+        if (
+            "TELEGRAM_TOKEN" in os.environ
+            or not isinstance(secret_arn, str)
+            or not re.fullmatch(
+                rf"arn:aws:secretsmanager:{region}:{account}:secret:airlake/alert-staging-v1/telegram-[A-Za-z0-9]{{6}}",
+                secret_arn,
+            )
+        ):
+            raise InvalidAlert(
+                "Staging requires a separately approved test-bot secret reference"
+            )
     session = Session(region_name=region)
     config = Config(
         retries={"total_max_attempts": 1, "mode": "standard"},
         connect_timeout=5,
         read_timeout=10,
     )
+    if secret_arn:
+        try:
+            token = session.client("secretsmanager", config=config).get_secret_value(
+                SecretId=secret_arn
+            )["SecretString"]
+        except Exception:  # noqa: BLE001 -- never expose secret lookup errors or values
+            raise InvalidAlert("Test bot secret lookup failed") from None
+    else:
+        token = os.environ["TELEGRAM_TOKEN"]
+    sender = TelegramSender(token)
     dynamo = session.resource("dynamodb", config=config)
     clock = lambda: datetime.now(UTC)
     ledger = DynamoLedger(
@@ -271,19 +368,24 @@ def application_from_environment(context=None):
     )
     return Application(
         DynamoSubscriptions(
-            dynamo.Table(os.environ["AIRLAKE_SUBSCRIPTION_TABLE"]), stations
+            dynamo.Table(os.environ["AIRLAKE_SUBSCRIPTION_TABLE"]),
+            stations,
+            only_recipient=recipient,
         ),
         sender,
         ledger,
         stations=stations,
         rules=rules,
-        clock=clock,
+        clock=alert_clock,
         queue_arn=os.environ["AIRLAKE_ALERT_QUEUE_ARN"],
         topic_arn=os.environ["AIRLAKE_ALERT_TOPIC_ARN"],
         account=account,
         region=region,
         partial_batch=os.environ.get("AIRLAKE_PARTIAL_BATCH_FAILURES") == "1",
         webhook_secret=os.environ.get("TELEGRAM_WEBHOOK_SECRET"),
+        test_mode=mode == "1",
+        test_recipient=recipient,
+        historical_demo=os.environ.get("AIRLAKE_ALERT_TEST_REFERENCE_TIME") is not None,
     )
 
 
