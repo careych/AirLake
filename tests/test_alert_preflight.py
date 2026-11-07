@@ -47,7 +47,11 @@ class FakeCLI:
         if service == "logs":
             return {"logGroups": []}
         if (service, operation) == ("secretsmanager", "describe-secret"):
-            return {"error": "ResourceNotFoundException"}
+            return {
+                "ARN": "arn:aws:secretsmanager:ap-southeast-2:701364614078:secret:airlake/alert-staging-v1/telegram-Ab1234"
+            }
+        if operation == "get-context-keys-for-principal-policy":
+            return {"ContextKeyNames": []}
         if (service, operation) == ("glue", "get-table"):
             table = args[-1]
             return {
@@ -75,7 +79,16 @@ class FakeCLI:
         if operation == "simulate-principal-policy":
             return {
                 "EvaluationResults": [
-                    {"EvalActionName": "sns:CreateTopic", "EvalDecision": "allowed"}
+                    {"EvalActionName": action, "EvalDecision": "allowed"}
+                    for action in (
+                        "lambda:CreateFunction",
+                        "iam:CreateRole",
+                        "iam:PassRole",
+                        "sns:CreateTopic",
+                        "sqs:CreateQueue",
+                        "dynamodb:CreateTable",
+                        "athena:CreateWorkGroup",
+                    )
                 ]
             }
         raise AssertionError((service, operation))
@@ -137,6 +150,80 @@ class PreflightTests(unittest.TestCase):
         self.assertTrue(
             preflight(self.plan, self.client)["status"].startswith("BLOCKED")
         )
+
+    def test_region_is_explicit_simulation_context_not_only_cli_region(self):
+        report = preflight(self.plan, self.client)
+        call = next(
+            args
+            for service, operation, args in self.client.calls
+            if operation == "simulate-principal-policy"
+        )
+        self.assertIn(
+            "ContextKeyName=aws:RequestedRegion,ContextKeyValues=ap-southeast-2,ContextKeyType=string",
+            call,
+        )
+        self.assertEqual(
+            {"aws:RequestedRegion": "ap-southeast-2"},
+            report["iam_simulation"]["context"],
+        )
+        self.assertFalse(report["execution_authorized"])
+
+    def test_missing_secret_blocks_even_when_inventory_and_simulation_pass(self):
+        self.client.override["secretsmanager", "describe-secret"] = {
+            "error": "ResourceNotFoundException"
+        }
+        report = preflight(self.plan, self.client)
+        self.assertEqual("PASS", report["inventory_status"])
+        self.assertTrue(report["iam_status"].startswith("SIMULATED_ALLOWED"))
+        self.assertTrue(report["status"].startswith("BLOCKED"))
+        self.assertEqual(["TEST_BOT_SECRET_MISSING_OR_UNVERIFIED"], report["blockers"])
+
+    def test_denial_missing_context_and_incomplete_simulation_fail_closed(self):
+        baseline = self.client.call("iam", "simulate-principal-policy")
+        import copy
+
+        cases = []
+        denied = copy.deepcopy(baseline)
+        denied["EvaluationResults"][0]["EvalDecision"] = "explicitDeny"
+        cases.append(denied)
+        missing = copy.deepcopy(baseline)
+        missing["EvaluationResults"][0]["MissingContextValues"] = [
+            "aws:RequestTag/owner"
+        ]
+        cases.append(missing)
+        partial = copy.deepcopy(baseline)
+        partial["EvaluationResults"].pop()
+        cases.append(partial)
+        cases += [{"error": "AccessDenied"}, {"EvaluationResults": []}]
+        for response in cases:
+            with self.subTest(response=response):
+                self.client.override["iam", "simulate-principal-policy"] = response
+                report = preflight(self.plan, self.client)
+                self.assertIn(
+                    "IAM_SIMULATION_DENIED_OR_INCONCLUSIVE", report["blockers"]
+                )
+                self.assertEqual("PASS", report["inventory_status"])
+                self.assertTrue(report["status"].startswith("BLOCKED"))
+
+    def test_cli_returns_nonzero_for_missing_secret_and_zero_only_when_ready_for_approval(
+        self,
+    ):
+        from contextlib import redirect_stdout
+        from io import StringIO
+        from unittest.mock import patch
+
+        from alerts.preflight import main
+
+        with (
+            patch("alerts.preflight.CLI", return_value=self.client),
+            redirect_stdout(StringIO()),
+        ):
+            self.client.override["secretsmanager", "describe-secret"] = {
+                "error": "ResourceNotFoundException"
+            }
+            self.assertEqual(1, main([]))
+            del self.client.override["secretsmanager", "describe-secret"]
+            self.assertEqual(0, main([]))
 
 
 class PreparationTests(unittest.TestCase):

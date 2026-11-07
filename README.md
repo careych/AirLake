@@ -74,8 +74,9 @@ are unchanged. The [historical Athena-to-Telegram MVP](docs/athena-to-telegram-m
 now provides a guarded Athena-to-SNS entrypoint, isolated deployment-command
 preparation and offline E2E tests. Its default invocation makes no AWS requests.
 Live deployment/query/notification execution and production alert rules still
-require separate approval; the latest staging preflight is blocked by an expired
-AWS login. No continuously deployed alert pipeline is claimed.
+require separate approval. Renewed read-only preflight verifies the staging
+inventory and regional IAM simulation; the separate test-bot secret is still
+missing. No continuously deployed alert pipeline is claimed.
 
 ## Local setup
 

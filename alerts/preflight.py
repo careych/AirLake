@@ -239,12 +239,16 @@ def preflight(plan, client):
             report["snapshots"].append(entry)
     role = identity.get("Arn", "").split(":assumed-role/")[-1].split("/")[0]
     report["publisher_principal_role_arn"] = f"arn:aws:iam::{account}:role/{role}"
-    simulation = client.call(
+    context = {"aws:RequestedRegion": region}
+    report["iam_context_keys"] = client.call(
         "iam",
-        "simulate-principal-policy",
+        "get-context-keys-for-principal-policy",
         "--policy-source-arn",
         report["publisher_principal_role_arn"],
-        "--action-names",
+    )
+    # --region selects the CLI endpoint; it does not populate simulator context.
+    # SCP-only context keys may be absent from GetContextKeys/MissingContextValues.
+    actions = [
         "lambda:CreateFunction",
         "iam:CreateRole",
         "iam:PassRole",
@@ -252,11 +256,28 @@ def preflight(plan, client):
         "sqs:CreateQueue",
         "dynamodb:CreateTable",
         "athena:CreateWorkGroup",
+    ]
+    simulation = client.call(
+        "iam",
+        "simulate-principal-policy",
+        "--policy-source-arn",
+        report["publisher_principal_role_arn"],
+        "--action-names",
+        *actions,
+        "--context-entries",
+        f"ContextKeyName=aws:RequestedRegion,ContextKeyValues={region},ContextKeyType=string",
     )
     report["iam_simulation"] = {
         "error": simulation.get("error"),
+        "context": context,
         "decisions": [
-            {"action": x["EvalActionName"], "decision": x["EvalDecision"]}
+            {
+                "action": x["EvalActionName"],
+                "decision": x["EvalDecision"],
+                "missing_context": x.get("MissingContextValues", []),
+                "organizations": x.get("OrganizationsDecisionDetail"),
+                "permissions_boundary": x.get("PermissionsBoundaryDecisionDetail"),
+            }
             for x in simulation.get("EvaluationResults", [])
         ],
     }
@@ -270,10 +291,49 @@ def preflight(plan, client):
         and count == 0
         and all(s["present"] for s in report["snapshots"])
     )
+    decisions = report["iam_simulation"]["decisions"]
+    simulated_allowed = (
+        not simulation.get("error")
+        and len(decisions) == len(actions)
+        and {x["action"] for x in decisions} == set(actions)
+        and all(
+            x["decision"] == "allowed"
+            and not x["missing_context"]
+            and (x["organizations"] or {}).get("AllowedByOrganizations") is not False
+            and (x["permissions_boundary"] or {}).get("AllowedByPermissionsBoundary")
+            is not False
+            for x in decisions
+        )
+    )
+    secret_prefix = (
+        f"arn:aws:secretsmanager:{region}:{account}:secret:{plan['secrets']['name']}-"
+    )
+    secret_exists = (
+        isinstance(secret.get("ARN"), str)
+        and bool(
+            re.fullmatch(re.escape(secret_prefix) + r"[A-Za-z0-9]{6}", secret["ARN"])
+        )
+        and not secret.get("error")
+    )
+    blockers = []
+    if not safe:
+        blockers.append("INVENTORY_OR_SNAPSHOT_CHECK_FAILED")
+    if not simulated_allowed:
+        blockers.append("IAM_SIMULATION_DENIED_OR_INCONCLUSIVE")
+    if not secret_exists:
+        blockers.append("TEST_BOT_SECRET_MISSING_OR_UNVERIFIED")
+    report["inventory_status"] = "PASS" if safe else "BLOCKED"
+    report["iam_status"] = (
+        "SIMULATED_ALLOWED; NOT LIVE AUTHORIZATION"
+        if simulated_allowed
+        else "DENIED_OR_INCONCLUSIVE"
+    )
+    report["blockers"] = blockers
+    report["execution_authorized"] = False
     report["status"] = (
-        "READ_ONLY_CHECKS_PASS; APPROVAL_AND_SECRET_REQUIRED"
-        if safe
-        else "BLOCKED; INSPECT_CHECKS"
+        "READ_ONLY_CHECKS_PASS; EXPLICIT_APPROVAL_REQUIRED"
+        if not blockers
+        else "BLOCKED; " + "; ".join(blockers)
     )
     return report
 

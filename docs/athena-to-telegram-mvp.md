@@ -61,13 +61,28 @@ metadata and operator IAM simulation. It does not read secret values, run SQL,
 consume SQS, send messages or create resources. Denials/uncertain inventory fail
 closed; an arbitrary `InvalidRequestException` is not proof of absence.
 
-The 2026-11-07 Terminal receipt stopped at `ExpiredSession` with account null,
-empty absence results and no snapshot results. Agent STS attempts also expired.
-Therefore **current resource absence, live snapshot availability and deployment
-permissions remain unverified**. Earlier Sprint 3A.2 inventory is historical.
-The preserved receipt summary is in the [MVP evidence](../tests/evidence/athena_alert_mvp_2026-11-07.json).
-Renew the existing login in Terminal, then run the checker immediately. Do not
-request credentials or repeat failed cloud operations automatically.
+The initial 2026-11-07 receipt stopped at `ExpiredSession`; that historical result
+remains in the [MVP evidence](../tests/evidence/athena_alert_mvp_2026-11-07.json).
+After renewal, identity, all ten staging-name absence checks, the empty result
+prefix and both retained Gold snapshots passed. The existing `airlake` workgroup
+is enabled on engine 3 with enforced output at the results-bucket root.
+
+The first renewed receipt exited 0 despite a missing test-bot secret and simulated
+denies. The old checker supplied no `aws:RequestedRegion` simulator context and
+did not gate on secret/IAM outcomes. A controlled comparison reproduced the five
+denies without context and allowed all seven actions with `ap-southeast-2`.
+`--region` selects an endpoint, not the simulator context. SCP-only missing keys
+may not appear in `MissingContextValues`; see
+[AWS simulator context documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_testing-policies.html).
+This is not a grant or proof of effective service permissions.
+
+The checker now supplies explicit regional context, retains simulation details,
+and returns nonzero for a missing/unverified secret, denied/incomplete simulation,
+or failed inventory. The new actual result is **exit 1: inventory PASS, all seven
+simulated actions allowed, deployment BLOCKED by the missing test-bot secret**
+`airlake/alert-staging-v1/telegram`. It never authorizes execution automatically.
+See the [renewed readiness evidence](../tests/evidence/athena_alert_readiness_2026-11-07.json).
+No secret value was requested and no resources, queries or messages were created.
 
 ## Exact proposed staging resources
 
@@ -228,11 +243,13 @@ uv lock --check --offline
 git diff --check
 ```
 
-223 offline Python cases passed, including full callable wiring, wrong snapshots,
+The original 223-case MVP run remains historical. After the readiness correction,
+227 offline Python cases passed, including full callable wiring, wrong snapshots,
 historical labels, secret references, single-recipient isolation, retries, partial
 failures and command preparation. Package imports/SDK model checks are offline,
 not deployment proof. Earlier 200-test and 48-Gold results remain historical;
 Gold source/P0 tests and all prior acceptance JSON files are unchanged.
 
 **Code publication can proceed after local checks. Cloud execution remains NO-GO
-until login/preflight succeeds and the exact staging/test scope is approved.**
+until the approved test-bot secret and private recipient are ready, a fresh
+corrected preflight passes and the exact staging/test scope is approved.**
