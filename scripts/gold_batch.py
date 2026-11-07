@@ -97,21 +97,14 @@ def _invalid_station_mapping():
     return F.lit(True) if valid is None else ~valid
 
 
-def create_spark_session() -> SparkSession:
-    spark = (
-        SparkSession.builder.appName("AirLake-Gold-Batch")
-        .config(
-            "spark.sql.extensions",
-            "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
-        )
-        .config("spark.sql.catalog.local", "org.apache.iceberg.spark.SparkCatalog")
-        .config("spark.sql.catalog.local.type", "hadoop")
-        .config("spark.sql.catalog.local.warehouse", "./warehouse")
-        .config("spark.sql.session.timeZone", "UTC")
-        .getOrCreate()
-    )
-    spark.sparkContext.setLogLevel("WARN")
-    return spark
+def create_spark_session(config=None) -> SparkSession:
+    if config is None:
+        try:
+            from scripts.pipeline_config import CatalogConfig
+        except ModuleNotFoundError:
+            from pipeline_config import CatalogConfig
+        config = CatalogConfig()
+    return config.create_spark("AirLake-Gold-Batch")
 
 
 def schema_signature(spark: SparkSession, table: str) -> list[tuple[str, str]]:
@@ -145,7 +138,9 @@ def ensure_breakpoint_table(
 ) -> DataFrame:
     # Preflight uses the same seed/validation without creating or appending a table.
     if initialize:
-        spark.sql("CREATE NAMESPACE IF NOT EXISTS local.silver")
+        spark.sql(
+            f"CREATE NAMESPACE IF NOT EXISTS {BREAKPOINT_TABLE.rsplit('.', 1)[0]}"
+        )
         spark.sql(
             f"""
         CREATE TABLE IF NOT EXISTS {BREAKPOINT_TABLE} (
@@ -251,7 +246,8 @@ def ensure_breakpoint_table(
 
 
 def create_gold_tables(spark: SparkSession) -> None:
-    spark.sql("CREATE NAMESPACE IF NOT EXISTS local.gold")
+    spark.sql(f"CREATE NAMESPACE IF NOT EXISTS {DIMENSION_TABLE.rsplit('.', 1)[0]}")
+    spark.sql(f"CREATE NAMESPACE IF NOT EXISTS {HOURLY_TABLE.rsplit('.', 1)[0]}")
     spark.sql(
         f"""
         CREATE TABLE IF NOT EXISTS {DIMENSION_TABLE} (
@@ -732,7 +728,17 @@ def run_gold_batch(spark: SparkSession) -> dict[str, int | str]:
 
 
 def main() -> None:
-    spark = create_spark_session()
+    try:
+        from scripts.pipeline_config import from_args, parser, print_plan
+    except ModuleNotFoundError:
+        from pipeline_config import from_args, parser, print_plan
+    args = parser("AirLake Gold batch").parse_args()
+    config = from_args(args)
+    if args.plan:
+        print_plan(config)
+        return
+    config.bind(globals())
+    spark = create_spark_session(config)
     try:
         run_gold_batch(spark)
     finally:

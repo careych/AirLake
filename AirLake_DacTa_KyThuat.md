@@ -371,6 +371,24 @@ Triển khai MVP cục bộ: `gold_batch.py` dùng metadata Bronze và mapping t
 
 **MVP limitation:** this is simplified hourly-mean AQI, not official VN_AQI. NowCast and regulatory completeness are not implemented. The official calculation, required input coverage and effective dates need primary-source review before replacing the approved MVP.
 
+**Integration status, 2026-11-06:** a bounded real OpenAQ replay through the existing
+local Kafka/Bronze/Silver/Gold path produced 200 Bronze rows, 200 Silver rows,
+one station dimension and 23 UTC hourly facts. Unchanged reruns preserved rows
+and snapshot IDs. Catalog, warehouse, namespace and table configuration now
+supports the original local defaults and an explicitly gated GlueCatalog/S3FileIO
+mode; Gold calculations, schemas and pre-write safeguards are unchanged.
+**Cloud acceptance, 2026-11-07:** the separately approved 200-record run passed
+on disposable S3/Glue resources, with the same 200/200/1/23 counts. Collected
+cloud rows and two Athena engine 3 SELECTs matched local acceptance; an unchanged
+rerun preserved all five tables' rows, snapshot IDs and metadata pointers.
+Spark `TIMESTAMP` was stored as Iceberg `timestamptz` and read by Athena as
+`timestamp with time zone`, with UTC hours. The local checkpoint is retained
+outside the repository; it is not a production cloud recovery design.
+See [the scoped guide and frozen plan](docs/real-openaq-batch.md),
+[local acceptance](tests/evidence/real_openaq_2026-11-06.json) and
+[cloud acceptance](tests/evidence/real_openaq_cloud_2026-11-07.json).
+These are implementation observations, not new regulatory or deployment requirements.
+
 ### 7.7. Gold — bảng đánh giá cảnh báo (`alert_eval`, deferred target)
 
 | Cột | Kiểu | Ghi chú |

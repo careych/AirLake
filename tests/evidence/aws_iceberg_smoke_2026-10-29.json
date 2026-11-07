@@ -1,0 +1,287 @@
+{
+  "scope": "Three-row Spark/S3/Iceberg/Glue/Athena interoperability only; not Bronze/Silver/Gold cloud acceptance",
+  "verification_date": "2026-10-29",
+  "date_basis": "Client Asia/Ho_Chi_Minh calendar; AWS query timestamps retained with offsets",
+  "status": "PASS",
+  "git_branch": "feat/local-lakehouse",
+  "git_head": "e54c8e0bfec675dc91ece02334e70c686fc10b02",
+  "source_state": "Smoke runner/tests are untracked local files; hashes identify executed content independently of HEAD",
+  "source_sha256": {
+    "scripts/aws_iceberg_smoke.py": "f05020843e15aeb7b1d41cc82a3935348de11812586a0c0adf5cd402e49a94da",
+    "tests/test_aws_iceberg_smoke.py": "181fc54c0806e8f338d71e8fd3e4d29be5026e06b1dfd3cf55d44d854cc655d0",
+    "scripts/gold_batch.py": "222ea9dc4e2bb2e6299fa92b641b581145c0215e536470c45ce5a195c205e729",
+    "tests/gold_p0_integration.py": "7bebab7d58750bc539b8907d76393c9e2cb204cb19a1264fc744d683b3f52a77",
+    "tests/test_gold_p0_orchestration.py": "d57959b7511b6efc1352cecc666b5fb66fa863a79d59b578c2ed16cc056a0a5f"
+  },
+  "runtime": {
+    "python": "3.12.15",
+    "spark": "3.5.9",
+    "scala": "2.12.18",
+    "java": "17.0.20.1",
+    "iceberg": "1.12.0",
+    "aws_sdk": "2.54.17",
+    "authentication": "airlake-spark credential_process delegates to airlake temporary login; CLI and Java STS passed",
+    "aws_bundle_sha256": "dd7e49ffa4ac9b215bed846581991259e3aec9bb2fa08d6cec029c46cd66d957",
+    "aws_bundle_signer_fingerprint": "7180E16D410C476E010F37E180763BA3EDCCE745",
+    "artifact_trust": "Detached signature verified earlier in this sprint and fingerprint corroborated against Apache KEYS and archived release-vote discussion; GPG ownertrust unchanged"
+  },
+  "target": {
+    "account": "701364614078",
+    "athena_results": "s3://airlake-701364614078-athena-results/",
+    "database": "airlake_smoke_20261026_84d217bb388f4f27b4336b21137bf225",
+    "expected_count": 3,
+    "expected_rows": [
+      [
+        1,
+        "alpha",
+        10.0
+      ],
+      [
+        2,
+        "beta",
+        0.0
+      ],
+      [
+        3,
+        "gamma",
+        25.0
+      ]
+    ],
+    "expected_sum": 35.0,
+    "prefix": "integration-smoke/20261026_84d217bb388f4f27b4336b21137bf225/",
+    "profile": "airlake",
+    "region": "ap-southeast-2",
+    "run_id": "20261026_84d217bb388f4f27b4336b21137bf225",
+    "table": "probe",
+    "table_location": "s3://airlake-701364614078-lake/integration-smoke/20261026_84d217bb388f4f27b4336b21137bf225/warehouse/probe",
+    "warehouse": "s3://airlake-701364614078-lake/integration-smoke/20261026_84d217bb388f4f27b4336b21137bf225/warehouse/"
+  },
+  "spark_operations": [
+    {
+      "operation": "aws_read_only_preflight",
+      "status": "succeeded"
+    },
+    {
+      "operation": "start_isolated_spark",
+      "status": "succeeded"
+    },
+    {
+      "operation": "verify_java_identity",
+      "status": "succeeded"
+    },
+    {
+      "operation": "recheck_unused_targets",
+      "status": "succeeded"
+    },
+    {
+      "operation": "create_namespace",
+      "status": "succeeded"
+    },
+    {
+      "operation": "create_table",
+      "status": "succeeded"
+    },
+    {
+      "operation": "append_three_rows",
+      "status": "succeeded"
+    },
+    {
+      "operation": "verify_spark_and_glue",
+      "status": "succeeded"
+    }
+  ],
+  "spark_observations": {
+    "count": 3,
+    "data_files": [
+      "s3://airlake-701364614078-lake/integration-smoke/20261026_84d217bb388f4f27b4336b21137bf225/warehouse/probe/data/00000-0-8d5fee4c-56b9-4488-a730-b4af449da22c-0-00001.parquet"
+    ],
+    "format_version": 2,
+    "metadata_location": "s3://airlake-701364614078-lake/integration-smoke/20261026_84d217bb388f4f27b4336b21137bf225/warehouse/probe/metadata/00001-58e5e4dc-809d-43a2-b232-81bcfb8809b0.metadata.json",
+    "pm25_sum": 35.0,
+    "rows": [
+      [
+        1,
+        "alpha",
+        10.0
+      ],
+      [
+        2,
+        "beta",
+        0.0
+      ],
+      [
+        3,
+        "gamma",
+        25.0
+      ]
+    ],
+    "schema": [
+      [
+        "id",
+        "int"
+      ],
+      [
+        "label",
+        "string"
+      ],
+      [
+        "pm25",
+        "double"
+      ]
+    ],
+    "snapshot_ids": [
+      238687515668187493
+    ]
+  },
+  "athena_queries": [
+    {
+      "purpose": "rows",
+      "query_id": "c838c40f-d4bc-45ce-9932-92cfe17d8962",
+      "sql": "WITH sample AS (SELECT id, label, pm25 AS value FROM \"airlake_smoke_20261026_84d217bb388f4f27b4336b21137bf225\".\"probe\")\nSELECT id, label, value, COUNT(*) OVER () AS row_count, SUM(value) OVER () AS value_sum\nFROM sample ORDER BY id",
+      "status": "SUCCEEDED",
+      "workgroup": "airlake",
+      "engine": "Athena engine version 3",
+      "service_timestamps": {
+        "State": "SUCCEEDED",
+        "SubmissionDateTime": "2026-10-29T02:10:58.613000+07:00",
+        "CompletionDateTime": "2026-10-29T02:11:01.361000+07:00"
+      },
+      "result_location": "s3://airlake-701364614078-athena-results/c838c40f-d4bc-45ce-9932-92cfe17d8962.csv",
+      "data_scanned_bytes": 174,
+      "result_reused": false,
+      "columns": [
+        [
+          "id",
+          "integer"
+        ],
+        [
+          "label",
+          "varchar"
+        ],
+        [
+          "value",
+          "double"
+        ],
+        [
+          "row_count",
+          "bigint"
+        ],
+        [
+          "value_sum",
+          "double"
+        ]
+      ],
+      "data_rows": [
+        [
+          "1",
+          "alpha",
+          "10.0",
+          "3",
+          "35.0"
+        ],
+        [
+          "2",
+          "beta",
+          "0.0",
+          "3",
+          "35.0"
+        ],
+        [
+          "3",
+          "gamma",
+          "25.0",
+          "3",
+          "35.0"
+        ]
+      ]
+    },
+    {
+      "purpose": "snapshot",
+      "query_id": "aafbdfa6-408b-481e-8dbe-c4b836f4ca91",
+      "sql": "SELECT snapshot_id, operation FROM \"airlake_smoke_20261026_84d217bb388f4f27b4336b21137bf225\".\"probe$snapshots\"",
+      "status": "SUCCEEDED",
+      "workgroup": "airlake",
+      "engine": "Athena engine version 3",
+      "service_timestamps": {
+        "State": "SUCCEEDED",
+        "SubmissionDateTime": "2026-10-29T02:14:59.649000+07:00",
+        "CompletionDateTime": "2026-10-29T02:15:00.281000+07:00"
+      },
+      "result_location": "s3://airlake-701364614078-athena-results/aafbdfa6-408b-481e-8dbe-c4b836f4ca91.csv",
+      "data_scanned_bytes": 1025,
+      "result_reused": false,
+      "columns": [
+        [
+          "snapshot_id",
+          "bigint"
+        ],
+        [
+          "operation",
+          "varchar"
+        ]
+      ],
+      "data_rows": [
+        [
+          "238687515668187493",
+          "append"
+        ]
+      ]
+    }
+  ],
+  "total_athena_queries": 2,
+  "total_reported_data_scanned_bytes": 1199,
+  "billing_note": "Reported scanned bytes are not billed bytes or an invoice; minimum query billing and S3/catalog/request charges may apply",
+  "offline_validation": {
+    "all_pure_python_tests": {
+      "passed": 82,
+      "failed": 0,
+      "errors": 0,
+      "command": ".venv/bin/python -B -m unittest discover -s tests -p 'test_*.py' -q",
+      "composition": {
+        "smoke_safety": 47,
+        "gold_orchestration": 9,
+        "other_existing_pure_python": 26
+      }
+    },
+    "ruff_lint": "PASS: scripts/aws_iceberg_smoke.py tests/test_aws_iceberg_smoke.py",
+    "ruff_format_check": "PASS: same two files",
+    "ast_parse": "PASS: recorded Python source/test paths",
+    "dry_run": "PASS, exit 0, mode dry_run_no_aws_no_spark; no execution flag"
+  },
+  "protected_local_state": {
+    "protected_files_checked": 1499,
+    "changed_or_missing": [],
+    "new_files": [],
+    "gold_acceptance_hash_matches": {
+      "scripts/gold_batch.py": true,
+      "tests/gold_p0_integration.py": true,
+      "tests/test_gold_p0_orchestration.py": true
+    }
+  },
+  "gold_runtime_baseline": {
+    "historical_integration_passed": 48,
+    "integration_rerun_this_sprint": false,
+    "current_orchestration_passed": 9,
+    "retained_acceptance": "gold_dimension_name_repair_2026-10-25.json"
+  },
+  "cleanup": {
+    "performed": false,
+    "glue_database": "airlake_smoke_20261026_84d217bb388f4f27b4336b21137bf225",
+    "glue_table": "probe",
+    "s3_run_prefix": "s3://airlake-701364614078-lake/integration-smoke/20261026_84d217bb388f4f27b4336b21137bf225/",
+    "verified_athena_csv_objects": [
+      "s3://airlake-701364614078-athena-results/c838c40f-d4bc-45ce-9932-92cfe17d8962.csv",
+      "s3://airlake-701364614078-athena-results/aafbdfa6-408b-481e-8dbe-c4b836f4ca91.csv"
+    ],
+    "complete_s3_object_inventory": "UNVERIFIED: auxiliary read-only inventory helper raised KeyError processing listing responses; three scope failures recorded outside repository; no further AWS activity after failure",
+    "ancillary_objects": "Iceberg manifests/metadata and possible Athena ancillary result objects must be enumerated before cleanup; do not infer exact keys",
+    "resource_deletion_requires_separate_approval": true
+  },
+  "limitations": [
+    "One writer and three deterministic rows; not workload-scale, concurrency or failure-recovery acceptance",
+    "No cloud multi-service transaction or atomic rollback claimed",
+    "No production Bronze/Silver/Gold execution or SNS/Telegram publishing",
+    "No new AWS compute, infrastructure deployment, automatic cleanup or Git publication",
+    "Successful smoke does not authorize reuse of this now-existing database/prefix"
+  ]
+}

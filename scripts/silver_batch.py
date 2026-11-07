@@ -36,21 +36,14 @@ REJECTION_REASONS = [
 ]
 
 
-def create_spark_session() -> SparkSession:
-    spark = (
-        SparkSession.builder.appName("AirLake-Silver-Batch")
-        .config(
-            "spark.sql.extensions",
-            "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
-        )
-        .config("spark.sql.catalog.local", "org.apache.iceberg.spark.SparkCatalog")
-        .config("spark.sql.catalog.local.type", "hadoop")
-        .config("spark.sql.catalog.local.warehouse", "./warehouse")
-        .config("spark.sql.session.timeZone", "UTC")
-        .getOrCreate()
-    )
-    spark.sparkContext.setLogLevel("WARN")
-    return spark
+def create_spark_session(config=None) -> SparkSession:
+    if config is None:
+        try:
+            from scripts.pipeline_config import CatalogConfig
+        except ModuleNotFoundError:
+            from pipeline_config import CatalogConfig
+        config = CatalogConfig()
+    return config.create_spark("AirLake-Silver-Batch")
 
 
 def classify_bronze_records(bronze: DataFrame) -> DataFrame:
@@ -79,7 +72,7 @@ def classify_bronze_records(bronze: DataFrame) -> DataFrame:
 
 
 def create_silver_table(spark: SparkSession) -> None:
-    spark.sql("CREATE NAMESPACE IF NOT EXISTS local.silver")
+    spark.sql(f"CREATE NAMESPACE IF NOT EXISTS {SILVER_TABLE.rsplit('.', 1)[0]}")
     spark.sql(
         f"""
         CREATE TABLE IF NOT EXISTS {SILVER_TABLE} (
@@ -280,7 +273,17 @@ def run_silver_batch(spark: SparkSession) -> dict[str, int]:
 
 
 def main() -> None:
-    spark = create_spark_session()
+    try:
+        from scripts.pipeline_config import from_args, parser, print_plan
+    except ModuleNotFoundError:
+        from pipeline_config import from_args, parser, print_plan
+    args = parser("AirLake Silver batch").parse_args()
+    config = from_args(args)
+    if args.plan:
+        print_plan(config)
+        return
+    config.bind(globals())
+    spark = create_spark_session(config)
     try:
         run_silver_batch(spark)
     finally:
