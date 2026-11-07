@@ -1,0 +1,360 @@
+{
+  "status": "PROPOSED ONLY; NOT DEPLOYED; REQUIRES SEPARATE APPROVAL",
+  "account": "701364614078",
+  "region": "ap-southeast-2",
+  "isolation": "New staging resources; never update shared AirLake_Bot_API or its mapping",
+  "names": {
+    "sns_topic": "airlake-alert-staging-v1",
+    "queue": "airlake-alert-staging-v1",
+    "dlq": "airlake-alert-staging-v1-dlq",
+    "lambda": "airlake-alert-staging-v1",
+    "subscriptions": "airlake-alert-staging-v1-subscriptions",
+    "delivery_ledger": "airlake-alert-staging-v1-ledger",
+    "workgroup": "airlake_alert_staging_v1",
+    "log_group": "/aws/lambda/airlake-alert-staging-v1",
+    "consumer_role": "airlake-alert-staging-v1-consumer",
+    "reader_role": "airlake-alert-staging-v1-reader"
+  },
+  "sns": {
+    "RawMessageDelivery": false,
+    "queue_policy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "sns.amazonaws.com"
+          },
+          "Action": "sqs:SendMessage",
+          "Resource": "arn:aws:sqs:ap-southeast-2:701364614078:airlake-alert-staging-v1",
+          "Condition": {
+            "ArnEquals": {
+              "aws:SourceArn": "arn:aws:sns:ap-southeast-2:701364614078:airlake-alert-staging-v1"
+            },
+            "StringEquals": {
+              "aws:SourceAccount": "701364614078"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "sqs": {
+    "VisibilityTimeout": 720,
+    "MessageRetentionPeriod": 345600,
+    "SqsManagedSseEnabled": true,
+    "RedrivePolicy": {
+      "deadLetterTargetArn": "arn:aws:sqs:ap-southeast-2:701364614078:airlake-alert-staging-v1-dlq",
+      "maxReceiveCount": 5
+    }
+  },
+  "lambda": {
+    "Runtime": "python3.12",
+    "Handler": "bot_lambda.src.lambda_function.lambda_handler",
+    "Timeout": 120,
+    "MemorySize": 256,
+    "ReservedConcurrentExecutions": 2,
+    "no_api_gateway_or_webhook_trigger": true,
+    "BatchSize": 1,
+    "MaximumBatchingWindowInSeconds": 0,
+    "FunctionResponseTypes": [
+      "ReportBatchItemFailures"
+    ],
+    "MaximumConcurrency": 2
+  },
+  "ledger": {
+    "partition_key": "delivery_id",
+    "partition_key_type": "S",
+    "ttl_attribute": "expires_at",
+    "lease_seconds": 180,
+    "retention_seconds": 5184000,
+    "manual_redrive_deadline_days": 30,
+    "billing": "PAY_PER_REQUEST"
+  },
+  "subscriptions": {
+    "partition_key": "chat_id",
+    "partition_key_type": "S",
+    "billing": "PAY_PER_REQUEST",
+    "recipient": "ONE OWNER-APPROVED RECIPIENT; value never committed; no shared-table copy"
+  },
+  "reader": {
+    "account": "701364614078",
+    "region": "ap-southeast-2",
+    "workgroup": "airlake_alert_staging_v1",
+    "catalog": "AwsDataCatalog",
+    "database": "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold",
+    "hourly_table": "pm25_aqi_hourly",
+    "dimension_table": "dim_location",
+    "allowed_tables": [
+      [
+        "AwsDataCatalog",
+        "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold",
+        "pm25_aqi_hourly"
+      ],
+      [
+        "AwsDataCatalog",
+        "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold",
+        "dim_location"
+      ]
+    ],
+    "hourly_snapshot": "1174385021871906125",
+    "dimension_snapshot": "4323462633891640540",
+    "start": "2025-07-03T15:00:00Z",
+    "end": "2025-07-03T16:00:00Z",
+    "location_ids": [
+      4946812
+    ],
+    "results_bucket": "airlake-701364614078-athena-results",
+    "results_prefix": "alert-staging/v1/",
+    "max_rows": 1,
+    "timeout_seconds": 60,
+    "historical_test_mode": true
+  },
+  "historical_test": {
+    "reference_time": "2025-07-03T16:30:00Z",
+    "rule": {
+      "rule_id": "fixture-only",
+      "version": "test-v1",
+      "minimum_aqi": 40,
+      "maximum_age_seconds": 7200
+    },
+    "requires_approval": true,
+    "meaning": "Test routing only; NOT a production health threshold or a current pollution alert",
+    "retained_expected_pm25_avg": 21.7875,
+    "retained_expected_aqi": 44
+  },
+  "workgroup": {
+    "EnforceWorkGroupConfiguration": true,
+    "EngineVersion": "Athena engine version 3",
+    "OutputLocation": "s3://airlake-701364614078-athena-results/alert-staging/v1/",
+    "BytesScannedCutoffPerQuery": 104857600
+  },
+  "runtime_environment_names": [
+    "AIRLAKE_ALERT_DELIVERY_ENABLED",
+    "AWS_REGION",
+    "AIRLAKE_ACCOUNT_ID",
+    "AIRLAKE_ALERT_STATIONS",
+    "AIRLAKE_ALERT_RULES",
+    "AIRLAKE_ALERT_TOPIC_ARN",
+    "AIRLAKE_ALERT_QUEUE_ARN",
+    "AIRLAKE_SUBSCRIPTION_TABLE",
+    "AIRLAKE_DELIVERY_TABLE",
+    "AIRLAKE_DELIVERY_LEASE_SECONDS",
+    "AIRLAKE_DEDUPE_RETENTION_SECONDS",
+    "AIRLAKE_PARTIAL_BATCH_FAILURES",
+    "AIRLAKE_ALERT_TEST_MODE",
+    "AIRLAKE_ALERT_TEST_RECIPIENT",
+    "AIRLAKE_ALERT_TEST_REFERENCE_TIME",
+    "TELEGRAM_TOKEN_SECRET_ARN",
+    "AIRLAKE_ALERT_STAGING_NAME"
+  ],
+  "consumer_policy_proposal": {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes"
+        ],
+        "Resource": [
+          "arn:aws:sqs:ap-southeast-2:701364614078:airlake-alert-staging-v1"
+        ]
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "dynamodb:GetItem"
+        ],
+        "Resource": [
+          "arn:aws:dynamodb:ap-southeast-2:701364614078:table/airlake-alert-staging-v1-subscriptions"
+        ]
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem"
+        ],
+        "Resource": [
+          "arn:aws:dynamodb:ap-southeast-2:701364614078:table/airlake-alert-staging-v1-ledger"
+        ],
+        "Condition": {
+          "ForAllValues:StringLike": {
+            "dynamodb:LeadingKeys": [
+              "telegram#*"
+            ]
+          }
+        }
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        "Resource": [
+          "arn:aws:logs:ap-southeast-2:701364614078:log-group:/aws/lambda/airlake-alert-staging-v1:log-stream:*"
+        ]
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "secretsmanager:GetSecretValue"
+        ],
+        "Resource": [
+          "arn:aws:secretsmanager:ap-southeast-2:701364614078:secret:airlake/alert-staging-v1/telegram-??????"
+        ]
+      }
+    ]
+  },
+  "reader_publisher_policy_proposal": {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "athena:GetWorkGroup",
+          "athena:StartQueryExecution",
+          "athena:GetQueryExecution",
+          "athena:GetQueryResults"
+        ],
+        "Resource": [
+          "arn:aws:athena:ap-southeast-2:701364614078:workgroup/airlake_alert_staging_v1"
+        ]
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "glue:GetDatabase",
+          "glue:GetTable"
+        ],
+        "Resource": [
+          "arn:aws:glue:ap-southeast-2:701364614078:catalog",
+          "arn:aws:glue:ap-southeast-2:701364614078:database/airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold",
+          "arn:aws:glue:ap-southeast-2:701364614078:table/airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold/pm25_aqi_hourly",
+          "arn:aws:glue:ap-southeast-2:701364614078:table/airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold/dim_location"
+        ]
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "s3:ListBucket"
+        ],
+        "Resource": [
+          "arn:aws:s3:::airlake-701364614078-lake"
+        ],
+        "Condition": {
+          "StringLike": {
+            "s3:prefix": [
+              "integration-real/20261106_f3b3b3e0677d4a6790e4a54faf68e4aa/warehouse/airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold.db/pm25_aqi_hourly/*",
+              "integration-real/20261106_f3b3b3e0677d4a6790e4a54faf68e4aa/warehouse/airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold.db/dim_location/*"
+            ]
+          }
+        }
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "s3:GetObject"
+        ],
+        "Resource": [
+          "arn:aws:s3:::airlake-701364614078-lake/integration-real/20261106_f3b3b3e0677d4a6790e4a54faf68e4aa/warehouse/airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold.db/pm25_aqi_hourly/*",
+          "arn:aws:s3:::airlake-701364614078-lake/integration-real/20261106_f3b3b3e0677d4a6790e4a54faf68e4aa/warehouse/airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold.db/dim_location/*"
+        ]
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "s3:GetBucketLocation"
+        ],
+        "Resource": [
+          "arn:aws:s3:::airlake-701364614078-lake",
+          "arn:aws:s3:::airlake-701364614078-athena-results"
+        ]
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "s3:ListBucket"
+        ],
+        "Resource": [
+          "arn:aws:s3:::airlake-701364614078-athena-results"
+        ],
+        "Condition": {
+          "StringLike": {
+            "s3:prefix": [
+              "alert-staging/v1/*"
+            ]
+          }
+        }
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:AbortMultipartUpload",
+          "s3:ListMultipartUploadParts"
+        ],
+        "Resource": [
+          "arn:aws:s3:::airlake-701364614078-athena-results/alert-staging/v1/*"
+        ]
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "sns:Publish"
+        ],
+        "Resource": [
+          "arn:aws:sns:ap-southeast-2:701364614078:airlake-alert-staging-v1"
+        ]
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem"
+        ],
+        "Resource": [
+          "arn:aws:dynamodb:ap-southeast-2:701364614078:table/airlake-alert-staging-v1-ledger"
+        ],
+        "Condition": {
+          "ForAllValues:StringLike": {
+            "dynamodb:LeadingKeys": [
+              "sns#*"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "limitations": [
+    "IAM proposals are not grants or effective-permission verification; KMS/Lake Formation/SCP constraints require owner review",
+    "No subscriber identity, token, static credentials or secret values are stored here",
+    "No automatic deployment, retries after ambiguous sends, cancellation or cleanup",
+    "Snapshot availability and joined SQL still require one separately approved Athena execution"
+  ],
+  "dlq": {
+    "MessageRetentionPeriod": 1209600,
+    "RedriveAllowPolicy": {
+      "redrivePermission": "byQueue",
+      "sourceQueueArns": [
+        "arn:aws:sqs:ap-southeast-2:701364614078:airlake-alert-staging-v1"
+      ]
+    },
+    "SqsManagedSseEnabled": true
+  },
+  "stations": {
+    "4946812": "Công viên hồ điều hòa Nhân Chính, Khuất Duy Tiến-4916745"
+  },
+  "secrets": {
+    "name": "airlake/alert-staging-v1/telegram",
+    "format": "SecretString containing only a separately scoped test bot token",
+    "owner_supplied": true
+  },
+  "timeout_decision": "Keep 120s/720s: existing 60s pre-send budget plus SDK/HTTP calls; batch=1 alone does not verify a shorter bound. Reduce only after measured live timings and failure tests."
+}
