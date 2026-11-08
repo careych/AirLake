@@ -306,6 +306,28 @@ def application_from_environment(context=None):
     mode = os.environ.get("AIRLAKE_ALERT_TEST_MODE", "0")
     if mode not in ("0", "1"):
         raise InvalidAlert("Recipient test mode must be 0 or 1")
+    scope = "airlake-alert-staging-v1"
+    staging_resources = {
+        "AIRLAKE_ALERT_TOPIC_ARN": f"arn:aws:sns:{region}:{account}:{scope}",
+        "AIRLAKE_ALERT_QUEUE_ARN": f"arn:aws:sqs:{region}:{account}:{scope}",
+        "AIRLAKE_SUBSCRIPTION_TABLE": scope + "-subscriptions",
+        "AIRLAKE_DELIVERY_TABLE": scope + "-ledger",
+    }
+    invoked_name = str(context.invoked_function_arn)[len(prefix) :].split(":")[0]
+    staging_selected = (
+        invoked_name == scope
+        or "AIRLAKE_ALERT_STAGING_NAME" in os.environ
+        or "AIRLAKE_ALERT_TEST_BOT_ID" in os.environ
+        or any(os.environ.get(k) == v for k, v in staging_resources.items())
+    )
+    if staging_selected and (
+        mode != "1"
+        or account != "701364614078"
+        or region != "ap-southeast-2"
+        or os.environ.get("AIRLAKE_PARTIAL_BATCH_FAILURES") != "1"
+        or "TELEGRAM_WEBHOOK_SECRET" in os.environ
+    ):
+        raise InvalidAlert("Staging requires isolated one-recipient SQS test mode")
     recipient = test_recipient_policy(
         mode == "1", os.environ.get("AIRLAKE_ALERT_TEST_RECIPIENT")
     )
@@ -342,6 +364,11 @@ def application_from_environment(context=None):
             raise InvalidAlert(
                 "Staging requires a separately approved test-bot secret reference"
             )
+    approved_bot_id = None
+    if mode == "1":
+        approved_bot_id = chat_id(os.environ.get("AIRLAKE_ALERT_TEST_BOT_ID"))
+        if approved_bot_id.startswith("-"):
+            raise InvalidAlert("Approved staging bot identity must be positive")
     session = Session(region_name=region)
     config = Config(
         retries={"total_max_attempts": 1, "mode": "standard"},
@@ -357,6 +384,13 @@ def application_from_environment(context=None):
             raise InvalidAlert("Test bot secret lookup failed") from None
     else:
         token = os.environ["TELEGRAM_TOKEN"]
+    if mode == "1" and (
+        not isinstance(token, str)
+        or token.count(":") != 1
+        or token.partition(":")[0] != approved_bot_id
+        or not token.partition(":")[2]
+    ):
+        raise InvalidAlert("Secret must contain the approved staging bot's raw token")
     sender = TelegramSender(token)
     dynamo = session.resource("dynamodb", config=config)
     clock = lambda: datetime.now(UTC)

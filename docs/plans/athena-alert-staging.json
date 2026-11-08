@@ -146,7 +146,8 @@
     "AIRLAKE_ALERT_TEST_RECIPIENT",
     "AIRLAKE_ALERT_TEST_REFERENCE_TIME",
     "TELEGRAM_TOKEN_SECRET_ARN",
-    "AIRLAKE_ALERT_STAGING_NAME"
+    "AIRLAKE_ALERT_STAGING_NAME",
+    "AIRLAKE_ALERT_TEST_BOT_ID"
   ],
   "consumer_policy_proposal": {
     "Version": "2012-10-17",
@@ -353,8 +354,10 @@
   },
   "secrets": {
     "name": "airlake/alert-staging-v1/telegram",
-    "format": "SecretString containing only a separately scoped test bot token",
-    "owner_supplied": true
+    "format": "Plaintext SecretString: raw separately scoped test bot token only; not JSON",
+    "owner_supplied": true,
+    "bot_identity_environment": "AIRLAKE_ALERT_TEST_BOT_ID",
+    "owner_confirmation": "Owner must confirm this approved bot identity belongs to a separate staging bot, not production. ARN naming alone does not verify bot identity."
   },
   "timeout_decision": "Keep 120s/720s: existing 60s pre-send budget plus SDK/HTTP calls; batch=1 alone does not verify a shorter bound. Reduce only after measured live timings and failure tests."
 }

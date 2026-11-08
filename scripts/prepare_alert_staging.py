@@ -14,9 +14,20 @@ from alerts.runtime import ROOT, load_plan
 
 
 def prepare(
-    plan_path, artifact, manifest_path, secret_arn, recipient_file, principal, output
+    plan_path,
+    artifact,
+    manifest_path,
+    secret_arn,
+    recipient_file,
+    principal,
+    output,
+    *,
+    test_bot_id,
 ):
     plan, digest = load_plan(plan_path)
+    test_bot_id = chat_id(test_bot_id)
+    if test_bot_id.startswith("-"):
+        raise ValueError("Approved staging bot identity must be positive")
     if not re.fullmatch(
         r"arn:aws:secretsmanager:ap-southeast-2:701364614078:secret:airlake/alert-staging-v1/telegram-[A-Za-z0-9]{6}",
         secret_arn,
@@ -79,7 +90,15 @@ def prepare(
             ],
         },
     )
-    write("consumer-policy.json", plan["consumer_policy_proposal"])
+    consumer_policy = json.loads(json.dumps(plan["consumer_policy_proposal"]))
+    for statement in consumer_policy["Statement"]:
+        if statement["Action"] == ["secretsmanager:GetSecretValue"]:
+            statement["Resource"] = [secret_arn]
+        if statement["Resource"] == [arn("dynamodb", "table/" + n["subscriptions"])]:
+            statement["Condition"] = {
+                "ForAllValues:StringEquals": {"dynamodb:LeadingKeys": [recipient]}
+            }
+    write("consumer-policy.json", consumer_policy)
     write("reader-policy.json", plan["reader_publisher_policy_proposal"])
     write(
         "dlq-attributes.json",
@@ -151,6 +170,7 @@ def prepare(
         "AIRLAKE_PARTIAL_BATCH_FAILURES": "1",
         "AIRLAKE_ALERT_TEST_MODE": "1",
         "AIRLAKE_ALERT_TEST_RECIPIENT": recipient,
+        "AIRLAKE_ALERT_TEST_BOT_ID": test_bot_id,
         "AIRLAKE_ALERT_TEST_REFERENCE_TIME": plan["historical_test"]["reference_time"],
         "AIRLAKE_ALERT_STAGING_NAME": scope,
         "TELEGRAM_TOKEN_SECRET_ARN": secret_arn,
@@ -490,6 +510,7 @@ def main():
     for flag in ["artifact", "manifest", "recipient-file", "output"]:
         p.add_argument("--" + flag, type=Path, required=True)
     p.add_argument("--secret-arn", required=True)
+    p.add_argument("--test-bot-id", required=True)
     p.add_argument("--publisher-principal", required=True)
     a = p.parse_args()
     print(
@@ -502,6 +523,7 @@ def main():
                 a.recipient_file,
                 a.publisher_principal,
                 a.output,
+                test_bot_id=a.test_bot_id,
             ),
             indent=2,
         )

@@ -282,8 +282,10 @@ class AlertRuntimeTests(unittest.TestCase):
             "AIRLAKE_ALERT_QUEUE_ARN": self.app.queue_arn,
             "AIRLAKE_SUBSCRIPTION_TABLE": "AirLake_Subscriptions",
             "AIRLAKE_DELIVERY_TABLE": self.plan["names"]["delivery_ledger"],
+            "AIRLAKE_PARTIAL_BATCH_FAILURES": "1",
             "AIRLAKE_ALERT_TEST_MODE": "1",
             "AIRLAKE_ALERT_TEST_RECIPIENT": "101",
+            "AIRLAKE_ALERT_TEST_BOT_ID": "900001",
             "AIRLAKE_ALERT_STAGING_NAME": self.plan["names"]["lambda"],
         }
         session = Mock()
@@ -296,7 +298,7 @@ class AlertRuntimeTests(unittest.TestCase):
                     "botocore.config": SimpleNamespace(Config=Mock()),
                 },
             ),
-            self.assertRaises(InvalidAlert),
+            self.assertRaisesRegex(InvalidAlert, "isolated staging resources"),
         ):
             application_from_environment(
                 SimpleNamespace(
@@ -327,6 +329,7 @@ class SecretFactoryTests(unittest.TestCase):
             "AIRLAKE_PARTIAL_BATCH_FAILURES": "1",
             "AIRLAKE_ALERT_TEST_MODE": "1",
             "AIRLAKE_ALERT_TEST_RECIPIENT": "101",
+            "AIRLAKE_ALERT_TEST_BOT_ID": "900001",
             "AIRLAKE_ALERT_TEST_REFERENCE_TIME": p["historical_test"]["reference_time"],
             "AIRLAKE_ALERT_STAGING_NAME": n["lambda"],
             "TELEGRAM_TOKEN_SECRET_ARN": f"arn:aws:secretsmanager:{region}:{account}:secret:airlake/alert-staging-v1/telegram-Ab1234",
@@ -336,7 +339,7 @@ class SecretFactoryTests(unittest.TestCase):
         )
         self.session = Mock()
         self.session.client.return_value.get_secret_value.return_value = {
-            "SecretString": "fixture-only-token"
+            "SecretString": "900001:fixture-only-token"
         }
         import sys
 
@@ -384,3 +387,148 @@ class SecretFactoryTests(unittest.TestCase):
         ):
             application_from_environment(self.context)
         self.session.client.assert_not_called()
+
+    def test_staging_function_cannot_disable_mode_and_remove_marker_environment(self):
+        env = dict(
+            self.env, AIRLAKE_ALERT_TEST_MODE="0", TELEGRAM_TOKEN="fixture-only-token"
+        )
+        for name in (
+            "AIRLAKE_ALERT_TEST_RECIPIENT",
+            "AIRLAKE_ALERT_TEST_REFERENCE_TIME",
+            "AIRLAKE_ALERT_TEST_BOT_ID",
+            "AIRLAKE_ALERT_STAGING_NAME",
+            "TELEGRAM_TOKEN_SECRET_ARN",
+        ):
+            env.pop(name)
+        env.update(
+            AIRLAKE_ALERT_TOPIC_ARN="arn:aws:sns:ap-southeast-2:701364614078:AirLake_Alerts",
+            AIRLAKE_ALERT_QUEUE_ARN="arn:aws:sqs:ap-southeast-2:701364614078:AirLake_Bot_Queue",
+            AIRLAKE_SUBSCRIPTION_TABLE="AirLake_Subscriptions",
+            AIRLAKE_DELIVERY_TABLE="ProductionDeliveryLedger",
+        )
+        with patch.dict("os.environ", env, clear=True), self.assertRaises(InvalidAlert):
+            application_from_environment(self.context)
+        self.session.client.assert_not_called()
+        self.session.resource.assert_not_called()
+
+    def test_staging_resource_cannot_disable_mode_from_another_function(self):
+        env = dict(self.env, AIRLAKE_ALERT_TEST_MODE="0")
+        for name in (
+            "AIRLAKE_ALERT_TEST_RECIPIENT",
+            "AIRLAKE_ALERT_TEST_REFERENCE_TIME",
+            "AIRLAKE_ALERT_TEST_BOT_ID",
+            "AIRLAKE_ALERT_STAGING_NAME",
+        ):
+            env.pop(name)
+        context = SimpleNamespace(
+            invoked_function_arn="arn:aws:lambda:ap-southeast-2:701364614078:function:OtherBot"
+        )
+        with patch.dict("os.environ", env, clear=True), self.assertRaises(InvalidAlert):
+            application_from_environment(context)
+        self.session.client.assert_not_called()
+
+    def test_staging_requires_partial_batches_and_no_webhook_secret(self):
+        for change in (
+            {"AIRLAKE_PARTIAL_BATCH_FAILURES": "0"},
+            {"TELEGRAM_WEBHOOK_SECRET": "fixture-webhook-secret"},
+        ):
+            with (
+                self.subTest(change=change),
+                patch.dict("os.environ", change),
+                self.assertRaises(InvalidAlert),
+            ):
+                application_from_environment(self.context)
+        self.session.client.assert_not_called()
+
+    def test_staging_rejects_wrong_account_or_region_before_clients(self):
+        for account, region in (
+            ("000000000000", "ap-southeast-2"),
+            ("701364614078", "us-east-1"),
+        ):
+            env = dict(self.env, AIRLAKE_ACCOUNT_ID=account, AWS_REGION=region)
+            context = SimpleNamespace(
+                invoked_function_arn=f"arn:aws:lambda:{region}:{account}:function:airlake-alert-staging-v1"
+            )
+            with (
+                self.subTest(account=account, region=region),
+                patch.dict("os.environ", env, clear=True),
+                self.assertRaises(InvalidAlert),
+            ):
+                application_from_environment(context)
+        self.session.client.assert_not_called()
+
+    def test_staging_requires_owner_approved_positive_bot_identity(self):
+        for value in (None, "", "0", "-900001", "0900001", "900001,900002"):
+            env = dict(self.env)
+            if value is None:
+                env.pop("AIRLAKE_ALERT_TEST_BOT_ID")
+            else:
+                env["AIRLAKE_ALERT_TEST_BOT_ID"] = value
+            with (
+                self.subTest(value=value),
+                patch.dict("os.environ", env, clear=True),
+                self.assertRaises(InvalidAlert),
+            ):
+                application_from_environment(self.context)
+        self.session.client.assert_not_called()
+
+    def test_wrong_bot_token_is_rejected_without_dynamo_or_sensitive_error(self):
+        token = "900002:fixture-only-token"
+        self.session.client.return_value.get_secret_value.return_value = {
+            "SecretString": token
+        }
+        with self.assertRaises(InvalidAlert) as error:
+            application_from_environment(self.context)
+        self.assertNotIn(token, str(error.exception))
+        self.session.resource.assert_not_called()
+
+    def test_secret_is_plaintext_not_json_and_rejects_malformed_values(self):
+        for token in (
+            '{"token":"900001:fixture-only-token"}',
+            {"token": "fixture-only-token"},
+            "900001:fixture-only-token\n",
+            "900001:",
+            "900001:fixture:extra",
+        ):
+            self.session.client.return_value.get_secret_value.return_value = {
+                "SecretString": token
+            }
+            with self.subTest(token=token), self.assertRaises(InvalidAlert):
+                application_from_environment(self.context)
+        self.session.resource.assert_not_called()
+
+    def test_every_shared_destination_is_rejected_before_secret_lookup(self):
+        for name, value in (
+            (
+                "AIRLAKE_ALERT_TOPIC_ARN",
+                "arn:aws:sns:ap-southeast-2:701364614078:AirLake_Alerts",
+            ),
+            (
+                "AIRLAKE_ALERT_QUEUE_ARN",
+                "arn:aws:sqs:ap-southeast-2:701364614078:AirLake_Bot_Queue",
+            ),
+            ("AIRLAKE_SUBSCRIPTION_TABLE", "AirLake_Subscriptions"),
+        ):
+            with (
+                self.subTest(name=name),
+                patch.dict("os.environ", {name: value}),
+                self.assertRaises(InvalidAlert),
+            ):
+                application_from_environment(self.context)
+        self.session.client.assert_not_called()
+
+
+class StagingPlanBoundaryTests(unittest.TestCase):
+    def test_roles_and_secret_name_cannot_be_retargeted(self):
+        from alerts.runtime import validate_plan
+
+        original, _ = load_plan(ROOT / "docs/plans/athena-alert-staging.json")
+        for kind, name in (
+            ("names", "consumer_role"),
+            ("names", "reader_role"),
+            ("secrets", "name"),
+        ):
+            plan = json.loads(json.dumps(original))
+            plan[kind][name] = "ProductionResource"
+            with self.subTest(name=name), self.assertRaises(InvalidAlert):
+                validate_plan(plan)

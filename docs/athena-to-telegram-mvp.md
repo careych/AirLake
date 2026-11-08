@@ -155,6 +155,7 @@ python -B -m scripts.prepare_alert_staging \
   --artifact /tmp/airlake-alert-build-UNUSED/alert-lambda.zip \
   --manifest /tmp/airlake-alert-build-UNUSED/alert-lambda-manifest.json \
   --secret-arn "$APPROVED_TEST_BOT_SECRET_ARN" \
+  --test-bot-id "$APPROVED_STAGING_BOT_ID" \
   --recipient-file "$PRIVATE_RECIPIENT_FILE" \
   --publisher-principal "$APPROVED_OPERATOR_ROLE_ARN" \
   --output /tmp/airlake-alert-deploy-UNUSED
@@ -253,3 +254,22 @@ Gold source/P0 tests and all prior acceptance JSON files are unchanged.
 **Code publication can proceed after local checks. Cloud execution remains NO-GO
 until the approved test-bot secret and private recipient are ready, a fresh
 corrected preflight passes and the exact staging/test scope is approved.**
+
+## Staging contract correction (not deployed)
+
+The staging runtime requires `AIRLAKE_ALERT_TEST_BOT_ID`, a positive canonical
+numeric string confirmed by the owner as a separate staging bot. The plaintext
+SecretString token prefix must match it; JSON, a wrong bot token, or a missing
+identity rejects before DynamoDB initialization. This does not independently
+prove the owner's bot identity claim. No token/chat values are checked into Git.
+
+Staging function/resource selection cannot disable test mode or partial-batch
+responses, change account/region, or enable a webhook. Private deployment
+preparation pins GetSecretValue to the supplied full secret ARN and subscription
+GetItem to the one approved key. Existing general bot commands are unchanged.
+The public policy remains a proposal; generated private policy carries the exact
+ARN/key. See the owner handoff in `telegram-staging-contract.md`.
+
+The saved reader plan still points to the historical July 2025 one-hour fixture,
+not the later 559-record November batch. Selecting new data/snapshots/station names
+and a test-only rule needs an explicit reviewed plan update before execution.
