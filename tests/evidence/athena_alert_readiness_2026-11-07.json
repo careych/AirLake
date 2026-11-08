@@ -1,0 +1,552 @@
+{
+  "verification_date": "2026-11-07",
+  "branch": "feat/athena-alert-runtime",
+  "baseline_commit": "fc1a6909f9e59372145496b4388bfef515d85c87",
+  "purpose": "Renewed read-only staging preflight and fail-closed readiness correction; NOT cloud E2E acceptance",
+  "original_user_receipt": {
+    "account": "701364614078",
+    "region": "ap-southeast-2",
+    "status": "READ_ONLY_CHECKS_PASS; APPROVAL_AND_SECRET_REQUIRED",
+    "absence": {
+      "sns_topic": "ABSENT",
+      "lambda": "ABSENT",
+      "workgroup": "ABSENT",
+      "queue": "ABSENT",
+      "dlq": "ABSENT",
+      "subscriptions": "ABSENT",
+      "delivery_ledger": "ABSENT",
+      "consumer_role": "ABSENT",
+      "reader_role": "ABSENT",
+      "log_group": "ABSENT"
+    },
+    "snapshots": [
+      {
+        "table": "pm25_aqi_hourly",
+        "snapshot": "1174385021871906125",
+        "present": true,
+        "error": null,
+        "lake_formation_registered": false,
+        "metadata_sha256": "144ece22d38d6287693078fa67c2300ba5cc04b4cdc8003de44c0d168a8e87ea",
+        "metadata_object": "s3://airlake-701364614078-lake/integration-real/20261106_f3b3b3e0677d4a6790e4a54faf68e4aa/warehouse/airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold.db/pm25_aqi_hourly/metadata/00001-804ee5ce-a343-4e96-b014-fe7bb1110850.metadata.json"
+      },
+      {
+        "table": "dim_location",
+        "snapshot": "4323462633891640540",
+        "present": true,
+        "error": null,
+        "lake_formation_registered": false,
+        "metadata_sha256": "7babea236dcf05966e1c06c770527571ba8db2a8d3aeedf5c49c6d2d4bf6eda1",
+        "metadata_object": "s3://airlake-701364614078-lake/integration-real/20261106_f3b3b3e0677d4a6790e4a54faf68e4aa/warehouse/airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold.db/dim_location/metadata/00001-d988f6dc-ffa1-4ae1-b98c-82582fb54eb3.metadata.json"
+      }
+    ],
+    "results_prefix_objects": 0,
+    "existing_workgroup": {
+      "Name": "airlake",
+      "State": "ENABLED",
+      "Configuration": {
+        "ResultConfiguration": {
+          "OutputLocation": "s3://airlake-701364614078-athena-results/"
+        },
+        "EnforceWorkGroupConfiguration": true,
+        "PublishCloudWatchMetricsEnabled": true,
+        "BytesScannedCutoffPerQuery": 10737418240,
+        "RequesterPaysEnabled": false,
+        "EngineVersion": {
+          "SelectedEngineVersion": "AUTO",
+          "EffectiveEngineVersion": "Athena engine version 3"
+        },
+        "EnableMinimumEncryptionConfiguration": false
+      },
+      "CreationTime": "2026-10-18T12:18:40.145000+07:00"
+    },
+    "test_secret": {
+      "metadata_exists": false,
+      "arn": null,
+      "error": "ResourceNotFoundException",
+      "value_requested": false
+    },
+    "publisher_principal_role_arn": "arn:aws:iam::701364614078:role/AccountFullAccessRole",
+    "iam_simulation": {
+      "error": null,
+      "decisions": [
+        {
+          "action": "lambda:CreateFunction",
+          "decision": "explicitDeny"
+        },
+        {
+          "action": "iam:CreateRole",
+          "decision": "allowed"
+        },
+        {
+          "action": "iam:PassRole",
+          "decision": "allowed"
+        },
+        {
+          "action": "sns:CreateTopic",
+          "decision": "explicitDeny"
+        },
+        {
+          "action": "sqs:CreateQueue",
+          "decision": "explicitDeny"
+        },
+        {
+          "action": "dynamodb:CreateTable",
+          "decision": "explicitDeny"
+        },
+        {
+          "action": "athena:CreateWorkGroup",
+          "decision": "explicitDeny"
+        }
+      ]
+    },
+    "limitations": [
+      "Simulation is not effective authorization. Resource policies, boundaries, Lake Formation, KMS and SCPs require owner review.",
+      "No deployed staging roles exist yet; no write permission is proven by read success.",
+      "Secret identity as a distinct test bot requires owner confirmation; its value was not requested."
+    ],
+    "plan_sha256": "97c7f760a7f3b1bf38520e1a384d579433fca12a7eb95767167331618faa6e53"
+  },
+  "controlled_simulation_without_region": {
+    "region_context": "OMITTED (control comparison only)",
+    "decisions": [
+      {
+        "action": "lambda:CreateFunction",
+        "decision": "explicitDeny",
+        "missing_context": [],
+        "organizations": {
+          "AllowedByOrganizations": false
+        }
+      },
+      {
+        "action": "iam:CreateRole",
+        "decision": "allowed",
+        "missing_context": [],
+        "organizations": {
+          "AllowedByOrganizations": true
+        }
+      },
+      {
+        "action": "iam:PassRole",
+        "decision": "allowed",
+        "missing_context": [],
+        "organizations": {
+          "AllowedByOrganizations": true
+        }
+      },
+      {
+        "action": "sns:CreateTopic",
+        "decision": "explicitDeny",
+        "missing_context": [],
+        "organizations": {
+          "AllowedByOrganizations": false
+        }
+      },
+      {
+        "action": "sqs:CreateQueue",
+        "decision": "explicitDeny",
+        "missing_context": [],
+        "organizations": {
+          "AllowedByOrganizations": false
+        }
+      },
+      {
+        "action": "dynamodb:CreateTable",
+        "decision": "explicitDeny",
+        "missing_context": [],
+        "organizations": {
+          "AllowedByOrganizations": false
+        }
+      },
+      {
+        "action": "athena:CreateWorkGroup",
+        "decision": "explicitDeny",
+        "missing_context": [],
+        "organizations": {
+          "AllowedByOrganizations": false
+        }
+      }
+    ]
+  },
+  "controlled_simulation_with_region": {
+    "principal": "arn:aws:iam::701364614078:role/AccountFullAccessRole",
+    "region_context": "ap-southeast-2",
+    "context_keys": [],
+    "decisions": [
+      {
+        "EvalActionName": "lambda:CreateFunction",
+        "EvalDecision": "allowed",
+        "MissingContextValues": [],
+        "OrganizationsDecisionDetail": {
+          "AllowedByOrganizations": true
+        },
+        "PermissionsBoundaryDecisionDetail": null,
+        "MatchedStatements": [
+          {
+            "SourcePolicyId": "AdministratorAccess",
+            "SourcePolicyType": "IAM Policy",
+            "StartPosition": {
+              "Line": 3,
+              "Column": 17
+            },
+            "EndPosition": {
+              "Line": 8,
+              "Column": 6
+            }
+          }
+        ]
+      },
+      {
+        "EvalActionName": "iam:CreateRole",
+        "EvalDecision": "allowed",
+        "MissingContextValues": [],
+        "OrganizationsDecisionDetail": {
+          "AllowedByOrganizations": true
+        },
+        "PermissionsBoundaryDecisionDetail": null,
+        "MatchedStatements": [
+          {
+            "SourcePolicyId": "AdministratorAccess",
+            "SourcePolicyType": "IAM Policy",
+            "StartPosition": {
+              "Line": 3,
+              "Column": 17
+            },
+            "EndPosition": {
+              "Line": 8,
+              "Column": 6
+            }
+          }
+        ]
+      },
+      {
+        "EvalActionName": "iam:PassRole",
+        "EvalDecision": "allowed",
+        "MissingContextValues": [],
+        "OrganizationsDecisionDetail": {
+          "AllowedByOrganizations": true
+        },
+        "PermissionsBoundaryDecisionDetail": null,
+        "MatchedStatements": [
+          {
+            "SourcePolicyId": "AdministratorAccess",
+            "SourcePolicyType": "IAM Policy",
+            "StartPosition": {
+              "Line": 3,
+              "Column": 17
+            },
+            "EndPosition": {
+              "Line": 8,
+              "Column": 6
+            }
+          }
+        ]
+      },
+      {
+        "EvalActionName": "sns:CreateTopic",
+        "EvalDecision": "allowed",
+        "MissingContextValues": [],
+        "OrganizationsDecisionDetail": {
+          "AllowedByOrganizations": true
+        },
+        "PermissionsBoundaryDecisionDetail": null,
+        "MatchedStatements": [
+          {
+            "SourcePolicyId": "AdministratorAccess",
+            "SourcePolicyType": "IAM Policy",
+            "StartPosition": {
+              "Line": 3,
+              "Column": 17
+            },
+            "EndPosition": {
+              "Line": 8,
+              "Column": 6
+            }
+          }
+        ]
+      },
+      {
+        "EvalActionName": "sqs:CreateQueue",
+        "EvalDecision": "allowed",
+        "MissingContextValues": [],
+        "OrganizationsDecisionDetail": {
+          "AllowedByOrganizations": true
+        },
+        "PermissionsBoundaryDecisionDetail": null,
+        "MatchedStatements": [
+          {
+            "SourcePolicyId": "AdministratorAccess",
+            "SourcePolicyType": "IAM Policy",
+            "StartPosition": {
+              "Line": 3,
+              "Column": 17
+            },
+            "EndPosition": {
+              "Line": 8,
+              "Column": 6
+            }
+          }
+        ]
+      },
+      {
+        "EvalActionName": "dynamodb:CreateTable",
+        "EvalDecision": "allowed",
+        "MissingContextValues": [],
+        "OrganizationsDecisionDetail": {
+          "AllowedByOrganizations": true
+        },
+        "PermissionsBoundaryDecisionDetail": null,
+        "MatchedStatements": [
+          {
+            "SourcePolicyId": "AdministratorAccess",
+            "SourcePolicyType": "IAM Policy",
+            "StartPosition": {
+              "Line": 3,
+              "Column": 17
+            },
+            "EndPosition": {
+              "Line": 8,
+              "Column": 6
+            }
+          }
+        ]
+      },
+      {
+        "EvalActionName": "athena:CreateWorkGroup",
+        "EvalDecision": "allowed",
+        "MissingContextValues": [],
+        "OrganizationsDecisionDetail": {
+          "AllowedByOrganizations": true
+        },
+        "PermissionsBoundaryDecisionDetail": null,
+        "MatchedStatements": [
+          {
+            "SourcePolicyId": "AdministratorAccess",
+            "SourcePolicyType": "IAM Policy",
+            "StartPosition": {
+              "Line": 3,
+              "Column": 17
+            },
+            "EndPosition": {
+              "Line": 8,
+              "Column": 6
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "corrected_actual_preflight": {
+    "account": "701364614078",
+    "region": "ap-southeast-2",
+    "status": "BLOCKED; TEST_BOT_SECRET_MISSING_OR_UNVERIFIED",
+    "absence": {
+      "sns_topic": "ABSENT",
+      "lambda": "ABSENT",
+      "workgroup": "ABSENT",
+      "queue": "ABSENT",
+      "dlq": "ABSENT",
+      "subscriptions": "ABSENT",
+      "delivery_ledger": "ABSENT",
+      "consumer_role": "ABSENT",
+      "reader_role": "ABSENT",
+      "log_group": "ABSENT"
+    },
+    "snapshots": [
+      {
+        "table": "pm25_aqi_hourly",
+        "snapshot": "1174385021871906125",
+        "present": true,
+        "error": null,
+        "lake_formation_registered": false,
+        "metadata_sha256": "144ece22d38d6287693078fa67c2300ba5cc04b4cdc8003de44c0d168a8e87ea",
+        "metadata_object": "s3://airlake-701364614078-lake/integration-real/20261106_f3b3b3e0677d4a6790e4a54faf68e4aa/warehouse/airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold.db/pm25_aqi_hourly/metadata/00001-804ee5ce-a343-4e96-b014-fe7bb1110850.metadata.json"
+      },
+      {
+        "table": "dim_location",
+        "snapshot": "4323462633891640540",
+        "present": true,
+        "error": null,
+        "lake_formation_registered": false,
+        "metadata_sha256": "7babea236dcf05966e1c06c770527571ba8db2a8d3aeedf5c49c6d2d4bf6eda1",
+        "metadata_object": "s3://airlake-701364614078-lake/integration-real/20261106_f3b3b3e0677d4a6790e4a54faf68e4aa/warehouse/airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold.db/dim_location/metadata/00001-d988f6dc-ffa1-4ae1-b98c-82582fb54eb3.metadata.json"
+      }
+    ],
+    "results_prefix_objects": 0,
+    "existing_workgroup": {
+      "Name": "airlake",
+      "State": "ENABLED",
+      "Configuration": {
+        "ResultConfiguration": {
+          "OutputLocation": "s3://airlake-701364614078-athena-results/"
+        },
+        "EnforceWorkGroupConfiguration": true,
+        "PublishCloudWatchMetricsEnabled": true,
+        "BytesScannedCutoffPerQuery": 10737418240,
+        "RequesterPaysEnabled": false,
+        "EngineVersion": {
+          "SelectedEngineVersion": "AUTO",
+          "EffectiveEngineVersion": "Athena engine version 3"
+        },
+        "EnableMinimumEncryptionConfiguration": false
+      },
+      "CreationTime": "2026-10-18T12:18:40.145000+07:00"
+    },
+    "test_secret": {
+      "metadata_exists": false,
+      "arn": null,
+      "error": "ResourceNotFoundException",
+      "value_requested": false
+    },
+    "publisher_principal_role_arn": "arn:aws:iam::701364614078:role/AccountFullAccessRole",
+    "iam_context_keys": {
+      "ContextKeyNames": []
+    },
+    "iam_simulation": {
+      "error": null,
+      "context": {
+        "aws:RequestedRegion": "ap-southeast-2"
+      },
+      "decisions": [
+        {
+          "action": "lambda:CreateFunction",
+          "decision": "allowed",
+          "missing_context": [],
+          "organizations": {
+            "AllowedByOrganizations": true
+          },
+          "permissions_boundary": null
+        },
+        {
+          "action": "iam:CreateRole",
+          "decision": "allowed",
+          "missing_context": [],
+          "organizations": {
+            "AllowedByOrganizations": true
+          },
+          "permissions_boundary": null
+        },
+        {
+          "action": "iam:PassRole",
+          "decision": "allowed",
+          "missing_context": [],
+          "organizations": {
+            "AllowedByOrganizations": true
+          },
+          "permissions_boundary": null
+        },
+        {
+          "action": "sns:CreateTopic",
+          "decision": "allowed",
+          "missing_context": [],
+          "organizations": {
+            "AllowedByOrganizations": true
+          },
+          "permissions_boundary": null
+        },
+        {
+          "action": "sqs:CreateQueue",
+          "decision": "allowed",
+          "missing_context": [],
+          "organizations": {
+            "AllowedByOrganizations": true
+          },
+          "permissions_boundary": null
+        },
+        {
+          "action": "dynamodb:CreateTable",
+          "decision": "allowed",
+          "missing_context": [],
+          "organizations": {
+            "AllowedByOrganizations": true
+          },
+          "permissions_boundary": null
+        },
+        {
+          "action": "athena:CreateWorkGroup",
+          "decision": "allowed",
+          "missing_context": [],
+          "organizations": {
+            "AllowedByOrganizations": true
+          },
+          "permissions_boundary": null
+        }
+      ]
+    },
+    "limitations": [
+      "Simulation is not effective authorization. Resource policies, boundaries, Lake Formation, KMS and SCPs require owner review.",
+      "No deployed staging roles exist yet; no write permission is proven by read success.",
+      "Secret identity as a distinct test bot requires owner confirmation; its value was not requested."
+    ],
+    "inventory_status": "PASS",
+    "iam_status": "SIMULATED_ALLOWED; NOT LIVE AUTHORIZATION",
+    "blockers": [
+      "TEST_BOT_SECRET_MISSING_OR_UNVERIFIED"
+    ],
+    "execution_authorized": false,
+    "plan_sha256": "97c7f760a7f3b1bf38520e1a384d579433fca12a7eb95767167331618faa6e53"
+  },
+  "corrected_exit_code": 1,
+  "simulation_interpretation": "Seven actions simulated allowed with requested region; this does not prove effective write permissions for all deployment/runtime operations",
+  "decision": "NO-GO: test-bot secret absent; private recipient and separate explicit deployment/test approval still required",
+  "plan_sha256": "97c7f760a7f3b1bf38520e1a384d579433fca12a7eb95767167331618faa6e53",
+  "tests": {
+    "run": 227,
+    "passed": 227,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "new_regressions": 4,
+    "seconds": 0.706,
+    "command": "python -B -m unittest discover -s tests -p 'test_*.py' -v"
+  },
+  "checks": {
+    "ruff_lint": "PASS",
+    "ruff_format": "PASS: 37 files",
+    "rebuilt_zip_crc_and_source_hashes": "PASS",
+    "rebuilt_package_imports": "PASS with sockets blocked",
+    "protected_gold_and_historical_evidence": "byte-identical to baseline"
+  },
+  "artifact": {
+    "architecture": "pure-python; validate on target runtime",
+    "archive_bytes": 16737312,
+    "archive_sha256": "d779709fb49416b83baaf6ee05ef9e11980c3ca8e572dbfc0018f3db3d73bc2a",
+    "dependencies": {
+      "boto3": "1.43.115",
+      "botocore": "1.43.115",
+      "jmespath": "1.1.0",
+      "python-dateutil": "2.9.0.post0",
+      "s3transfer": "0.19.3",
+      "six": "1.17.0",
+      "urllib3": "2.8.0"
+    },
+    "deployment_status": "NOT DEPLOYED",
+    "file_count": 2203,
+    "handler": "bot_lambda.src.lambda_function.lambda_handler",
+    "runtime": "python3.12",
+    "source_sha256": {
+      "alerts/__init__.py": "cef9abe0a57e76e68363c2ac6a900e927214ed04d072bb5428b635a88effa3c8",
+      "alerts/athena.py": "d61386177f4fd0fc19580e24e158b1fc1d8ed3dc417f02ccabf6037e854ecfd2",
+      "alerts/delivery.py": "1aa96a204b4b1c85938497b862c44c64ca8e767b9eeb90780d294d74204e0733",
+      "alerts/gold.py": "05ed22bdb93a8f6571b5e3b6f48794695ae1ece74900e695a8956a6dcc431513",
+      "alerts/preflight.py": "810f7f076883e94d098f468abe3241111460651d7537266be979d64841564aa1",
+      "alerts/runtime.py": "59c596a25aacee1247808991d132e69794d8531a70fac78f5aa9e6d8d160016b",
+      "bot_lambda/src/create_table.py": "ae8fa63f8a93a32a27d16dd16c4dab71b3ead5ab76e4bf87205a55295bd70dd0",
+      "bot_lambda/src/lambda_function.py": "a058a54884fd2d1674bf0afc110d82c7c513058748728b53ec625fb71eefd4af"
+    },
+    "uv_lock_sha256": "daf23121b7b89b90c9de0cca6094314dfef36ab969d2bc6cb40757d8be976c5b",
+    "wheel_verification": "SHA-256 matched uv.lock"
+  },
+  "changed_file_sha256": {
+    "alerts/preflight.py": "810f7f076883e94d098f468abe3241111460651d7537266be979d64841564aa1",
+    "tests/test_alert_preflight.py": "eb6abc94f12c6167ce05863d74eb2b3547ea2884e9be6a052b3ead52b08dcbd1",
+    "README.md": "98f3c19c3f4c5b46f9f6c4b738777dd18326768607967697349524488e0ef48a",
+    "docs/athena-to-telegram-mvp.md": "b22d1539219f714d6836687efea417d131f65136350a4949de8a9b0aaadd16d1"
+  },
+  "no_mutations": [
+    "No AWS resource creation or policy changes",
+    "No Athena SQL execution",
+    "No SNS publication or Telegram request",
+    "No secret values requested",
+    "No Gold/data/checkpoint changes"
+  ]
+}

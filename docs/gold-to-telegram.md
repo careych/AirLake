@@ -1,5 +1,9 @@
 # Gold-to-Telegram local integration
 
+Sprint 3A.2 adds the [bounded Athena reader and staging preparation](athena-alert-runtime.md).
+The acceptance below remains the historical PR #5 local result; live deployment
+and Telegram delivery are still unverified.
+
 This slice implements Gold observation validation → explicit alert rule → SNS
 JSON → raw or wrapped SNS/SQS body → Lambda handler → Telegram transport.
 AWS and Telegram are mocked in local acceptance. No deployment, live notification,

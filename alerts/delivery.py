@@ -156,9 +156,14 @@ def subscription_number(value):
 class DynamoSubscriptions:
     """Keep the teammate's chat_id key and paginate before any alert fanout."""
 
-    def __init__(self, table, stations, *, max_pages=10, max_recipients=100):
+    def __init__(
+        self, table, stations, *, max_pages=10, max_recipients=100, only_recipient=None
+    ):
         integer(max_pages, 1, 100)
         integer(max_recipients, 1, 1000)
+        self.only_recipient = (
+            chat_id(only_recipient) if only_recipient is not None else None
+        )
         self.table, self.stations = table, stations
         self.max_pages, self.max_recipients = max_pages, max_recipients
 
@@ -167,7 +172,17 @@ class DynamoSubscriptions:
         scan_kwargs = {"ConsistentRead": True, "Limit": 100}
         seen = set()
         for _ in range(self.max_pages):
-            response = self.table.scan(**scan_kwargs)
+            if self.only_recipient is None:
+                response = self.table.scan(**scan_kwargs)
+            else:
+                item = self.table.get_item(
+                    Key={"chat_id": self.only_recipient}, ConsistentRead=True
+                ).get("Item")
+                if item is not None and item.get("chat_id") != self.only_recipient:
+                    raise InvalidAlert(
+                        "Subscription lookup returned a different recipient"
+                    )
+                response = {"Items": [] if item is None else [item]}
             for item in response.get("Items", []):
                 recipient = chat_id(item.get("chat_id"))
                 enabled = item.get("enabled", True)
