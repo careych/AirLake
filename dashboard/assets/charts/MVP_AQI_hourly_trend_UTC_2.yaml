@@ -1,0 +1,31 @@
+slice_name: MVP AQI hourly trend (UTC)
+description: null
+certified_by: null
+certification_details: null
+viz_type: echarts_timeseries_line
+params:
+  datasource: 1__table
+  viz_type: echarts_timeseries_line
+  time_range: No filter
+  granularity_sqla: hour_start_utc
+  time_grain_sqla: PT1H
+  row_limit: 1000
+  adhoc_filters: []
+  metrics:
+  - expressionType: SIMPLE
+    column:
+      column_name: aqi
+    aggregate: AVG
+    label: Hourly MVP AQI
+  groupby:
+  - station_name
+  x_axis: hour_start_utc
+  show_legend: true
+  rich_tooltip: true
+  x_axis_title: Observation hour (UTC)
+  y_axis_title: Hourly MVP AQI
+query_context: null
+cache_timeout: null
+uuid: 2384c1bd-56cc-4919-85d7-4ff44feb8699
+version: 1.0.0
+dataset_uuid: bf4900d9-f3f4-470f-b816-3ce7ee4db202

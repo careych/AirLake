@@ -1,0 +1,29 @@
+slice_name: Latest observation by station (UTC)
+description: null
+certified_by: null
+certification_details: null
+viz_type: table
+params:
+  datasource: 2__table
+  viz_type: table
+  time_range: No filter
+  granularity_sqla: hour_start_utc
+  time_grain_sqla: PT1H
+  row_limit: 1000
+  adhoc_filters: []
+  all_columns:
+  - station_name
+  - hour_start_utc
+  - pm25_avg
+  - aqi
+  - age_hours
+  - freshness
+  - dataset_label
+  order_by_cols:
+  - '["hour_start_utc", false]'
+  query_mode: raw
+query_context: null
+cache_timeout: null
+uuid: b49d30f0-63de-4a50-93da-abac309b166f
+version: 1.0.0
+dataset_uuid: e8ad00db-610b-4d95-aeef-c4293b97839b

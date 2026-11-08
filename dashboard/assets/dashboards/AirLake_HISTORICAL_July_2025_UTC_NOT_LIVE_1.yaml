@@ -1,0 +1,260 @@
+dashboard_title: "AirLake \u2014 HISTORICAL July 2025 / UTC / NOT LIVE"
+description: null
+css: null
+slug: airlake-historical-gold
+certified_by: null
+certification_details: null
+published: true
+uuid: 6f0dc076-ff73-4dc5-ab29-9e59174c2cfa
+position:
+  DASHBOARD_VERSION_KEY: v2
+  ROOT_ID:
+    id: ROOT_ID
+    type: ROOT
+    children:
+    - GRID_ID
+  GRID_ID:
+    id: GRID_ID
+    type: GRID
+    children:
+    - ROW-0
+    - ROW-1
+    - ROW-2
+    - ROW-3
+    - ROW-4
+    - ROW-N-SIYYZR0L
+    parents:
+    - ROOT_ID
+  ROW-0:
+    id: ROW-0
+    type: ROW
+    children:
+    - CHART-1
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    meta:
+      background: BACKGROUND_TRANSPARENT
+  CHART-1:
+    id: CHART-1
+    type: CHART
+    children: []
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - ROW-0
+    meta:
+      chartId: 1
+      height: 35
+      width: 12
+      sliceName: PM2.5 hourly trend (UTC)
+  ROW-1:
+    id: ROW-1
+    type: ROW
+    children:
+    - CHART-2
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    meta:
+      background: BACKGROUND_TRANSPARENT
+  CHART-2:
+    id: CHART-2
+    type: CHART
+    children: []
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - ROW-1
+    meta:
+      chartId: 2
+      height: 35
+      width: 12
+      sliceName: MVP AQI hourly trend (UTC)
+  ROW-2:
+    id: ROW-2
+    type: ROW
+    children:
+    - CHART-3
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    meta:
+      background: BACKGROUND_TRANSPARENT
+  CHART-3:
+    id: CHART-3
+    type: CHART
+    children: []
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - ROW-2
+    meta:
+      chartId: 3
+      height: 22
+      width: 12
+      sliceName: "Station comparison \u2014 historical means"
+  ROW-3:
+    id: ROW-3
+    type: ROW
+    children:
+    - CHART-4
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    meta:
+      background: BACKGROUND_TRANSPARENT
+  CHART-4:
+    id: CHART-4
+    type: CHART
+    children: []
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - ROW-3
+    meta:
+      chartId: 4
+      height: 22
+      width: 12
+      sliceName: Latest observation by station (UTC)
+  ROW-4:
+    id: ROW-4
+    type: ROW
+    children:
+    - CHART-5
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    meta:
+      background: BACKGROUND_TRANSPARENT
+  CHART-5:
+    id: CHART-5
+    type: CHART
+    children: []
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - ROW-4
+    meta:
+      chartId: 5
+      height: 22
+      width: 12
+      sliceName: "Freshness \u2014 age since hour end (hours)"
+  ROW-N-SIYYZR0L:
+    children:
+    - CHART-24J1B1NJ
+    - CHART-2TSHUB8W
+    - CHART-1JW3FBKW
+    - CHART-CY3VN3KW
+    - CHART-5PAFGVAN
+    id: ROW-N-SIYYZR0L
+    meta:
+      '0': ROOT_ID
+      background: BACKGROUND_TRANSPARENT
+    type: ROW
+    parents:
+    - ROOT_ID
+    - GRID_ID
+  CHART-24J1B1NJ:
+    children: []
+    id: CHART-24J1B1NJ
+    meta:
+      chartId: 1
+      height: 50
+      sliceName: PM2.5 hourly trend (UTC)
+      uuid: 88160af8-ac17-4a0b-ad80-2f8743c0c2cf
+      width: 4
+    type: CHART
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - ROW-N-SIYYZR0L
+  CHART-2TSHUB8W:
+    children: []
+    id: CHART-2TSHUB8W
+    meta:
+      chartId: 5
+      height: 50
+      sliceName: "Freshness \u2014 age since hour end (hours)"
+      uuid: a0b3eee1-b510-406b-90a2-fd02914e7fd2
+      width: 4
+    type: CHART
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - ROW-N-SIYYZR0L
+  CHART-1JW3FBKW:
+    children: []
+    id: CHART-1JW3FBKW
+    meta:
+      chartId: 4
+      height: 50
+      sliceName: Latest observation by station (UTC)
+      uuid: b49d30f0-63de-4a50-93da-abac309b166f
+      width: 4
+    type: CHART
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - ROW-N-SIYYZR0L
+  CHART-CY3VN3KW:
+    children: []
+    id: CHART-CY3VN3KW
+    meta:
+      chartId: 2
+      height: 50
+      sliceName: MVP AQI hourly trend (UTC)
+      uuid: 2384c1bd-56cc-4919-85d7-4ff44feb8699
+      width: 4
+    type: CHART
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - ROW-N-SIYYZR0L
+  CHART-5PAFGVAN:
+    children: []
+    id: CHART-5PAFGVAN
+    meta:
+      chartId: 3
+      height: 50
+      sliceName: "Station comparison \u2014 historical means"
+      uuid: 9517d6ad-958a-48bf-9e07-705a2361adfa
+      width: 4
+    type: CHART
+    parents:
+    - ROOT_ID
+    - GRID_ID
+    - ROW-N-SIYYZR0L
+metadata:
+  native_filter_configuration:
+  - id: station-filter
+    name: Station
+    filterType: filter_select
+    targets:
+    - column:
+        name: station_name
+      datasetUuid: bf4900d9-f3f4-470f-b816-3ce7ee4db202
+    defaultDataMask:
+      extraFormData: {}
+      filterState: {}
+    controlValues:
+      enableEmptyFilter: false
+      multiSelect: true
+      searchAllOptions: false
+      inverseSelection: false
+    scope:
+      rootPath:
+      - ROOT_ID
+      excluded: []
+    type: NATIVE_FILTER
+  timed_refresh_immune_slices: []
+  expanded_slices: {}
+  refresh_frequency: 0
+  color_scheme: ''
+  label_colors: {}
+  shared_label_colors: []
+  map_label_colors: {}
+  color_scheme_domain: []
+  cross_filters_enabled: true
+theme_uuid: null
+version: 1.0.0
