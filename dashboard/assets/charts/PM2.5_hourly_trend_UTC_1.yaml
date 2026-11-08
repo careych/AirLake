@@ -1,0 +1,31 @@
+slice_name: PM2.5 hourly trend (UTC)
+description: null
+certified_by: null
+certification_details: null
+viz_type: echarts_timeseries_line
+params:
+  datasource: 1__table
+  viz_type: echarts_timeseries_line
+  time_range: No filter
+  granularity_sqla: hour_start_utc
+  time_grain_sqla: PT1H
+  row_limit: 1000
+  adhoc_filters: []
+  metrics:
+  - expressionType: SIMPLE
+    column:
+      column_name: pm25_avg
+    aggregate: AVG
+    label: "PM2.5 (\xB5g/m\xB3)"
+  groupby:
+  - station_name
+  x_axis: hour_start_utc
+  show_legend: true
+  rich_tooltip: true
+  x_axis_title: Observation hour (UTC)
+  y_axis_title: "PM2.5 (\xB5g/m\xB3)"
+query_context: null
+cache_timeout: null
+uuid: 88160af8-ac17-4a0b-ad80-2f8743c0c2cf
+version: 1.0.0
+dataset_uuid: bf4900d9-f3f4-470f-b816-3ce7ee4db202

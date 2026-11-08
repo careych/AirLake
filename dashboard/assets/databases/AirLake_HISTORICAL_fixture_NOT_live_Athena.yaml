@@ -1,0 +1,18 @@
+database_name: "AirLake HISTORICAL fixture \u2014 NOT live Athena"
+sqlalchemy_uri: sqlite:////app/dev/gold.sqlite
+cache_timeout: null
+expose_in_sqllab: true
+allow_run_async: false
+allow_ctas: false
+allow_cvas: false
+allow_dml: false
+allow_file_upload: false
+extra:
+  metadata_params: {}
+  engine_params: {}
+  metadata_cache_timeout: {}
+  schemas_allowed_for_file_upload: []
+impersonate_user: false
+configuration_method: sqlalchemy_form
+uuid: c7ee50ea-294d-4c62-b974-e4c12b7e7512
+version: 1.0.0

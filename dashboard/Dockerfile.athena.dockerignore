@@ -1,0 +1,4 @@
+**
+!dashboard/
+!dashboard/requirements-athena.txt
+!dashboard/Dockerfile.athena

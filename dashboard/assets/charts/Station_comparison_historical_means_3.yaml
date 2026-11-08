@@ -1,0 +1,37 @@
+slice_name: "Station comparison \u2014 historical means"
+description: null
+certified_by: null
+certification_details: null
+viz_type: table
+params:
+  datasource: 1__table
+  viz_type: table
+  time_range: No filter
+  granularity_sqla: hour_start_utc
+  time_grain_sqla: PT1H
+  row_limit: 1000
+  adhoc_filters: []
+  metrics:
+  - expressionType: SIMPLE
+    column:
+      column_name: pm25_avg
+    aggregate: AVG
+    label: "PM2.5 historical mean (\xB5g/m\xB3)"
+  - expressionType: SIMPLE
+    column:
+      column_name: aqi
+    aggregate: AVG
+    label: MVP AQI historical mean
+  groupby:
+  - station_name
+  x_axis: hour_start_utc
+  show_legend: true
+  rich_tooltip: true
+  x_axis_title: Observation hour (UTC)
+  y_axis_title: "PM2.5 (\xB5g/m\xB3)"
+  query_mode: aggregate
+query_context: null
+cache_timeout: null
+uuid: 9517d6ad-958a-48bf-9e07-705a2361adfa
+version: 1.0.0
+dataset_uuid: bf4900d9-f3f4-470f-b816-3ce7ee4db202
