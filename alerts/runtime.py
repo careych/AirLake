@@ -34,6 +34,8 @@ def validate_plan(plan):
             ("lambda", ""),
             ("subscriptions", "-subscriptions"),
             ("delivery_ledger", "-ledger"),
+            ("consumer_role", "-consumer"),
+            ("reader_role", "-reader"),
         ]
     ):
         raise InvalidAlert("Only the reviewed isolated staging names are supported")
@@ -42,6 +44,8 @@ def validate_plan(plan):
         or names["log_group"] != "/aws/lambda/" + scope
     ):
         raise InvalidAlert("Unexpected staging workgroup/log scope")
+    if plan["secrets"]["name"] != "airlake/alert-staging-v1/telegram":
+        raise InvalidAlert("Only the dedicated staging secret name is supported")
     settings = dict(plan["reader"])
     settings["allowed_tables"] = tuple(tuple(v) for v in settings["allowed_tables"])
     settings["location_ids"] = tuple(settings["location_ids"])

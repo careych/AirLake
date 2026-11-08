@@ -252,6 +252,7 @@ class PreparationTests(unittest.TestCase):
             "artifact": self.artifact,
             "manifest_path": self.manifest,
             "secret_arn": self.secret,
+            "test_bot_id": "900001",
             "recipient_file": self.recipient,
             "principal": "arn:aws:iam::701364614078:role/FixtureOperator",
             "output": self.directory / "prepared",
@@ -269,6 +270,26 @@ class PreparationTests(unittest.TestCase):
         self.assertEqual("0", env["AIRLAKE_ALERT_DELIVERY_ENABLED"])
         self.assertNotIn("TELEGRAM_TOKEN", env)
         self.assertEqual(self.secret, env["TELEGRAM_TOKEN_SECRET_ARN"])
+        self.assertEqual("900001", env["AIRLAKE_ALERT_TEST_BOT_ID"])
+        policy = json.loads((output / "consumer-policy.json").read_text())
+        secret_statement = next(
+            s
+            for s in policy["Statement"]
+            if s["Action"] == ["secretsmanager:GetSecretValue"]
+        )
+        self.assertEqual([self.secret], secret_statement["Resource"])
+        subscription_statement = next(
+            s
+            for s in policy["Statement"]
+            if s["Resource"]
+            == [
+                "arn:aws:dynamodb:ap-southeast-2:701364614078:table/airlake-alert-staging-v1-subscriptions"
+            ]
+        )
+        self.assertEqual(
+            {"ForAllValues:StringEquals": {"dynamodb:LeadingKeys": ["101"]}},
+            subscription_statement["Condition"],
+        )
         for name in ["deploy-disabled.sh", "enable-test.sh"]:
             subprocess.run(
                 ["sh", "-n", str(output / name)], check=True, capture_output=True
@@ -289,4 +310,10 @@ class PreparationTests(unittest.TestCase):
         self.artifact.write_bytes(b"changed")
         with self.assertRaises(ValueError):
             self.run_prepare()
+        self.assertFalse((self.directory / "prepared").exists())
+
+    def test_invalid_bot_identity_fails_before_private_output_creation(self):
+        for value in (None, "", "0", "-900001", "0900001"):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                self.run_prepare(test_bot_id=value)
         self.assertFalse((self.directory / "prepared").exists())
