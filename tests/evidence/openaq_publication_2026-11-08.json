@@ -1,0 +1,171 @@
+{
+  "verification_date": "2026-11-08",
+  "kind": "openaq",
+  "branch": "feat/openaq-incremental",
+  "review_base_main": "3e25394ff91554336f26bbb6e2d2a2d4807c1100",
+  "pr6": {
+    "merged": true,
+    "merge_commit": "3e25394ff91554336f26bbb6e2d2a2d4807c1100",
+    "head": "919a9a4aaff748919ce1bfad38c62caa19f3ce82"
+  },
+  "base_update": "Private source snapshot retained; clean tracked baseline fast-forwarded to latest main; original module files byte-preserved before reviewed corrections",
+  "tests": {
+    "python_passed": 241,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "combined_latest_main_overlay_passed": 255,
+    "gold_48": "Earlier real run retained; not repeated: Gold/P0 production bytes unchanged"
+  },
+  "checks": {
+    "ruff_lint": "PASS",
+    "ruff_format": "PASS",
+    "uv_lock_offline": "PASS",
+    "secret_scan": "PASS: known private credential comparison and sensitive-pattern checks",
+    "git_diff_check": "PASS"
+  },
+  "historical_acceptance": "openaq_incremental_2026-11-08.json",
+  "historical_acceptance_sha256": "7aa490b77d7d1c5d33c54d8f6b87a67f5a8afc6c3d1e3790212bff2d3bbce1f4",
+  "protected_sha256": {
+    "scripts/bronze_local.py": "8f2229b0a8d81d20d9ee3d24d47c12b01771b4b46dd96369c7fddb23fd5a6dd4",
+    "scripts/silver_batch.py": "71f9a2cc800e8ebde7987afea4c490c1ca9765ec41253e32766f0d1e48c12259",
+    "scripts/gold_batch.py": "f11d7e954b8e40765f95833f5c76ee013d2bb6a44f9c97a4f79ad3b06dd45836",
+    "scripts/pipeline_config.py": "9c80bf359feb9ffcacfcf3edde04070765a6f63ab1f81b158673423025a456fc",
+    "real_producer.py": "43da589f9ed1eb239c9f519c053256b8cd3fc0f68e7bb92e836e1ce3bbd813da",
+    "tests/gold_p0_integration.py": "7bebab7d58750bc539b8907d76393c9e2cb204cb19a1264fc744d683b3f52a77",
+    "tests/evidence/athena_alert_mvp_2026-11-07.json": "9e48bceff2bdccf42d4e8915c9fb366e6cb67fed0908e857f0053e437df090dd",
+    "tests/evidence/athena_alert_readiness_2026-11-07.json": "114abb3e2a1064f429df019e9c910b831631945b5bd3ad14790bff1c78ac8a70",
+    "tests/evidence/athena_alert_runtime_2026-11-07.json": "767ad1064678630c118f7bda1a1fc38c1c2b00d38109934db39510fa2336ebd5",
+    "tests/evidence/aws_iceberg_smoke_2026-10-29.json": "f8f47ac3258374b54e52137520c5b3c85bf23f7cbf2acebf8a526495ec67b3ae",
+    "tests/evidence/cloud_wiring_readiness.json": "85ac639c9cdd53b4b6616415d93cd3df6149fd79b33fff9aa41313697194009b",
+    "tests/evidence/gold_dimension_name_repair_2026-10-25.json": "0b17ebbbe33b762ebb6379278278f963b1929dc1e36270c5cbbe54ed2042182c",
+    "tests/evidence/gold_to_alert_local_2026-11-07.json": "658fc888c36e647b8b8ce973db5cd34468810506d13b416686467535808694db",
+    "tests/evidence/publication_validation_2026-11-07.json": "d53f6cdcbf872744205200f061c0e52d35b2b2a9e63695d2d8090ee173671bed",
+    "tests/evidence/real_openaq_2026-11-06.json": "f6124f921dd02c3dedd5a166558c65c922f52ed8ef0aa9def2e4f8ab6f83e6df",
+    "tests/evidence/real_openaq_cloud_2026-11-07.json": "4a4e9c2f5b24dc39a89c2a0eb629a6f47386caeaf1f2d668f1735005a00dd9bc"
+  },
+  "source_sha256_at_review": {
+    "docs/openaq-incremental.md": "84c17e939ef7136abdca57021ff34edd758192b31ebe34a4d4fceed51a0ccd61",
+    "ingestion/__init__.py": "f95e0d6a1d657238802181745526decb1095b5fee666184daac8fce25d3b913f",
+    "ingestion/local_pipeline.py": "1a19bb5eaed65263f7f1d8ed40e953dacfb49d8297784e68f3c0806a8651c152",
+    "ingestion/openaq.py": "bab5afad3196da5472ef64770f7402d6f1cb35d410951a5551d8e1b458728c34",
+    "tests/evidence/openaq_incremental_2026-11-08.json": "7aa490b77d7d1c5d33c54d8f6b87a67f5a8afc6c3d1e3790212bff2d3bbce1f4",
+    "tests/test_incremental_openaq.py": "3e0ca3b2e4b16a592e5222cb105bdae2c4979d2f9ee0f947a47c4944382b8837"
+  },
+  "reviewed_files": [
+    "docs/openaq-incremental.md",
+    "ingestion/__init__.py",
+    "ingestion/local_pipeline.py",
+    "ingestion/openaq.py",
+    "tests/evidence/openaq_incremental_2026-11-08.json",
+    "tests/evidence/openaq_publication_2026-11-08.json",
+    "tests/test_incremental_openaq.py"
+  ],
+  "not_executed": [
+    "AWS APIs or Athena queries",
+    "OpenAQ API polling or Kafka production during publication",
+    "Gold/warehouse/checkpoint changes",
+    "Terraform or EC2 operations"
+  ],
+  "capture_note": "Recorded before focused Git commits; hashes identify reviewed bytes, not a claim the baseline already contains them.",
+  "confirmed_source_requests": [
+    {
+      "sensor": 13502151,
+      "endpoint": "https://api.openaq.org/v3/sensors/13502151/measurements",
+      "page": 1,
+      "limit": 100,
+      "datetime_from": "2026-11-07T02:45:37Z",
+      "datetime_to": "2026-11-08T02:45:37Z",
+      "unique_acknowledged_records": 100
+    },
+    {
+      "sensor": 13502151,
+      "endpoint": "https://api.openaq.org/v3/sensors/13502151/measurements",
+      "page": 2,
+      "limit": 100,
+      "datetime_from": "2026-11-07T02:45:37Z",
+      "datetime_to": "2026-11-08T02:45:37Z",
+      "unique_acknowledged_records": 100
+    },
+    {
+      "sensor": 13502151,
+      "endpoint": "https://api.openaq.org/v3/sensors/13502151/measurements",
+      "page": 3,
+      "limit": 100,
+      "datetime_from": "2026-11-07T02:45:37Z",
+      "datetime_to": "2026-11-08T02:45:37Z",
+      "unique_acknowledged_records": 88
+    },
+    {
+      "sensor": 13502154,
+      "endpoint": "https://api.openaq.org/v3/sensors/13502154/measurements",
+      "page": 1,
+      "limit": 100,
+      "datetime_from": "2026-11-07T02:45:37Z",
+      "datetime_to": "2026-11-08T02:45:37Z",
+      "unique_acknowledged_records": 100
+    },
+    {
+      "sensor": 13502154,
+      "endpoint": "https://api.openaq.org/v3/sensors/13502154/measurements",
+      "page": 2,
+      "limit": 100,
+      "datetime_from": "2026-11-07T02:45:37Z",
+      "datetime_to": "2026-11-08T02:45:37Z",
+      "unique_acknowledged_records": 100
+    },
+    {
+      "sensor": 13502154,
+      "endpoint": "https://api.openaq.org/v3/sensors/13502154/measurements",
+      "page": 3,
+      "limit": 100,
+      "datetime_from": "2026-11-07T02:45:37Z",
+      "datetime_to": "2026-11-08T02:45:37Z",
+      "unique_acknowledged_records": 47
+    },
+    {
+      "sensor": 14581375,
+      "endpoint": "https://api.openaq.org/v3/sensors/14581375/measurements",
+      "page": 1,
+      "limit": 100,
+      "datetime_from": "2026-11-07T02:45:37Z",
+      "datetime_to": "2026-11-08T02:45:37Z",
+      "unique_acknowledged_records": 24
+    }
+  ],
+  "max_records_semantics": "Per invocation across all stations: cap on newly acknowledged publications, not per API request or per station; API pages have stable limit=100.",
+  "retained_table_metadata_verification": [
+    {
+      "table": "live.bronze.aq_measurements",
+      "retained_snapshot_set_matches": true,
+      "current_snapshot": 7291079704347038186,
+      "metadata_sha256": "62cd6f06384768a2162deba98a138f8c1c93dca79ddc1f5736ee774fc4f3826e"
+    },
+    {
+      "table": "live.silver.aq_measurements",
+      "retained_snapshot_set_matches": true,
+      "current_snapshot": 5404878621554237205,
+      "metadata_sha256": "3fd64460b7b434dd5dfd27c230cb701bb08d6f754f3569aca9b2452b9fb71d4a"
+    },
+    {
+      "table": "live.silver.aqi_breakpoints",
+      "retained_snapshot_set_matches": true,
+      "current_snapshot": 4511745389782850668,
+      "metadata_sha256": "2873f8109763d46341a96a267289c305e31f97210fc0138b668176fa41672097"
+    },
+    {
+      "table": "live.gold.dim_location",
+      "retained_snapshot_set_matches": true,
+      "current_snapshot": 9201257557945142830,
+      "metadata_sha256": "9951cddd64cf73399ffb1fa957be216d4129b7f433ac85d164b994c977aeeebb"
+    },
+    {
+      "table": "live.gold.pm25_aqi_hourly",
+      "retained_snapshot_set_matches": true,
+      "current_snapshot": 2172688521768576744,
+      "metadata_sha256": "6485b7d748863186e0a4bbe31d9ab495ac72305cc34d1b3a2381ba4d09648e72"
+    }
+  ],
+  "count_source": "559/559/3/72 are retained actual Spark result counts, reconciled to private report; metadata snapshot sets are separately checked and are not independent row counts.",
+  "review_changes": "Documentation clarification only; ingestion implementation unchanged from accepted source."
+}
