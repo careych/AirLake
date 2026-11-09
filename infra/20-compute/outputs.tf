@@ -24,3 +24,13 @@ output "trino_port" {
   description = "Cổng kết nối HTTP/JDBC của Trino"
   value       = 8080
 }
+
+output "superset_public_url" {
+  description = "Địa chỉ truy cập Web UI của Superset qua Application Load Balancer"
+  value       = "http://${aws_lb.web.dns_name}"
+}
+
+output "superset_private_ip" {
+  description = "Địa chỉ IP nội bộ của máy chủ Superset"
+  value       = aws_instance.superset.private_ip
+}
