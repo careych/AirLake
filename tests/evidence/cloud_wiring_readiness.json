@@ -1,0 +1,484 @@
+{
+  "scope": "Two cloud wiring blockers only; offline startup uses mocked AWS identity and local Hadoop storage, not cloud interoperability",
+  "retained_acceptance_sha256": "f6124f921dd02c3dedd5a166558c65c922f52ed8ef0aa9def2e4f8ab6f83e6df",
+  "previous_source_sha256": {
+    "scripts/pipeline_config.py": "9c1648b41622891e18e84c82f5d00b0259ad39b60727ef63f673d2e50d733d8a",
+    "scripts/bronze_local.py": "f7ec6cc4adb273b6250e6b6da3f04d03f36c9cb64366efbea6936a0604fc7b63"
+  },
+  "current_source_sha256": {
+    "scripts/pipeline_config.py": "9c80bf359feb9ffcacfcf3edde04070765a6f63ab1f81b158673423025a456fc",
+    "scripts/bronze_local.py": "8f2229b0a8d81d20d9ee3d24d47c12b01771b4b46dd96369c7fddb23fd5a6dd4"
+  },
+  "unchanged_bronze_transformation_ast_sha256": "4d11a0d8b3d5c371bedf2157bd8f5d4bf1620cbc4760c09dc77064e10eb541c2",
+  "unchanged_bronze_source_schema": true,
+  "unchanged_business_and_historical_files": {
+    "scripts/silver_batch.py": true,
+    "scripts/gold_batch.py": true,
+    "scripts/real_batch.py": true,
+    "tests/evidence/real_openaq_2026-11-06.json": true,
+    "tests/evidence/aws_iceberg_smoke_2026-10-29.json": true,
+    "tests/evidence/gold_dimension_name_repair_2026-10-25.json": true
+  },
+  "offline_integration": {
+    "aws_identity": "MOCKED for offline startup only",
+    "aws_api_calls": 0,
+    "cloud_ddl": 0,
+    "producer_calls": 0,
+    "topic": "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa",
+    "explicit_jars": [
+      "org.apache.iceberg_iceberg-spark-runtime-3.5_2.12-1.12.0.jar",
+      "iceberg-aws-bundle-1.12.0.jar",
+      "org.apache.spark_spark-sql-kafka-0-10_2.12-3.5.9.jar",
+      "org.apache.spark_spark-token-provider-kafka-0-10_2.12-3.5.9.jar",
+      "org.apache.kafka_kafka-clients-3.4.1.jar",
+      "org.apache.commons_commons-pool2-2.11.1.jar"
+    ],
+    "class_origins": {
+      "org.apache.spark.sql.kafka010.KafkaSourceProvider": "file:<HOME>/.ivy2/jars/org.apache.spark_spark-sql-kafka-0-10_2.12-3.5.9.jar",
+      "org.apache.spark.kafka010.KafkaTokenUtil": "file:<HOME>/.ivy2/jars/org.apache.spark_spark-token-provider-kafka-0-10_2.12-3.5.9.jar",
+      "org.apache.kafka.clients.consumer.KafkaConsumer": "file:<HOME>/.ivy2/jars/org.apache.kafka_kafka-clients-3.4.1.jar",
+      "org.apache.commons.pool2.impl.GenericObjectPool": "file:<HOME>/.ivy2/jars/org.apache.commons_commons-pool2-2.11.1.jar",
+      "javax.annotation.Nullable": "file:<REPOSITORY>/.venv/lib/python3.12/site-packages/pyspark/jars/jsr305-3.0.0.jar",
+      "org.apache.iceberg.aws.glue.GlueCatalog": "file:<HOME>/.ivy2/jars/org.apache.iceberg_iceberg-spark-runtime-3.5_2.12-1.12.0.jar",
+      "org.apache.iceberg.aws.s3.S3FileIO": "file:<HOME>/.ivy2/jars/org.apache.iceberg_iceberg-spark-runtime-3.5_2.12-1.12.0.jar",
+      "software.amazon.awssdk.services.s3.S3Client": "file:<HOME>/.local/share/airlake/dependencies/iceberg/1.12.0/iceberg-aws-bundle-1.12.0.jar",
+      "software.amazon.awssdk.services.glue.GlueClient": "file:<HOME>/.local/share/airlake/dependencies/iceberg/1.12.0/iceberg-aws-bundle-1.12.0.jar",
+      "software.amazon.awssdk.services.sts.StsClient": "file:<HOME>/.local/share/airlake/dependencies/iceberg/1.12.0/iceberg-aws-bundle-1.12.0.jar",
+      "software.amazon.awssdk.auth.credentials.ProcessCredentialsProvider": "file:<HOME>/.local/share/airlake/dependencies/iceberg/1.12.0/iceberg-aws-bundle-1.12.0.jar",
+      "software.amazon.awssdk.http.apache5.Apache5HttpClient": "file:<HOME>/.local/share/airlake/dependencies/iceberg/1.12.0/iceberg-aws-bundle-1.12.0.jar"
+    },
+    "first_query": {
+      "input_rows": 200,
+      "output_rows": 200
+    },
+    "resumed_query": {
+      "input_rows": 0,
+      "output_rows": 200
+    },
+    "retained_local_snapshots": [
+      2566872451122072278
+    ],
+    "checkpoint_metadata_present": true,
+    "tests_run": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "status": "PASS"
+  },
+  "checkpoint_unit_tests": {
+    "passed": 10,
+    "failed": 0,
+    "errors": 0,
+    "coverage": [
+      "outside paths",
+      "symlink escapes and nested symlinks",
+      "marker symlink",
+      "unbound/malformed checkpoint",
+      "incompatible table/broker/topic",
+      "missing bound checkpoint",
+      "compatible reuse without changing files"
+    ]
+  },
+  "gold_regression": {
+    "tests_run": 48,
+    "failure_count": 0,
+    "error_count": 0,
+    "skipped_count": 0,
+    "results": [
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_absent_target_key_with_complete_metadata_is_created_safely",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_all_three_mapped_stations_are_supported",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_blank_source_name_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_blank_target_names_are_rejected_without_automatic_repair",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_conflicting_source_coordinates_are_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_conflicting_source_names_are_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_duplicate_dimension_key_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_duplicate_fact_key_cannot_leave_partial_dimension_write",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_empty_silver_cannot_hide_unrepairable_null_name",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_existing_infinite_aggregate_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_existing_nan_aggregate_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_existing_orphan_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_existing_valid_name_and_payload_are_preserved",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_finite_inputs_with_nonfinite_aggregate_are_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_finite_positive_measurements_are_accepted",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_first_run_without_gold_or_breakpoint_tables",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_identical_bronze_metadata_allows_name_repair",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_existing_fact_value_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_fact_target_does_not_initialize_breakpoints",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_legacy_station_mapping_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_legacy_target_coordinates_are_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_numeric_input_does_not_initialize_breakpoints",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_invalid_source_coordinates_are_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_largest_finite_single_measurement_is_accepted",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_legacy_null_name_absent_from_silver_is_repaired",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_legacy_null_name_with_empty_silver_is_repaired",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_legacy_null_name_without_metadata_rejects_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_legacy_repair_cannot_introduce_an_unsupported_station_mapping",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_legacy_repair_rejection_does_not_initialize_breakpoints",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_missing_bronze_metadata_is_rejected_by_real_builder",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_missing_metadata_and_absent_target_key_cannot_write_orphan",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_missing_metadata_does_not_initialize_breakpoints",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_mixed_valid_and_invalid_bronze_metadata_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_nan_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_negative_infinity_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_negative_measurement_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_dimension_key_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_fact_key_cannot_leave_partial_dimension_write",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_measurement_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_name_is_repaired_from_unique_bronze_metadata",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_name_with_missing_bronze_metadata_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_null_source_name_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_positive_infinity_is_rejected",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_unchanged_rerun_preserves_rows_and_snapshots",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_unknown_legacy_target_key_is_rejected_before_writes",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_valid_bronze_metadata_covers_silver_location",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_valid_legacy_name_does_not_require_bronze_metadata",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      },
+      {
+        "test": "__main__._worker.<locals>.GoldP0IntegrationTests.test_zero_is_accepted",
+        "status": "PASS",
+        "failures": [],
+        "errors": [],
+        "skipped": []
+      }
+    ]
+  },
+  "kafka_artifacts_sha256": {
+    "org.apache.spark_spark-sql-kafka-0-10_2.12-3.5.9.jar": "fed393dcc3ef70611fe3d4f35ae78a8ea7c55301fd4cdd66c5dc97fcfaa5a00f",
+    "org.apache.spark_spark-token-provider-kafka-0-10_2.12-3.5.9.jar": "e82612e6070438c5ea48b08c74f367a6d214a390bdf6dcf3ff316dca592ddda5",
+    "org.apache.kafka_kafka-clients-3.4.1.jar": "9d0a9058c8ede79db6e54ae378ed16fe8d1bead2894635a4aa6aa0b7981668c6",
+    "org.apache.commons_commons-pool2-2.11.1.jar": "ea0505ee7515e58b1ac0e686e4d1a5d9f7d808e251a61bc371aa0595b9963f83",
+    "com.google.code.findbugs_jsr305-3.0.0.jar": "bec0b24dcb23f9670172724826584802b80ae6cbdaba03bdebdef9327b962f6a"
+  },
+  "runtime_versions": {
+    "spark": "3.5.9",
+    "scala": "2.12",
+    "java": "17",
+    "iceberg": "1.12.0",
+    "kafka_client": "3.4.1"
+  },
+  "duplicate_resolution": "JSR-305 3.0.0 cached and Spark-bundled bytes match; only bundled copy loaded. Other conflicting copies are rejected.",
+  "downloads": 0,
+  "hadoop_s3a_added": false,
+  "complete_200_record_replay_repeated": false,
+  "local_checkpoint_policy": "Retain checkpoint and binding in the single fixed working directory; no deletion, offset reset, or adoption of incompatible state",
+  "aws_preflight": {
+    "status": "BLOCKED_AUTHENTICATION",
+    "cli_attempts": [
+      {
+        "exit": 255,
+        "error": "Session expired before caller identity verified"
+      },
+      {
+        "after_user_reported_renewal": true,
+        "exit": 255,
+        "error": "Agent still reports expired session"
+      }
+    ],
+    "airlake_spark_nonsecret_profile_validation": {
+      "exists": true,
+      "region_matches": true,
+      "credential_process_matches": true
+    },
+    "java_identity": "NOT RUN: stopped on CLI authentication failure",
+    "s3_glue_athena_inventory": "NOT RUN: stopped on CLI authentication failure",
+    "write_permissions": "UNVERIFIED; read success would not prove write permission",
+    "reauth_or_credential_context_comparison": "Requested from Terminal; no credentials requested or profile changes made"
+  },
+  "pure_suite": {
+    "passed": 112,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "command": ".venv/bin/python -B -m unittest discover -s tests -p 'test_*.py' -q"
+  },
+  "git_publication": false,
+  "ruff_lint": "PASS",
+  "ruff_format": "PASS",
+  "protected_runtime": {
+    "files_checked": 1499,
+    "changed": [],
+    "method": "Data size/mtime; warehouse/checkpoints/Derby metadata SHA256+size/mtime"
+  },
+  "plan_sha256": "8732e3cd5c459ad487e9f2a18420673652764d5604b83ae7d7a9d6eec59376ef"
+}

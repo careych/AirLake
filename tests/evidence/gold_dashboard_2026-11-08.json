@@ -1,0 +1,172 @@
+{
+  "verification_date": "2026-11-08",
+  "status": "ACTUAL LOCAL SUPERSET DASHBOARD PASS; HISTORICAL FIXTURE; LIVE ATHENA NOT TESTED",
+  "base_main": "f3f86f8b2a22953a2e181c5705b8ea72ed7d48eb",
+  "references": {
+    "khue": "b5a188d1ffdf1c00a01b2a4e925660b9c8c9314c",
+    "thinh": "8af4f39cdd7abc3b5f6deb26d644f665105599d3",
+    "findings": "EC2/Docker bootstrap and existing Superset load-test references; no deployable dashboard assets imported from teammate branches"
+  },
+  "fixture_manifest": {
+    "mode": "HISTORICAL_ACCEPTANCE_FIXTURE; NOT LIVE ATHENA",
+    "source_sha256": {
+      "tests/evidence/real_openaq_2026-11-06.json": "f6124f921dd02c3dedd5a166558c65c922f52ed8ef0aa9def2e4f8ab6f83e6df",
+      "tests/evidence/real_openaq_cloud_2026-11-07.json": "4a4e9c2f5b24dc39a89c2a0eb629a6f47386caeaf1f2d668f1735005a00dd9bc"
+    },
+    "counts": {
+      "facts": 23,
+      "stations": 1,
+      "latest_rows": 1
+    },
+    "timezone": "UTC",
+    "freshness_threshold_hours": 24,
+    "synthetic_measurements": false
+  },
+  "authenticated_api_checks": {
+    "mode": "ACTUAL LOCAL SUPERSET; HISTORICAL FIXTURE; NOT LIVE ATHENA",
+    "dashboard_url": "http://127.0.0.1:18088/superset/dashboard/airlake-historical-gold/",
+    "chart_checks": [
+      {
+        "chart_id": 1,
+        "title": "PM2.5 hourly trend (UTC)",
+        "authenticated_query_rows": 23
+      },
+      {
+        "chart_id": 2,
+        "title": "MVP AQI hourly trend (UTC)",
+        "authenticated_query_rows": 23
+      },
+      {
+        "chart_id": 3,
+        "title": "Station comparison — historical means",
+        "authenticated_query_rows": 23
+      },
+      {
+        "chart_id": 4,
+        "title": "Latest observation by station (UTC)",
+        "authenticated_query_rows": 1
+      },
+      {
+        "chart_id": 5,
+        "title": "Freshness — age since hour end (hours)",
+        "authenticated_query_rows": 1
+      }
+    ],
+    "dashboard_id": 1,
+    "dataset_ids": {
+      "gold_hourly": 1,
+      "gold_latest": 2
+    },
+    "station_count": 1,
+    "time_zone": "UTC",
+    "athena_queries_executed": 0
+  },
+  "actual_browser_check": {
+    "mode": "ACTUAL AUTHENTICATED LOCAL SUPERSET; HISTORICAL FIXTURE",
+    "dashboard_url": "http://127.0.0.1:18088/superset/dashboard/airlake-historical-gold/",
+    "five_panels_rendered": true,
+    "browser_timezone": "Asia/Ho_Chi_Minh",
+    "chart_http_statuses": [
+      200,
+      200,
+      200,
+      200,
+      200,
+      200
+    ],
+    "native_station_filter_applied": true,
+    "historical_stale_label_visible": true,
+    "athena_queries_executed": 0,
+    "canvas_axis_text": [
+      "0",
+      "01 PM",
+      "04 AM",
+      "04 PM",
+      "08 AM",
+      "08 PM",
+      "1/1",
+      "10",
+      "100",
+      "20",
+      "30",
+      "40",
+      "50",
+      "60",
+      "80",
+      "90",
+      "All",
+      "Công viên hồ điều hòa Nhân Chính, Khuất Duy Tiến-4916745",
+      "Fri 04",
+      "Hourly MVP AQI",
+      "Inv",
+      "Observation hour (UTC)",
+      "PM2.5 (µg/m³)"
+    ]
+  },
+  "actual_bundle_import_http": 200,
+  "imported_yaml_files": 10,
+  "superset_version": "6.1.0",
+  "base_image_digest": "sha256:16b50bbef6648912a79e3293d418fefa743ce555d36c5af6b85d859119ed7f88",
+  "athena_driver": {
+    "image_built": true,
+    "PyAthena": "3.14.1",
+    "SQLAlchemy": "1.4.54",
+    "dialect_import": "AthenaRestDialect PASS",
+    "live_queries": 0,
+    "credentials_mounted": false
+  },
+  "tests": {
+    "python": {
+      "passed": 174,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ruff": "PASS; 36 files",
+    "lock_check_offline": "PASS"
+  },
+  "browser_correction": "Initial browser check found removed dist_bar plugin; replaced with aggregate table, re-exported/reimported and verified all five panels without errors.",
+  "limits": [
+    "Historical accepted rows, not an authenticated AWS dashboard",
+    "Only one accepted station exists in fixture; no invented comparison stations",
+    "Athena requires separate query approval and verified runtime IAM/credential configuration"
+  ],
+  "protected_sha256": {
+    "scripts/bronze_local.py": "8f2229b0a8d81d20d9ee3d24d47c12b01771b4b46dd96369c7fddb23fd5a6dd4",
+    "scripts/silver_batch.py": "71f9a2cc800e8ebde7987afea4c490c1ca9765ec41253e32766f0d1e48c12259",
+    "scripts/gold_batch.py": "f11d7e954b8e40765f95833f5c76ee013d2bb6a44f9c97a4f79ad3b06dd45836",
+    "scripts/pipeline_config.py": "9c80bf359feb9ffcacfcf3edde04070765a6f63ab1f81b158673423025a456fc",
+    "real_producer.py": "43da589f9ed1eb239c9f519c053256b8cd3fc0f68e7bb92e836e1ce3bbd813da",
+    "tests/evidence/aws_iceberg_smoke_2026-10-29.json": "f8f47ac3258374b54e52137520c5b3c85bf23f7cbf2acebf8a526495ec67b3ae",
+    "tests/evidence/cloud_wiring_readiness.json": "85ac639c9cdd53b4b6616415d93cd3df6149fd79b33fff9aa41313697194009b",
+    "tests/evidence/gold_dimension_name_repair_2026-10-25.json": "0b17ebbbe33b762ebb6379278278f963b1929dc1e36270c5cbbe54ed2042182c",
+    "tests/evidence/gold_to_alert_local_2026-11-07.json": "658fc888c36e647b8b8ce973db5cd34468810506d13b416686467535808694db",
+    "tests/evidence/publication_validation_2026-11-07.json": "d53f6cdcbf872744205200f061c0e52d35b2b2a9e63695d2d8090ee173671bed",
+    "tests/evidence/real_openaq_2026-11-06.json": "f6124f921dd02c3dedd5a166558c65c922f52ed8ef0aa9def2e4f8ab6f83e6df",
+    "tests/evidence/real_openaq_cloud_2026-11-07.json": "4a4e9c2f5b24dc39a89c2a0eb629a6f47386caeaf1f2d668f1735005a00dd9bc"
+  },
+  "source_sha256_at_final_review": {
+    "dashboard/Dockerfile.athena": "db00e18062e393f6aa0cac8b4a8b67d8f3accba9da587edace60bacc9b90de1f",
+    "dashboard/Dockerfile.athena.dockerignore": "2b0591ef3eddc22b2d696c2fd096877a4ad0766020febd3bde3e91d30c53701a",
+    "dashboard/__init__.py": "b005764a3ea8f229935d118947e475e03fd494b2602f9a4a73c12acc97dc2d8b",
+    "dashboard/assets/charts/Freshness_age_since_hour_end_hours_5.yaml": "536e6becf53e7c9cda49ac8f711d48b451c5b3cc4c1ff7d24d90d98590420a38",
+    "dashboard/assets/charts/Latest_observation_by_station_UTC_4.yaml": "e2709cfe4c5e132fe66cd58cdad4b4fce3f2d106745ee4b1bf54e796b58c9290",
+    "dashboard/assets/charts/MVP_AQI_hourly_trend_UTC_2.yaml": "d8e1a27d609f43b0d55487bc403998738d6c38876033bfc81f073bc5c7ef6fc0",
+    "dashboard/assets/charts/PM2.5_hourly_trend_UTC_1.yaml": "d2e4494aba8317343645e0c6de92cf62bc5bb3b484f8924ef15b6ec28b5b2327",
+    "dashboard/assets/charts/Station_comparison_historical_means_3.yaml": "e97384913443a2fc7f205236c186ed9923795eb7464e1a8efdef5dc8799a012e",
+    "dashboard/assets/dashboards/AirLake_HISTORICAL_July_2025_UTC_NOT_LIVE_1.yaml": "b170ab511f5a8183b7d5989a190910544bc93986f76d201afbf4711355b3238a",
+    "dashboard/assets/databases/AirLake_HISTORICAL_fixture_NOT_live_Athena.yaml": "4ce9b51cac0fabdb38d27b490e8b31e0d822306a98a255807903bf88af7fe1a3",
+    "dashboard/assets/datasets/AirLake_HISTORICAL_fixture_NOT_live_Athena/gold_hourly_1.yaml": "0ed27fd23de683a478d82aa8e7eaa0276f9c15067ec1986e06dc024cf3dbf099",
+    "dashboard/assets/datasets/AirLake_HISTORICAL_fixture_NOT_live_Athena/gold_latest_2.yaml": "2d136f555e6545e53046f20c2a2a0f65b3fadc4ba18a4f2d52ce5039b5715b43",
+    "dashboard/assets/metadata.yaml": "5388728d0ed0346dd4677b14cb87f359569d26f40ffebb82034c8242862750f5",
+    "dashboard/assets.py": "693951f17ddaf6cbed101ff915bd1d071e82481cf1e609cce4b23ee5e8f7acde",
+    "dashboard/browser_smoke.py": "e07c41ec5880b3e45f0ae23d5fd322a6cc9bed93e1891b9116e488200a68803e",
+    "dashboard/dev.py": "e0d5e17831a71080830ea3ba3a73650fc6e07149c4413a21efc873483a5dede8",
+    "dashboard/install.py": "4cc42fee73b5db74c1e4e2831b89862d1493fd4e3e25f49d3ce0db39ad700eb3",
+    "dashboard/prepare.py": "d2ff48fe064765e65deea378b8288aa368dbada1969254c95dcf9f859f1beb63",
+    "dashboard/requirements-athena.txt": "abaa6062a13b330827730b207cd9bffe55ed58de84f5424e4e6ea71388740fe6",
+    "dashboard/requirements-ui.txt": "9543ee8d5286b69b696256b21d78ddfbeb5e6412e9839ea5a5f4917859257364",
+    "dashboard/sql/athena_gold.sql": "81f0f10703aa0ff6598af22754ef1c2e0ffcd7bcb574c4da6173afc44384ca6b",
+    "dashboard/sql/athena_latest.sql": "efc2208d6af1b2289e177c4d58755dc237d759ffe310873e48830dce1abc1f98"
+  }
+}

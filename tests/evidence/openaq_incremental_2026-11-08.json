@@ -1,0 +1,275 @@
+{
+  "verification_date": "2026-11-08",
+  "status": "REAL OPENAQ API → LOCAL KAFKA → BRONZE/SILVER/GOLD PASS; NOT AWS INGESTION",
+  "base_main": "f3f86f8b2a22953a2e181c5705b8ea72ed7d48eb",
+  "references": {
+    "nam": "7d4669c2604927eed3b6fb8875004d9d260e2694",
+    "reused": "pilot sensor map and API concepts; actual station metadata/API values; unchanged existing producer client/key and production transformations"
+  },
+  "source_window": {
+    "window_start_utc": "2026-11-07T02:45:37Z",
+    "window_end_utc": "2026-11-08T02:45:37Z"
+  },
+  "publication_counts_by_invocation": [
+    224,
+    200,
+    135,
+    0
+  ],
+  "actual_pilot_record_counts": {
+    "observed_at_utc": "2026-11-08T03:10:36.312758+00:00",
+    "stations": [
+      {
+        "location_id": 4946812,
+        "measurements": 288,
+        "earliest_utc": "2026-11-07T02:50:00Z",
+        "latest_utc": "2026-11-08T02:45:00Z",
+        "age_hours_at_verification": 0.427
+      },
+      {
+        "location_id": 4946813,
+        "measurements": 247,
+        "earliest_utc": "2026-11-07T02:50:00Z",
+        "latest_utc": "2026-11-08T02:45:00Z",
+        "age_hours_at_verification": 0.427
+      },
+      {
+        "location_id": 6123215,
+        "measurements": 24,
+        "earliest_utc": "2026-11-07T03:00:00Z",
+        "latest_utc": "2026-11-08T02:00:00Z",
+        "age_hours_at_verification": 1.177
+      }
+    ]
+  },
+  "kafka_independent_audit": {
+    "topic": "airlake_live_20261108_mvp",
+    "partition": 0,
+    "low_offset": 0,
+    "high_offset": 559,
+    "actual_consumed_records": 559,
+    "payload_counter_matches_acknowledged_outbox": true,
+    "group_offsets_committed": false,
+    "canonical_payload_multiset_sha256": "34fe8078235b4d9d56e4d7ec9486f5d4b46b3fec6dd16c27eb20eeca76a555d6"
+  },
+  "initial_pipeline": {
+    "bronze": {
+      "input_rows": 224,
+      "output_rows": 224
+    },
+    "silver": {
+      "source_count": 224,
+      "valid_count": 224,
+      "rejected_count": 0,
+      "duplicate_rows_removed": 0,
+      "deduplicated_source_count": 224,
+      "new_records_count": 224,
+      "source_keys_already_present": 0,
+      "output_count": 224,
+      "null_key_count": 0,
+      "duplicate_key_count": 0,
+      "null_value_count": 0,
+      "negative_value_count": 0,
+      "null_ingested_at_count": 0,
+      "null_parameter_count": 0,
+      "null_units_count": 0
+    },
+    "gold": {
+      "silver_source_count": 224,
+      "pm25_source_count": 224,
+      "non_pm25_source_count": 0,
+      "valid_pm25_count": 224,
+      "hourly_output_count": 44,
+      "invalid_pm25_count": 0,
+      "duplicate_hourly_key_count": 0,
+      "dimension_source_count": 3,
+      "dimension_output_count": 3,
+      "dimension_new_count": 3,
+      "dimension_changed_count": 0,
+      "hourly_new_count": 44,
+      "hourly_changed_count": 0,
+      "null_dimension_key_count": 0,
+      "null_hourly_key_count": 0,
+      "duplicate_dimension_key_count": 0,
+      "orphan_location_count": 0,
+      "invalid_hourly_output_count": 0,
+      "dimension_sha256": "1422e0922f0ed700b2d5d9e3c0d4ad54cdf27d5b772a5f51547bd9af2fc829da",
+      "hourly_sha256": "2e223ad59c950806fab1a22c582b2c260330fe9a67f8ba3e1a1372d24192ff75"
+    },
+    "counts": {
+      "BRONZE_TABLE": 224,
+      "SILVER_TABLE": 224,
+      "BREAKPOINT_TABLE": 7,
+      "DIMENSION_TABLE": 3,
+      "HOURLY_TABLE": 44
+    },
+    "unchanged_rerun": true
+  },
+  "final_pipeline": {
+    "bronze": {
+      "input_rows": 0,
+      "output_rows": 559
+    },
+    "silver": {
+      "source_count": 559,
+      "valid_count": 559,
+      "rejected_count": 0,
+      "duplicate_rows_removed": 0,
+      "deduplicated_source_count": 559,
+      "new_records_count": 0,
+      "source_keys_already_present": 559,
+      "output_count": 559,
+      "null_key_count": 0,
+      "duplicate_key_count": 0,
+      "null_value_count": 0,
+      "negative_value_count": 0,
+      "null_ingested_at_count": 0,
+      "null_parameter_count": 0,
+      "null_units_count": 0
+    },
+    "gold": {
+      "silver_source_count": 559,
+      "pm25_source_count": 559,
+      "non_pm25_source_count": 0,
+      "valid_pm25_count": 559,
+      "hourly_output_count": 72,
+      "invalid_pm25_count": 0,
+      "duplicate_hourly_key_count": 0,
+      "dimension_source_count": 3,
+      "dimension_output_count": 3,
+      "dimension_new_count": 0,
+      "dimension_changed_count": 0,
+      "hourly_new_count": 0,
+      "hourly_changed_count": 0,
+      "null_dimension_key_count": 0,
+      "null_hourly_key_count": 0,
+      "duplicate_dimension_key_count": 0,
+      "orphan_location_count": 0,
+      "invalid_hourly_output_count": 0,
+      "dimension_sha256": "1422e0922f0ed700b2d5d9e3c0d4ad54cdf27d5b772a5f51547bd9af2fc829da",
+      "hourly_sha256": "9e31937c232305f2d5b46e997a1f2f25f98a375d6d219778c53c9088a6380f25"
+    },
+    "counts": {
+      "BRONZE_TABLE": 559,
+      "SILVER_TABLE": 559,
+      "BREAKPOINT_TABLE": 7,
+      "DIMENSION_TABLE": 3,
+      "HOURLY_TABLE": 72
+    },
+    "bronze_rerun": {
+      "input_rows": 0,
+      "output_rows": 559
+    },
+    "snapshot_ids": {
+      "live.bronze.aq_measurements": [
+        5098633858045198167,
+        7291079704347038186
+      ],
+      "live.silver.aq_measurements": [
+        5404878621554237205,
+        5500088626799959911
+      ],
+      "live.silver.aqi_breakpoints": [
+        4511745389782850668
+      ],
+      "live.gold.dim_location": [
+        9201257557945142830
+      ],
+      "live.gold.pm25_aqi_hourly": [
+        2172688521768576744,
+        7410957442013907630
+      ]
+    },
+    "unchanged_rerun": true,
+    "independent_utc_mean_check": "PASS"
+  },
+  "outbox_pending": 0,
+  "final_api_rerun": {
+    "source": "LIVE OpenAQ API v3",
+    "published": 0,
+    "stations": [
+      {
+        "location_id": 4946812,
+        "sensor_id": 13502151,
+        "published": 0,
+        "fetched": 12,
+        "complete": true,
+        "source_name": "Công viên Nhân Chính - Khuất Duy Tiến",
+        "source_latest_utc": "2026-11-08T02:50:00Z",
+        "pending": 0
+      },
+      {
+        "location_id": 4946813,
+        "sensor_id": 13502154,
+        "published": 0,
+        "fetched": 12,
+        "complete": true,
+        "source_name": "Số 1 đường Giải Phóng - phường Bạch Mai - ĐHBK ",
+        "source_latest_utc": "2026-11-08T02:50:00Z",
+        "pending": 0
+      },
+      {
+        "location_id": 6123215,
+        "sensor_id": 14581375,
+        "published": 0,
+        "fetched": 1,
+        "complete": true,
+        "source_name": "Dragon",
+        "source_latest_utc": "2026-11-08T02:00:00Z",
+        "pending": 0
+      }
+    ],
+    "outbox_confirmed_total": 559,
+    "outbox_pending_total": 0
+  },
+  "tests": {
+    "python": {
+      "passed": 182,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "gold_spark": {
+      "passed": 48,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 125.754
+    },
+    "ruff": "PASS; 33 files",
+    "lock_check_offline": "PASS"
+  },
+  "reporting_correction": "Initial Python naive datetime display used host timezone; switched to Spark UTC JSON and verified actual source-hour/value reconciliation. Iceberg timestamps/calculations were not rewritten.",
+  "isolation": {
+    "topic": "airlake_live_20261108_mvp",
+    "runtime": "<EXTERNAL_RUN_ROOT>",
+    "catalog": "live",
+    "production_scripts_and_prior_evidence_sha256": {
+      "scripts/bronze_local.py": "8f2229b0a8d81d20d9ee3d24d47c12b01771b4b46dd96369c7fddb23fd5a6dd4",
+      "scripts/silver_batch.py": "71f9a2cc800e8ebde7987afea4c490c1ca9765ec41253e32766f0d1e48c12259",
+      "scripts/gold_batch.py": "f11d7e954b8e40765f95833f5c76ee013d2bb6a44f9c97a4f79ad3b06dd45836",
+      "scripts/pipeline_config.py": "9c80bf359feb9ffcacfcf3edde04070765a6f63ab1f81b158673423025a456fc",
+      "real_producer.py": "43da589f9ed1eb239c9f519c053256b8cd3fc0f68e7bb92e836e1ce3bbd813da",
+      "tests/evidence/aws_iceberg_smoke_2026-10-29.json": "f8f47ac3258374b54e52137520c5b3c85bf23f7cbf2acebf8a526495ec67b3ae",
+      "tests/evidence/cloud_wiring_readiness.json": "85ac639c9cdd53b4b6616415d93cd3df6149fd79b33fff9aa41313697194009b",
+      "tests/evidence/gold_dimension_name_repair_2026-10-25.json": "0b17ebbbe33b762ebb6379278278f963b1929dc1e36270c5cbbe54ed2042182c",
+      "tests/evidence/gold_to_alert_local_2026-11-07.json": "658fc888c36e647b8b8ce973db5cd34468810506d13b416686467535808694db",
+      "tests/evidence/publication_validation_2026-11-07.json": "d53f6cdcbf872744205200f061c0e52d35b2b2a9e63695d2d8090ee173671bed",
+      "tests/evidence/real_openaq_2026-11-06.json": "f6124f921dd02c3dedd5a166558c65c922f52ed8ef0aa9def2e4f8ab6f83e6df",
+      "tests/evidence/real_openaq_cloud_2026-11-07.json": "4a4e9c2f5b24dc39a89c2a0eb629a6f47386caeaf1f2d668f1735005a00dd9bc"
+    },
+    "cloud_operations": 0,
+    "existing_runtime_paths_not_used_as_targets": true
+  },
+  "limits": [
+    "Bounded one-window local result; no installed scheduler or AWS ingestion",
+    "At-least-once on crash between broker acceptance and local commit; Silver dedup remains necessary",
+    "One-hour overlap does not guarantee arbitrary late-data recovery",
+    "No official VN_AQI or complete-hour coverage claim"
+  ],
+  "source_sha256_at_final_review": {
+    "ingestion/__init__.py": "f95e0d6a1d657238802181745526decb1095b5fee666184daac8fce25d3b913f",
+    "ingestion/local_pipeline.py": "1a19bb5eaed65263f7f1d8ed40e953dacfb49d8297784e68f3c0806a8651c152",
+    "ingestion/openaq.py": "bab5afad3196da5472ef64770f7402d6f1cb35d410951a5551d8e1b458728c34"
+  }
+}

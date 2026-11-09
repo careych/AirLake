@@ -1,0 +1,333 @@
+{
+  "verification_date": "2026-11-07",
+  "branch": "feat/athena-alert-runtime",
+  "base_main": "f3f86f8b2a22953a2e181c5705b8ea72ed7d48eb",
+  "pr5_verified": "main merge has PR #5 tip c8ef8447da8e8dc39dd1789c446c412de9a938e0 as parent",
+  "status": "OFFLINE PASS; NOT DEPLOYED; LIVE ATHENA/TELEGRAM NOT TESTED",
+  "python_tests": {
+    "run": 200,
+    "passed": 200,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "previous_main_cases": 168,
+    "new_cases": 32,
+    "command": "python -B -m unittest discover -s tests -p 'test_*.py' -v",
+    "seconds": 0.633
+  },
+  "checks": {
+    "ruff_lint": "PASS",
+    "ruff_format": "PASS: 32 Python files",
+    "ast_parse": "PASS",
+    "uv_lock_check_offline": "PASS: 16 packages",
+    "git_diff_check": "PASS",
+    "secret_scan": "PASS for proposed changed files; no guarantee about all historical refs"
+  },
+  "gold_regression": {
+    "current_execution": "NOT RERUN: no Gold changes",
+    "retained_pr5_runtime_cases": 48,
+    "protected_files_match_origin_main": true,
+    "evidence_not_rewritten": true
+  },
+  "protected_sha256": {
+    "scripts/bronze_local.py": "8f2229b0a8d81d20d9ee3d24d47c12b01771b4b46dd96369c7fddb23fd5a6dd4",
+    "scripts/silver_batch.py": "71f9a2cc800e8ebde7987afea4c490c1ca9765ec41253e32766f0d1e48c12259",
+    "scripts/gold_batch.py": "f11d7e954b8e40765f95833f5c76ee013d2bb6a44f9c97a4f79ad3b06dd45836",
+    "scripts/pipeline_config.py": "9c80bf359feb9ffcacfcf3edde04070765a6f63ab1f81b158673423025a456fc",
+    "tests/gold_p0_integration.py": "7bebab7d58750bc539b8907d76393c9e2cb204cb19a1264fc744d683b3f52a77",
+    "tests/test_gold_p0_orchestration.py": "d57959b7511b6efc1352cecc666b5fb66fa863a79d59b578c2ed16cc056a0a5f",
+    "tests/evidence/aws_iceberg_smoke_2026-10-29.json": "f8f47ac3258374b54e52137520c5b3c85bf23f7cbf2acebf8a526495ec67b3ae",
+    "tests/evidence/cloud_wiring_readiness.json": "85ac639c9cdd53b4b6616415d93cd3df6149fd79b33fff9aa41313697194009b",
+    "tests/evidence/gold_dimension_name_repair_2026-10-25.json": "0b17ebbbe33b762ebb6379278278f963b1929dc1e36270c5cbbe54ed2042182c",
+    "tests/evidence/gold_to_alert_local_2026-11-07.json": "658fc888c36e647b8b8ce973db5cd34468810506d13b416686467535808694db",
+    "tests/evidence/publication_validation_2026-11-07.json": "d53f6cdcbf872744205200f061c0e52d35b2b2a9e63695d2d8090ee173671bed",
+    "tests/evidence/real_openaq_2026-11-06.json": "f6124f921dd02c3dedd5a166558c65c922f52ed8ef0aa9def2e4f8ab6f83e6df",
+    "tests/evidence/real_openaq_cloud_2026-11-07.json": "4a4e9c2f5b24dc39a89c2a0eb629a6f47386caeaf1f2d668f1735005a00dd9bc"
+  },
+  "changed_source_document_sha256": {
+    "alerts/athena.py": "317dc8f25292e79b2c61261066c7319f999a5b547ba495b9546a9a0d9fc6b6b7",
+    "bot_lambda/src/lambda_function.py": "7efe331d5365d9c7970dca3d40fb69ea821f03ae667ac9d2fda7ad751028622f",
+    "scripts/build_alert_lambda.py": "8edbd507a2c5edc6309e28c119f4b70efa1a1ebb67d6f73a74f56cf10cfcd789",
+    "tests/test_athena_alerts.py": "85088fabda7c1c02fac87ea21b6dc3ebeef184e995d79357ca22d3e02b0bb545",
+    "tests/test_alert_package.py": "a8e1879debb4e958b8cad1ec43a6dbbed474ded99b6a37277a31ee01393ab972",
+    "docs/gold-to-telegram.md": "cf64c59d0d671583af1e492eec997ffdab0e8629f73461dd6553f2eedf9968d8",
+    "docs/athena-alert-runtime.md": "3438d399b129bec1cb2af3b8319a9386d8e7b856122a6b239b9cd68a657cd14f",
+    "docs/plans/athena-alert-staging.json": "5f5b438f119f67c87fedb5dab95e365463b56041e7cfbc7db1ca7b35c8378ef6"
+  },
+  "artifact": {
+    "architecture": "pure-python; validate on target runtime",
+    "archive_bytes": 16728334,
+    "archive_sha256": "500c239065967c691d907d0dc8aacbaadc14781796f3335953c30f7b7f755994",
+    "dependencies": {
+      "boto3": "1.43.115",
+      "botocore": "1.43.115",
+      "jmespath": "1.1.0",
+      "python-dateutil": "2.9.0.post0",
+      "s3transfer": "0.19.3",
+      "six": "1.17.0",
+      "urllib3": "2.8.0"
+    },
+    "deployment_status": "NOT DEPLOYED",
+    "file_count": 2201,
+    "handler": "bot_lambda.src.lambda_function.lambda_handler",
+    "runtime": "python3.12",
+    "source_sha256": {
+      "alerts/__init__.py": "cef9abe0a57e76e68363c2ac6a900e927214ed04d072bb5428b635a88effa3c8",
+      "alerts/athena.py": "317dc8f25292e79b2c61261066c7319f999a5b547ba495b9546a9a0d9fc6b6b7",
+      "alerts/delivery.py": "9e9b1f470b919ebca0780e1f3e06e187a3325caf517428524d92ff48a63eee71",
+      "alerts/gold.py": "05ed22bdb93a8f6571b5e3b6f48794695ae1ece74900e695a8956a6dcc431513",
+      "bot_lambda/src/create_table.py": "ae8fa63f8a93a32a27d16dd16c4dab71b3ead5ab76e4bf87205a55295bd70dd0",
+      "bot_lambda/src/lambda_function.py": "7efe331d5365d9c7970dca3d40fb69ea821f03ae667ac9d2fda7ad751028622f"
+    },
+    "uv_lock_sha256": "daf23121b7b89b90c9de0cca6094314dfef36ab969d2bc6cb40757d8be976c5b",
+    "wheel_verification": "SHA-256 matched uv.lock"
+  },
+  "artifact_offline_validation": {
+    "runtime": "3.12.15",
+    "handler_import": "PASS",
+    "sdk_parameter_models": "PASS",
+    "sdk_dynamodb_stubber": "PASS; client marshalling only, not live DynamoDB condition evaluation",
+    "environment_factory": "PASS with synthetic configuration; no delivery",
+    "network_requests": 0,
+    "expanded_bytes": 22994282,
+    "dependencies": {
+      "boto3": "1.43.115",
+      "botocore": "1.43.115",
+      "jmespath": "1.1.0",
+      "s3transfer": "0.19.3",
+      "python-dateutil": "2.9.0.post0",
+      "six": "1.17.0",
+      "urllib3": "2.8.0"
+    }
+  },
+  "aws_inspection": {
+    "mode": "READ ONLY; no Athena StartQueryExecution, SQS ReceiveMessage, SNS Publish or Telegram API",
+    "account": "701364614078",
+    "region": "ap-southeast-2",
+    "identity_profile": "airlake",
+    "sns": [
+      {
+        "FilterPolicy_present": false,
+        "RawMessageDelivery": "false",
+        "RedrivePolicy_present": false,
+        "is_bot_queue": true,
+        "protocol": "sqs"
+      }
+    ],
+    "sqs": {
+      "MessageRetentionPeriod": "345600",
+      "QueueArn": "arn:aws:sqs:ap-southeast-2:701364614078:AirLake_Bot_Queue",
+      "SqsManagedSseEnabled": "true",
+      "VisibilityTimeout": "30"
+    },
+    "sqs_redrive_policy_present": false,
+    "lambda": {
+      "CodeSha256": "4X2BjXmIb0Yy8hd3I8iirVT2u60E4d9UFmy8tzZ2mdA=",
+      "FunctionArn": "arn:aws:lambda:ap-southeast-2:701364614078:function:AirLake_Bot_API",
+      "Handler": "lambda_function.lambda_handler",
+      "MemorySize": 128,
+      "Role": "arn:aws:iam::701364614078:role/PowerUserRole",
+      "Runtime": "python3.12",
+      "Timeout": 3,
+      "Version": "$LATEST",
+      "environment_names": [
+        "TELEGRAM_TOKEN"
+      ]
+    },
+    "mapping": {
+      "BatchSize": 10,
+      "EventSourceArn": "arn:aws:sqs:ap-southeast-2:701364614078:AirLake_Bot_Queue",
+      "FunctionArn": "arn:aws:lambda:ap-southeast-2:701364614078:function:AirLake_Bot_API",
+      "FunctionResponseTypes": [],
+      "LastProcessingResult": null,
+      "MaximumBatchingWindowInSeconds": 0,
+      "ScalingConfig": null,
+      "State": "Enabled",
+      "UUID": "8dde34f1-e036-40e5-82c5-49209877759e"
+    },
+    "api": {
+      "api_id": "rsvjj5fff3",
+      "http_api": {
+        "Name": "AirLake_Bot_API-API",
+        "ProtocolType": "HTTP",
+        "DisableExecuteApiEndpoint": false,
+        "AUDIT_ERROR": null
+      },
+      "routes": [
+        {
+          "RouteKey": "ANY /AirLake_Bot_API",
+          "AuthorizationType": "NONE",
+          "Target": "integrations/knydns3"
+        }
+      ],
+      "integrations": [
+        {
+          "IntegrationType": "AWS_PROXY",
+          "IntegrationUri": "arn:aws:lambda:ap-southeast-2:701364614078:function:AirLake_Bot_API",
+          "TimeoutInMillis": 30000,
+          "PayloadFormatVersion": "2.0"
+        }
+      ]
+    },
+    "subscriptions_key_schema": [
+      {
+        "AttributeName": "chat_id",
+        "KeyType": "HASH"
+      }
+    ],
+    "subscriber_presence": "At least one item confirmed by COUNT-only Scan Limit=1; identities not requested",
+    "table_inventory": "Only AirLake_Subscriptions returned; delivery ledger absent at inspection time",
+    "role_policy": "PowerUserAccess attached; not suitable for proposed least-privilege roles",
+    "deployed_package": {
+      "bundled_boto3": false,
+      "bytes": 1548,
+      "handler_features": {
+        "idempotency": false,
+        "pagination": false,
+        "partial_batch": false,
+        "sns_envelope": true,
+        "sqs_records": true,
+        "timeout": false,
+        "webhook": true,
+        "webhook_secret": false
+      },
+      "matches_lambda_hash": true,
+      "python_sources": [
+        "lambda_function.py"
+      ],
+      "sha256": "e17d818d79886f4632f2177723c8a2ad54f6bbad04e1df54166cbcb7367699d0"
+    },
+    "athena_workgroup": {
+      "Configuration": {
+        "BytesScannedCutoffPerQuery": 10737418240,
+        "EnableMinimumEncryptionConfiguration": false,
+        "EnforceWorkGroupConfiguration": true,
+        "EngineVersion": {
+          "EffectiveEngineVersion": "Athena engine version 3",
+          "SelectedEngineVersion": "AUTO"
+        },
+        "PublishCloudWatchMetricsEnabled": true,
+        "RequesterPaysEnabled": false,
+        "ResultConfiguration": {
+          "OutputLocation": "s3://airlake-701364614078-athena-results/"
+        }
+      },
+      "CreationTime": "2026-10-18T12:18:40.145000+07:00",
+      "Name": "airlake",
+      "State": "ENABLED"
+    },
+    "glue_schema_verified": [
+      {
+        "database": "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold",
+        "table": "pm25_aqi_hourly",
+        "columns": [
+          {
+            "Name": "location_id",
+            "Type": "int",
+            "Parameters": {
+              "iceberg.field.current": "true",
+              "iceberg.field.id": "1",
+              "iceberg.field.optional": "true"
+            }
+          },
+          {
+            "Name": "hour_start",
+            "Type": "timestamp",
+            "Parameters": {
+              "iceberg.field.current": "true",
+              "iceberg.field.id": "2",
+              "iceberg.field.optional": "true"
+            }
+          },
+          {
+            "Name": "pm25_avg",
+            "Type": "double",
+            "Parameters": {
+              "iceberg.field.current": "true",
+              "iceberg.field.id": "3",
+              "iceberg.field.optional": "true"
+            }
+          },
+          {
+            "Name": "aqi",
+            "Type": "int",
+            "Parameters": {
+              "iceberg.field.current": "true",
+              "iceberg.field.id": "4",
+              "iceberg.field.optional": "true"
+            }
+          }
+        ],
+        "location": "s3://airlake-701364614078-lake/integration-real/20261106_f3b3b3e0677d4a6790e4a54faf68e4aa/warehouse/airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold.db/pm25_aqi_hourly"
+      },
+      {
+        "database": "airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold",
+        "table": "dim_location",
+        "columns": [
+          {
+            "Name": "location_id",
+            "Type": "int",
+            "Parameters": {
+              "iceberg.field.current": "true",
+              "iceberg.field.id": "1",
+              "iceberg.field.optional": "true"
+            }
+          },
+          {
+            "Name": "name",
+            "Type": "string",
+            "Parameters": {
+              "iceberg.field.current": "true",
+              "iceberg.field.id": "2",
+              "iceberg.field.optional": "true"
+            }
+          },
+          {
+            "Name": "lat",
+            "Type": "double",
+            "Parameters": {
+              "iceberg.field.current": "true",
+              "iceberg.field.id": "3",
+              "iceberg.field.optional": "true"
+            }
+          },
+          {
+            "Name": "lon",
+            "Type": "double",
+            "Parameters": {
+              "iceberg.field.current": "true",
+              "iceberg.field.id": "4",
+              "iceberg.field.optional": "true"
+            }
+          },
+          {
+            "Name": "station_type",
+            "Type": "string",
+            "Parameters": {
+              "iceberg.field.current": "true",
+              "iceberg.field.id": "5",
+              "iceberg.field.optional": "true"
+            }
+          }
+        ],
+        "location": "s3://airlake-701364614078-lake/integration-real/20261106_f3b3b3e0677d4a6790e4a54faf68e4aa/warehouse/airlake_it2_20261106_f3b3b3e0677d4a6790e4a54faf68e4aa_gold.db/dim_location"
+      }
+    ],
+    "limits": "Metadata does not prove effective future IAM, live snapshot availability, webhook registration, notification delivery, or source freshness"
+  },
+  "proposed_scope": "Separate staging plan; one station/hour query and one approved recipient; no shared bot update",
+  "remaining_blockers": [
+    "Approve staging resources/roles and deployment",
+    "Privately approve recipient and staging bot credential",
+    "Approve test-only rule and historical reference or supply fresh Gold",
+    "Review KMS/Lake Formation/SCP/role constraints with infrastructure owner",
+    "Verify live joined query and delivery only after separate approval"
+  ],
+  "no_actions": [
+    "No Git stage/commit/push/PR",
+    "No AWS mutations or Athena queries",
+    "No Spark/Kafka/Terraform jobs",
+    "No real Telegram requests",
+    "No existing runtime data or credential modifications"
+  ]
+}

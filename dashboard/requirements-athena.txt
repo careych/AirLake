@@ -1,0 +1,12 @@
+# Optional driver image only; no credentials or Athena connection is created.
+PyAthena[SQLAlchemy]==3.14.1
+SQLAlchemy==1.4.54
+boto3==1.43.115
+botocore==1.43.115
+fsspec==2026.9.0
+python-dateutil==2.9.0.post0
+jmespath==1.1.0
+s3transfer==0.19.3
+six==1.17.0
+tenacity==9.2.1
+urllib3==2.6.3
