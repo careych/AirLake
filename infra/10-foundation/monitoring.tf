@@ -1,6 +1,6 @@
 variable "alarm_on_missing" {
   type    = bool
-  default = false   # false khi dev; đặt true khi demo để "không có dữ liệu" cũng báo động
+  default = false # false khi dev; đặt true khi demo để "không có dữ liệu" cũng báo động
 }
 
 locals {
@@ -103,11 +103,11 @@ resource "aws_cloudwatch_dashboard" "airlake_operations" {
         width  = 12,
         height = 6,
         properties = {
-          title   = "Lưu lượng log ứng dụng (/airlake/*)",
-          region  = var.region,
-          stat    = "Sum",
-          period  = 300,
-          view    = "timeSeries",
+          title  = "Lưu lượng log ứng dụng (/airlake/*)",
+          region = var.region,
+          stat   = "Sum",
+          period = 300,
+          view   = "timeSeries",
           metrics = [
             ["AWS/Logs", "IncomingLogEvents", "LogGroupName", "/airlake/kafka", { "label" : "Kafka Logs", "color" : "#1f77b4" }],
             ["AWS/Logs", "IncomingLogEvents", "LogGroupName", "/airlake/spark", { "label" : "Spark Logs", "color" : "#2ca02c" }],
@@ -122,11 +122,11 @@ resource "aws_cloudwatch_dashboard" "airlake_operations" {
         width  = 12,
         height = 6,
         properties = {
-          title   = "Hoạt động đẩy metric (CloudWatch PutMetricData)",
-          region  = var.region,
-          stat    = "SampleCount",
-          period  = 300,
-          view    = "timeSeries",
+          title  = "Hoạt động đẩy metric (CloudWatch PutMetricData)",
+          region = var.region,
+          stat   = "SampleCount",
+          period = 300,
+          view   = "timeSeries",
           metrics = [
             ["AirLake", "SensorAgeHours", "location_id", "4946812", "sensors_id", "13502151", "parameter", "pm25", { "label" : "Nhân Chính Count" }],
             ["AirLake", "SensorAgeHours", "location_id", "4946813", "sensors_id", "13502154", "parameter", "pm25", { "label" : "Giải Phóng Count" }],
