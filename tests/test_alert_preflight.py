@@ -2,9 +2,13 @@
 
 import hashlib
 import json
+import os
+import shlex
 import subprocess
+import sys
 import tempfile
 import unittest
+from datetime import UTC, datetime
 from pathlib import Path
 
 from alerts.preflight import preflight
@@ -37,6 +41,13 @@ class FakeCLI:
         if (service, operation) == ("dynamodb", "describe-table"):
             return {"error": "ResourceNotFoundException"}
         if (service, operation) == ("iam", "get-role"):
+            if args[-1] == "FixtureOperator":
+                return {
+                    "Role": {
+                        "RoleName": "FixtureOperator",
+                        "Arn": "arn:aws:iam::701364614078:role/FixtureOperator",
+                    }
+                }
             return {"error": "NoSuchEntity"}
         if (service, operation) == ("athena", "get-work-group"):
             return (
@@ -168,6 +179,32 @@ class PreflightTests(unittest.TestCase):
         )
         self.assertFalse(report["execution_authorized"])
 
+    def test_operator_role_path_is_resolved_through_iam_not_invented_from_sts(self):
+        original = self.client.call
+
+        def call(service, operation, *args):
+            if operation == "get-role" and args[-1] == "FixtureOperator":
+                return {
+                    "Role": {
+                        "RoleName": "FixtureOperator",
+                        "Arn": "arn:aws:iam::701364614078:role/team/FixtureOperator",
+                    }
+                }
+            return original(service, operation, *args)
+
+        self.client.call = call
+        report = preflight(self.plan, self.client)
+        self.assertEqual(
+            "arn:aws:iam::701364614078:role/team/FixtureOperator",
+            report["publisher_principal_role_arn"],
+        )
+
+    def test_unverified_operator_role_blocks_instead_of_guessing_arn(self):
+        self.client.override["iam", "get-role"] = {"error": "AccessDenied"}
+        report = preflight(self.plan, self.client)
+        self.assertEqual(["OPERATOR_IAM_ROLE_UNVERIFIED"], report["blockers"])
+        self.assertNotIn("publisher_principal_role_arn", report)
+
     def test_missing_secret_blocks_even_when_inventory_and_simulation_pass(self):
         self.client.override["secretsmanager", "describe-secret"] = {
             "error": "ResourceNotFoundException"
@@ -290,10 +327,14 @@ class PreparationTests(unittest.TestCase):
             {"ForAllValues:StringEquals": {"dynamodb:LeadingKeys": ["101"]}},
             subscription_statement["Condition"],
         )
-        for name in ["deploy-disabled.sh", "enable-test.sh"]:
+        for name in ["deploy-disabled.sh", "enable-test.sh", "disable-test.sh"]:
             subprocess.run(
                 ["sh", "-n", str(output / name)], check=True, capture_output=True
             )
+            for line in (output / name).read_text().splitlines():
+                args = shlex.split(line)
+                if "-c" in args:
+                    compile(args[args.index("-c") + 1], "<generated check>", "exec")
         script = (output / "deploy-disabled.sh").read_text()
         self.assertIn("--no-enabled", script)
         self.assertIn("ReportBatchItemFailures", script)
@@ -301,6 +342,10 @@ class PreparationTests(unittest.TestCase):
             script.index("alerts.preflight"), script.index("iam create-role")
         )
         self.assertNotIn("101", json.dumps(result))
+        disable = (output / "disable-test.sh").read_text()
+        self.assertIn("--no-enabled", disable)
+        self.assertIn("disabled-version.txt", disable)
+        self.assertNotIn("delete-", disable)
         with self.assertRaises(FileExistsError):
             self.run_prepare()
 
@@ -317,3 +362,98 @@ class PreparationTests(unittest.TestCase):
             with self.subTest(value=value), self.assertRaises(ValueError):
                 self.run_prepare(test_bot_id=value)
         self.assertFalse((self.directory / "prepared").exists())
+
+    def test_verified_identity_file_populates_private_config_without_cli_identifiers(
+        self,
+    ):
+        identity_dir = self.directory / "identity"
+        identity_dir.mkdir(mode=0o700)
+        identity = identity_dir / "identity.json"
+        identity.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "bot_id": "900001",
+                    "bot_username": "tmkhuebot",
+                    "chat_id": "101",
+                    "verified_at": datetime.now(UTC).isoformat(),
+                    "private_chat_verified": True,
+                }
+            )
+        )
+        identity.chmod(0o600)
+        result = self.run_prepare(
+            identity_file=identity, recipient_file=None, test_bot_id=None
+        )
+        self.assertTrue(result["private_identity_evidence_supplied"])
+        env = json.loads((self.directory / "prepared/function.json").read_text())[
+            "Environment"
+        ]["Variables"]
+        self.assertEqual("900001", env["AIRLAKE_ALERT_TEST_BOT_ID"])
+        self.assertEqual("101", env["AIRLAKE_ALERT_TEST_RECIPIENT"])
+        self.assertNotIn("101", json.dumps(result))
+        for script in ("deploy-disabled.sh", "enable-test.sh"):
+            self.assertIn(
+                "load_identity", (self.directory / "prepared" / script).read_text()
+            )
+        line = next(
+            line
+            for line in (self.directory / "prepared/enable-test.sh")
+            .read_text()
+            .splitlines()
+            if "load_identity" in line
+        )
+        args = shlex.split(line)
+        args.insert(1, "-O")
+        function = self.directory / "prepared/function.json"
+        changed = json.loads(function.read_text())
+        changed["Environment"]["Variables"]["AIRLAKE_ALERT_TEST_RECIPIENT"] = "102"
+        function.write_text(json.dumps(changed))
+        checked = subprocess.run(args, check=False, capture_output=True, text=True)
+        self.assertNotEqual(0, checked.returncode)
+        self.assertEqual("", checked.stdout)
+        self.assertEqual(
+            "Private identity/configuration mismatch", checked.stderr.strip()
+        )
+
+    def test_disable_script_expands_recorded_ids_without_any_real_aws_calls(self):
+        self.run_prepare()
+        output = self.directory / "prepared"
+        mapping = "00000000-0000-0000-0000-000000000001"
+        (output / "mapping-uuid.txt").write_text(mapping)
+        (output / "disabled-version.txt").write_text("1")
+        fake = self.directory / "bin"
+        fake.mkdir()
+        log = self.directory / "mock-calls.jsonl"
+        aws = fake / "aws"
+        aws.write_text(
+            "#!"
+            + sys.executable
+            + "\nimport json,sys\nwith open("
+            + repr(str(log))
+            + ", 'a') as f: f.write(json.dumps(sys.argv[1:])+'\\n')\n"
+        )
+        aws.chmod(0o700)
+        result = subprocess.run(
+            ["sh", str(output / "disable-test.sh")],
+            check=False,
+            env=dict(
+                os.environ,
+                PATH=str(fake) + os.pathsep + os.environ.get("PATH", ""),
+                AIRLAKE_APPROVED_PLAN_SHA256=json.loads(
+                    (output / "preparation.json").read_text()
+                )["plan_sha256"],
+            ),
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(0, result.returncode, result.stderr)
+        calls = [json.loads(line) for line in log.read_text().splitlines()]
+        self.assertEqual(3, len(calls))
+        self.assertIn(mapping, calls[0])
+        self.assertIn("--no-enabled", calls[0])
+        self.assertEqual("1", calls[1][calls[1].index("--function-version") + 1])
+        self.assertIn("update-function-configuration", calls[2])
+        self.assertIn(
+            "file://" + str((output / "disabled-environment.json").resolve()), calls[2]
+        )
