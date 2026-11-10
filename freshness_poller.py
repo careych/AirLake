@@ -27,7 +27,12 @@ if hasattr(sys.stdout, "reconfigure"):
     except Exception:
         pass
 
-import requests
+try:
+    import requests
+    RequestException = requests.RequestException
+except ImportError:
+    requests = None
+    RequestException = Exception
 
 try:
     import boto3
@@ -136,11 +141,15 @@ def fetch_station_freshness(
     headers = {"X-API-Key": api_key}
     url = f"{OPENAQ_BASE_URL}/locations/{location_id}/latest"
 
+    if requests is None:
+        logger.error("Missing required dependency 'requests' for live OpenAQ API polling")
+        return None
+
     try:
         resp = requests.get(url, headers=headers, timeout=20)
         resp.raise_for_status()
         data = resp.json()
-    except requests.RequestException as err:
+    except RequestException as err:
         logger.error("Failed to query OpenAQ latest measurements for location %d: %s", location_id, err)
         return None
 

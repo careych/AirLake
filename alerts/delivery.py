@@ -245,3 +245,15 @@ class DynamoSubscriptions:
 
     def unsubscribe(self, recipient):
         self.table.delete_item(Key={"chat_id": chat_id(recipient)})
+
+    def get_subscription(self, recipient):
+        chat_id(recipient)
+        try:
+            item = self.table.get_item(
+                Key={"chat_id": recipient}, ConsistentRead=True
+            ).get("Item")
+        except Exception:  # noqa: BLE001
+            raise DeliveryError("Subscription read failed") from None
+        if not item or not item.get("enabled", True):
+            return None
+        return item

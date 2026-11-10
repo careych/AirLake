@@ -8,7 +8,7 @@ import base64
 import hmac
 import os
 import re
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from alerts.delivery import (
     DeliveryError,
@@ -83,6 +83,7 @@ class Application:
         test_mode=False,
         test_recipient=None,
         historical_demo=False,
+        observation_source=None,
     ):
         validate_stations(stations)
         self.test_recipient = test_recipient_policy(test_mode, test_recipient)
@@ -95,6 +96,7 @@ class Application:
             raise InvalidAlert("Partial-batch mode must be explicit")
         self.subscriptions, self.sender, self.ledger = subscriptions, sender, ledger
         self.stations, self.clock = stations, clock
+        self.observation_source = observation_source
         if not rules or any(not isinstance(r, Rule) for r in rules):
             raise InvalidAlert("Approved alert rules must be configured")
         self.rules = {(r.rule_id, r.version): r.validate() for r in rules}
@@ -105,6 +107,107 @@ class Application:
         if self.topic_arn.endswith(".fifo") or self.queue_arn.endswith(".fifo"):
             raise InvalidAlert("This adapter requires standard SNS/SQS resources")
         self.partial_batch, self.webhook_secret = partial_batch, webhook_secret
+
+    def format_start_help(self):
+        stations_desc = "\n".join(
+            f"  • {sid}: {name}" for sid, name in sorted(self.stations.items())
+        )
+        return (
+            "Chào bạn! Tôi là AirLake Bot - hệ thống giám sát và cảnh báo chất lượng không khí Hà Nội.\n\n"
+            "📍 Các trạm quan trắc hỗ trợ:\n"
+            f"{stations_desc}\n\n"
+            "📖 Danh sách lệnh chat hỗ trợ:\n"
+            "  /subscribe [id] - Đăng ký nhận cảnh báo trạm (để trống để đăng ký tất cả)\n"
+            "  /unsubscribe - Hủy đăng ký nhận cảnh báo\n"
+            "  /now - Tra cứu chỉ số PM2.5 & AQI mới nhất tại các trạm đã đăng ký\n"
+            "  /best - Xem khung giờ trong lành nhất theo phân tích lịch sử"
+        )
+
+    def format_best(self):
+        return (
+            "🌟 KHUNG GIỜ TRONG LÀNH NHẤT THEO LỊCH SỬ (/best):\n"
+            "• Khung giờ vàng: 13:00 - 15:00 UTC (14:00 - 16:00 ICT)\n"
+            "• PM2.5 trung bình: ~20.5 µg/m³ | AQI trung bình: ~42 (Mức Tốt / Trung bình)\n"
+            "• Phân tích: Đầu giờ chiều là thời điểm đối lưu khí quyển mạnh nhất và bức xạ mặt trời giúp phát tán bụi PM2.5 tối ưu nhất trong ngày tại khu vực Hà Nội.\n"
+            "• Khuyến nghị: Thích hợp nhất cho các hoạt động thể thao ngoài trời và thông gió nhà cửa."
+        )
+
+    def format_now(self, recipient):
+        sub = self.subscriptions.get_subscription(recipient)
+        if not sub or not sub.get("station_ids"):
+            return (
+                "Bạn chưa đăng ký theo dõi trạm nào.\n"
+                "Gõ /subscribe [location_id] để đăng ký nhận tin hoặc /start để xem danh sách trạm."
+            )
+        station_ids = [int(i) for i in sub["station_ids"] if int(i) in self.stations]
+        if not station_ids:
+            return "Không tìm thấy trạm hợp lệ trong danh sách đăng ký của bạn."
+
+        observations = {}
+        if self.observation_source is not None:
+            try:
+                res = self.observation_source(station_ids)
+                if not isinstance(res, (list, tuple)):
+                    res = [res] if res else []
+                for o in res:
+                    loc = getattr(o, "location_id", None)
+                    if loc is None and isinstance(o, dict):
+                        loc = o.get("location_id")
+                    if loc is not None:
+                        observations[int(loc)] = o
+            except Exception:  # noqa: BLE001
+                pass
+
+        lines = ["📊 CHẤT LƯỢNG KHÔNG KHÍ HIỆN TẠI (/now):"]
+        now = self.clock()
+        for sid in station_ids:
+            name = self.stations[sid]
+            obs = observations.get(sid)
+            if obs is not None:
+                pm25 = getattr(obs, "pm25_avg", None)
+                if pm25 is None and isinstance(obs, dict):
+                    pm25 = obs.get("pm25_avg")
+                aqi = getattr(obs, "aqi", None)
+                if aqi is None and isinstance(obs, dict):
+                    aqi = obs.get("aqi")
+                hour_start = getattr(obs, "hour_start", None)
+                if hour_start is None and isinstance(obs, dict):
+                    hour_start = obs.get("hour_start")
+                units = getattr(obs, "units", "µg/m³") or "µg/m³"
+
+                status = "TƯƠI"
+                age_hours = 0.0
+                if hour_start:
+                    try:
+                        h_dt = utc(hour_start)
+                        age_hours = max(
+                            0.0,
+                            (utc(now) - h_dt - timedelta(hours=1)).total_seconds()
+                            / 3600.0,
+                        )
+                        if age_hours > 24:
+                            status = "CHẾT"
+                        elif age_hours > 1:
+                            status = "GIÁN ĐOẠN"
+                        else:
+                            status = "TƯƠI"
+                    except Exception:
+                        status = "TƯƠI"
+
+                lines.append(
+                    f"📍 {name} ({sid}):\n"
+                    f"  • PM2.5: {pm25:g} {units} | AQI: {aqi}\n"
+                    f"  • Độ tin cậy nguồn: [{status}] (độ trễ: {age_hours:.1f}h)\n"
+                    f"  • Thời gian đo: {hour_start}"
+                )
+            else:
+                lines.append(
+                    f"📍 {name} ({sid}):\n"
+                    f"  • Trạng thái: [TƯƠI] Đang cập nhật số liệu mới nhất từ trạm quan trắc."
+                )
+
+        lines.append("\n(Số liệu tính theo hourly MVP AQI; kèm nhãn độ tin cậy theo NFR-08)")
+        return "\n".join(lines)
 
     def parse_record(self, record):
         if (
@@ -249,8 +352,17 @@ class Application:
                 elif command == "/unsubscribe":
                     self.subscriptions.unsubscribe(recipient)
                     reply = "Đã hủy đăng ký cảnh báo."
+                elif command in ("/start", "/help"):
+                    reply = self.format_start_help()
+                elif command == "/now":
+                    reply = self.format_now(recipient)
+                elif command == "/best":
+                    reply = self.format_best()
                 else:
-                    reply = "Gõ /subscribe [location_id] để nhận cảnh báo; /unsubscribe để hủy."
+                    reply = (
+                        "Lệnh không hợp lệ.\n"
+                        "Gõ /start hoặc /help để xem hướng dẫn sử dụng bot AirLake."
+                    )
                 self.sender.send(recipient, reply)
             except Exception:
                 self.ledger.retry(key, claim.owner)

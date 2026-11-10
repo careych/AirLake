@@ -13,9 +13,6 @@ from confluent_kafka.admin import AdminClient
 
 
 def parse_args(argv=None):
-    default_bootstrap = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
-    default_topic = os.environ.get("KAFKA_TOPIC", "aq_measurements")
-
     parser = argparse.ArgumentParser(
         description="Send real OpenAQ CSV.GZ records to Kafka."
     )
@@ -28,13 +25,13 @@ def parse_args(argv=None):
     )
     parser.add_argument(
         "--bootstrap-servers",
-        default=default_bootstrap,
-        help=f"Kafka bootstrap servers (defaults to KAFKA_BOOTSTRAP_SERVERS or '{default_bootstrap}').",
+        default="localhost:19092",
+        help="Kafka bootstrap servers; CLI-only, defaults to localhost:19092.",
     )
     parser.add_argument(
         "--topic",
-        default=default_topic,
-        help=f"Kafka topic (defaults to KAFKA_TOPIC or '{default_topic}').",
+        default="aq_measurements_test1",
+        help="Kafka topic. Defaults to the test topic.",
     )
     parser.add_argument(
         "--max-rows",
