@@ -11,6 +11,7 @@ from pathlib import Path
 
 from alerts.delivery import chat_id
 from alerts.runtime import ROOT, load_plan
+from scripts.verify_telegram_staging_identity import load_identity
 
 
 def prepare(
@@ -22,9 +23,20 @@ def prepare(
     principal,
     output,
     *,
-    test_bot_id,
+    test_bot_id=None,
+    identity_file=None,
 ):
     plan, digest = load_plan(plan_path)
+    if identity_file is not None:
+        if test_bot_id is not None or recipient_file is not None:
+            raise ValueError(
+                "Choose private identity evidence or manual identity inputs"
+            )
+        identity = load_identity(identity_file)
+        test_bot_id = identity["bot_id"]
+        recipient_data = {"chat_id": identity["chat_id"]}
+    else:
+        recipient_data = json.loads(recipient_file.read_text())
     test_bot_id = chat_id(test_bot_id)
     if test_bot_id.startswith("-"):
         raise ValueError("Approved staging bot identity must be positive")
@@ -37,7 +49,6 @@ def prepare(
         r"arn:aws:iam::701364614078:role/[A-Za-z0-9_+=,.@/-]+", principal
     ):
         raise ValueError("An approved existing IAM role principal is required")
-    recipient_data = json.loads(recipient_file.read_text())
     if set(recipient_data) != {"chat_id"}:
         raise ValueError("Recipient file must contain only chat_id")
     recipient = chat_id(recipient_data["chat_id"])
@@ -189,6 +200,7 @@ def prepare(
         },
     )
     enabled = dict(variables, AIRLAKE_ALERT_DELIVERY_ENABLED="1")
+    write("disabled-environment.json", {"Variables": variables})
     write("enabled-environment.json", {"Variables": enabled})
     q = lambda x: shlex.quote(str(x))
     file = lambda name: "file://" + str(output / name)
@@ -200,6 +212,24 @@ def prepare(
     )
     queue_url = f"https://sqs.{region}.amazonaws.com/{account}/{n['queue']}"
     dlq_url = queue_url + "-dlq"
+    identity_check = []
+    if identity_file is not None:
+        identity_check = [
+            f"{q(sys.executable)} -B -c "
+            + q(
+                "import json,sys; from pathlib import Path; "
+                "from scripts.verify_telegram_staging_identity import load_identity; "
+                "i=load_identity(Path(sys.argv[1])); "
+                "e=json.load(open(sys.argv[2]))['Environment']['Variables']; "
+                "sys.exit(0 if i['bot_id']==e['AIRLAKE_ALERT_TEST_BOT_ID'] "
+                "and i['chat_id']==e['AIRLAKE_ALERT_TEST_RECIPIENT'] "
+                "else 'Private identity/configuration mismatch')"
+            )
+            + " "
+            + q(identity_file.resolve())
+            + " "
+            + q(output / "function.json")
+        ]
     steps = [
         "#!/bin/sh",
         "set -eu",
@@ -212,12 +242,16 @@ def prepare(
         + q(
             "import json; p=json.load(open("
             + repr(str(output / "fresh-preflight.json"))
-            + ")); assert p['status'].startswith('READ_ONLY_CHECKS_PASS'); assert p['plan_sha256']=="
+            + ")); import sys; sys.exit(0 if p['status'].startswith('READ_ONLY_CHECKS_PASS') and p['plan_sha256']=="
             + repr(digest)
-            + "; assert p['test_secret']['arn']=="
+            + " and p['test_secret']['arn']=="
             + repr(secret_arn)
+            + " else 'Fresh staging preflight mismatch')"
         ),
-        "# FIRST AWS MUTATION BELOW: requires separate exact-scope approval. No automatic retry/cleanup.",
+    ]
+    steps += identity_check
+    steps += [
+        "# FIRST AWS MUTATION BELOW: requires separate exact-scope approval. No automatic retry/cleanup."
     ]
     for role, kind in [(n["consumer_role"], "consumer"), (n["reader_role"], "reader")]:
         steps += [
@@ -425,6 +459,8 @@ def prepare(
         "umask 077",
         'export AWS_MAX_ATTEMPTS=1 AWS_PAGER=""',
         f'test "${{AIRLAKE_APPROVED_PLAN_SHA256:-}}" = {q(digest)}',
+        f"cd {q(ROOT)}",
+        *identity_check,
         cli(
             "lambda",
             "update-function-configuration",
@@ -490,6 +526,60 @@ def prepare(
     )
     (output / "enable-test.sh").write_text("\n".join(enable) + "\n")
     (output / "enable-test.sh").chmod(0o600)
+    disable = [
+        "#!/bin/sh",
+        "set -eu",
+        "umask 077",
+        'export AWS_MAX_ATTEMPTS=1 AWS_PAGER=""',
+        f'test "${{AIRLAKE_APPROVED_PLAN_SHA256:-}}" = {q(digest)}',
+        cli(
+            "lambda",
+            "update-event-source-mapping",
+            "--uuid",
+            "$(cat " + q(output / "mapping-uuid.txt") + ")",
+            "--no-enabled",
+            "--query",
+            "State",
+            "--output",
+            "text",
+        ),
+        cli(
+            "lambda",
+            "update-alias",
+            "--function-name",
+            scope,
+            "--name",
+            "staging",
+            "--function-version",
+            "$(cat " + q(output / "disabled-version.txt") + ")",
+            "--query",
+            "AliasArn",
+            "--output",
+            "text",
+        ),
+    ]
+    for index in (5, 6):
+        for name in ("mapping-uuid.txt", "disabled-version.txt"):
+            substitution = "$(cat " + q(output / name) + ")"
+            disable[index] = disable[index].replace(
+                q(substitution), '"' + substitution + '"'
+            )
+    disable.append(
+        cli(
+            "lambda",
+            "update-function-configuration",
+            "--function-name",
+            scope,
+            "--environment",
+            file("disabled-environment.json"),
+            "--query",
+            "LastUpdateStatus",
+            "--output",
+            "text",
+        )
+    )
+    (output / "disable-test.sh").write_text("\n".join(disable) + "\n")
+    (output / "disable-test.sh").chmod(0o600)
     summary = {
         "status": "PREPARED ONLY; NO AWS OPERATIONS EXECUTED",
         "plan_sha256": digest,
@@ -497,6 +587,7 @@ def prepare(
         "inventory": n,
         "secret_reference_only": True,
         "one_recipient_configured": True,
+        "private_identity_evidence_supplied": identity_file is not None,
     }
     write("preparation.json", summary)
     return summary
@@ -507,12 +598,20 @@ def main():
     p.add_argument(
         "--plan", type=Path, default=ROOT / "docs/plans/athena-alert-staging.json"
     )
-    for flag in ["artifact", "manifest", "recipient-file", "output"]:
+    for flag in ["artifact", "manifest", "output"]:
         p.add_argument("--" + flag, type=Path, required=True)
+    p.add_argument("--recipient-file", type=Path)
+    p.add_argument("--identity-file", type=Path)
     p.add_argument("--secret-arn", required=True)
-    p.add_argument("--test-bot-id", required=True)
+    p.add_argument("--test-bot-id")
     p.add_argument("--publisher-principal", required=True)
     a = p.parse_args()
+    if (a.identity_file is not None) == (
+        a.recipient_file is not None or a.test_bot_id is not None
+    ) or (
+        a.identity_file is None and (a.recipient_file is None or a.test_bot_id is None)
+    ):
+        p.error("Supply --identity-file OR both --recipient-file and --test-bot-id")
     print(
         json.dumps(
             prepare(
@@ -524,6 +623,7 @@ def main():
                 a.publisher_principal,
                 a.output,
                 test_bot_id=a.test_bot_id,
+                identity_file=a.identity_file,
             ),
             indent=2,
         )

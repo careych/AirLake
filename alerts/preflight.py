@@ -237,8 +237,29 @@ def preflight(plan, client):
                 else:
                     entry["error"] = response["error"]
             report["snapshots"].append(entry)
-    role = identity.get("Arn", "").split(":assumed-role/")[-1].split("/")[0]
-    report["publisher_principal_role_arn"] = f"arn:aws:iam::{account}:role/{role}"
+    session_arn = identity.get("Arn", "")
+    assumed = re.fullmatch(
+        rf"arn:aws:sts::{account}:assumed-role/(.+)/[^/]+", session_arn
+    )
+    direct = re.fullmatch(rf"arn:aws:iam::{account}:role/(.+)", session_arn)
+    role_name = (assumed or direct).group(1).split("/")[-1] if assumed or direct else ""
+    role = (
+        client.call("iam", "get-role", "--role-name", role_name)
+        if re.fullmatch(r"[A-Za-z0-9_+=,.@-]{1,64}", role_name)
+        else {}
+    ).get("Role", {})
+    principal = role.get("Arn", "")
+    if (
+        role.get("RoleName") != role_name
+        or not re.fullmatch(
+            rf"arn:aws:iam::{account}:role/(?:[A-Za-z0-9_+=,.@-]+/)*{re.escape(role_name)}",
+            principal,
+        )
+        or (direct and principal != session_arn)
+    ):
+        report["blockers"] = ["OPERATOR_IAM_ROLE_UNVERIFIED"]
+        return report
+    report["publisher_principal_role_arn"] = principal
     context = {"aws:RequestedRegion": region}
     report["iam_context_keys"] = client.call(
         "iam",
