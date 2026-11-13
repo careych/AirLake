@@ -2,10 +2,8 @@
 
 import hashlib
 import json
-import os
 import shlex
 import subprocess
-import sys
 import tempfile
 import unittest
 from datetime import UTC, datetime
@@ -331,7 +329,14 @@ class PreparationTests(unittest.TestCase):
             subprocess.run(
                 ["sh", "-n", str(output / name)], check=True, capture_output=True
             )
-            for line in (output / name).read_text().splitlines():
+            text = (output / name).read_text()
+            if "<<'AIRLAKE_STAGING_CONTROL'" in text:
+                body = text.split("<<'AIRLAKE_STAGING_CONTROL'\n", 1)[1].rsplit(
+                    "\nAIRLAKE_STAGING_CONTROL", 1
+                )[0]
+                compile(body, "<generated control>", "exec")
+                text = text.split("<<'AIRLAKE_STAGING_CONTROL'", 1)[0]
+            for line in text.splitlines():
                 args = shlex.split(line)
                 if "-c" in args:
                     compile(args[args.index("-c") + 1], "<generated check>", "exec")
@@ -343,7 +348,7 @@ class PreparationTests(unittest.TestCase):
         )
         self.assertNotIn("101", json.dumps(result))
         disable = (output / "disable-test.sh").read_text()
-        self.assertIn("--no-enabled", disable)
+        self.assertIn("Enabled=False", disable)
         self.assertIn("disabled-version.txt", disable)
         self.assertNotIn("delete-", disable)
         with self.assertRaises(FileExistsError):
@@ -417,43 +422,32 @@ class PreparationTests(unittest.TestCase):
         )
 
     def test_disable_script_expands_recorded_ids_without_any_real_aws_calls(self):
+        from test_staging_transitions import MAPPING, Clock, LambdaFake
+
+        from scripts.prepare_alert_staging import _run_control
+
         self.run_prepare()
         output = self.directory / "prepared"
-        mapping = "00000000-0000-0000-0000-000000000001"
-        (output / "mapping-uuid.txt").write_text(mapping)
+        (output / "mapping-uuid.txt").write_text(MAPPING)
         (output / "disabled-version.txt").write_text("1")
-        fake = self.directory / "bin"
-        fake.mkdir()
-        log = self.directory / "mock-calls.jsonl"
-        aws = fake / "aws"
-        aws.write_text(
-            "#!"
-            + sys.executable
-            + "\nimport json,sys\nwith open("
-            + repr(str(log))
-            + ", 'a') as f: f.write(json.dumps(sys.argv[1:])+'\\n')\n"
+        env = json.loads((output / "function.json").read_text())["Environment"][
+            "Variables"
+        ]
+        digest = json.loads((output / "preparation.json").read_text())[
+            "artifact_sha256"
+        ]
+        fake, clock = LambdaFake(env, digest), Clock()
+        fake.current = "2"
+        fake.latest["Environment"]["Variables"]["AIRLAKE_ALERT_DELIVERY_ENABLED"] = "1"
+        fake.states = ["Enabled"]
+        _run_control(
+            "disable", output, "khue", digest, call=fake, clock=clock, sleep=clock.sleep
         )
-        aws.chmod(0o700)
-        result = subprocess.run(
-            ["sh", str(output / "disable-test.sh")],
-            check=False,
-            env=dict(
-                os.environ,
-                PATH=str(fake) + os.pathsep + os.environ.get("PATH", ""),
-                AIRLAKE_APPROVED_PLAN_SHA256=json.loads(
-                    (output / "preparation.json").read_text()
-                )["plan_sha256"],
-            ),
-            capture_output=True,
-            text=True,
+        writes = [(op, args) for op, args in fake.calls if not op.startswith("get-")]
+        self.assertEqual(3, len(writes))
+        self.assertEqual("1", writes[0][1]["FunctionVersion"])
+        self.assertEqual(
+            "0",
+            writes[1][1]["Environment"]["Variables"]["AIRLAKE_ALERT_DELIVERY_ENABLED"],
         )
-        self.assertEqual(0, result.returncode, result.stderr)
-        calls = [json.loads(line) for line in log.read_text().splitlines()]
-        self.assertEqual(3, len(calls))
-        self.assertIn(mapping, calls[0])
-        self.assertIn("--no-enabled", calls[0])
-        self.assertEqual("1", calls[1][calls[1].index("--function-version") + 1])
-        self.assertIn("update-function-configuration", calls[2])
-        self.assertIn(
-            "file://" + str((output / "disabled-environment.json").resolve()), calls[2]
-        )
+        self.assertEqual({"UUID": MAPPING, "Enabled": False}, writes[2][1])

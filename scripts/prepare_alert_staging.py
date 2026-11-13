@@ -1,9 +1,10 @@
 """Prepare private AWS CLI deployment files; never executes AWS commands."""
 
 import argparse
-import base64
 import hashlib
+import inspect
 import json
+import os
 import re
 import shlex
 import sys
@@ -12,6 +13,356 @@ from pathlib import Path
 from alerts.delivery import chat_id
 from alerts.runtime import ROOT, load_plan
 from scripts.verify_telegram_staging_identity import load_identity
+
+
+def _run_control(
+    mode, directory, profile, artifact_hash, *, call=None, clock=None, sleep=None
+):
+    """Embedded in generated scripts; mutations are single attempts, polls are bounded."""
+    import base64
+    import json
+    import os
+    import re
+    import shlex
+    import subprocess
+    import time
+    from pathlib import Path
+
+    directory = Path(directory)
+    scope = "airlake-alert-staging-v1"
+    account, region = "701364614078", "ap-southeast-2"
+    function_arn = f"arn:aws:lambda:{region}:{account}:function:{scope}"
+    expected = json.loads((directory / "function.json").read_text())["Environment"][
+        "Variables"
+    ]
+    mapping_id = (directory / "mapping-uuid.txt").read_text().strip()
+    disabled_version = (directory / "disabled-version.txt").read_text().strip()
+    if (
+        mode not in {"enable", "disable"}
+        or not re.fullmatch(r"[A-Za-z0-9_-]+", profile)
+        or not re.fullmatch(r"[0-9a-fA-F-]{36}", mapping_id)
+        or not re.fullmatch(r"[1-9][0-9]*", disabled_version)
+        or not re.fullmatch(r"[0-9a-f]{64}", artifact_hash)
+        or any(key.startswith("AWS_ENDPOINT_URL") for key in os.environ)
+    ):
+        raise ValueError("Invalid staging control inputs")
+    code_hash = base64.b64encode(bytes.fromhex(artifact_hash)).decode()
+    clock, sleep = clock or time.monotonic, sleep or time.sleep
+    if call is None:
+
+        def call(operation, **parameters):
+            # JSON goes over stdin, never process arguments, files or shared logs.
+            result = subprocess.run(
+                shlex.split(f"aws --profile {profile} --region {region}")
+                + [
+                    "--no-cli-pager",
+                    "--output",
+                    "json",
+                    "--cli-connect-timeout",
+                    "5",
+                    "--cli-read-timeout",
+                    "10",
+                    "lambda",
+                    operation,
+                    "--cli-input-json",
+                    "file:///dev/stdin",
+                ],
+                input=json.dumps(parameters),
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=20,
+                env=dict(
+                    os.environ,
+                    AWS_MAX_ATTEMPTS="1",
+                    AWS_RETRY_MODE="standard",
+                    AWS_PAGER="",
+                ),
+            )
+            if result.returncode:
+                raise RuntimeError("Staging Lambda operation failed")
+            return json.loads(result.stdout)
+
+    def config(qualifier=None):
+        args = {"FunctionName": scope}
+        if qualifier is not None:
+            args["Qualifier"] = qualifier
+        result = call("get-function-configuration", **args)
+        if result.get("FunctionArn") not in {
+            function_arn,
+            function_arn + ":" + str(qualifier),
+        }:
+            raise RuntimeError("Unexpected staging function scope")
+        return result
+
+    def ready():
+        deadline = clock() + 300
+        while clock() < deadline:
+            value = config()
+            if clock() >= deadline:
+                raise RuntimeError("Lambda configuration wait timed out")
+            if (
+                value.get("State") == "Active"
+                and value.get("LastUpdateStatus") == "Successful"
+            ):
+                return value
+            if value.get("State") not in {"Active", "Pending"} or value.get(
+                "LastUpdateStatus"
+            ) not in {"InProgress", "Successful"}:
+                raise RuntimeError("Unexpected Lambda configuration state")
+            sleep(5)
+        raise RuntimeError("Lambda configuration wait timed out")
+
+    def mapping():
+        deadline, previous = clock() + 300, None
+        while clock() < deadline:
+            value = call("get-event-source-mapping", UUID=mapping_id)
+            if clock() >= deadline:
+                raise RuntimeError("Mapping wait timed out")
+            if (
+                value.get("UUID") != mapping_id
+                or value.get("FunctionArn") != function_arn + ":staging"
+                or value.get("EventSourceArn")
+                != f"arn:aws:sqs:{region}:{account}:{scope}"
+            ):
+                raise RuntimeError("Unexpected staging mapping scope")
+            state = value.get("State")
+            if state in {"Enabled", "Disabled"}:
+                if state == previous:
+                    return value
+                previous = state
+            elif state in {"Enabling", "Disabling", "Updating"}:
+                previous = None
+            else:
+                raise RuntimeError("Unexpected mapping state")
+            sleep(5)
+        raise RuntimeError("Mapping wait timed out")
+
+    def alias():
+        value = call("get-alias", FunctionName=scope, Name="staging")
+        if value.get("AliasArn") != function_arn + ":staging":
+            raise RuntimeError("Unexpected staging alias scope")
+        return value
+
+    def delivery(value, flag):
+        environment = value.get("Environment", {})
+        variables = environment.get("Variables")
+        if (
+            environment.get("Error")
+            or not isinstance(variables, dict)
+            or any(
+                not isinstance(k, str) or not isinstance(v, str)
+                for k, v in variables.items()
+            )
+        ):
+            raise RuntimeError("Existing environment cannot be safely preserved")
+        if variables.get("AIRLAKE_ALERT_DELIVERY_ENABLED") != flag:
+            merged = dict(variables, AIRLAKE_ALERT_DELIVERY_ENABLED=flag)
+            call(
+                "update-function-configuration",
+                FunctionName=scope,
+                RevisionId=value["RevisionId"],
+                Environment={"Variables": merged},
+            )
+            value = ready()
+        if (
+            value.get("Environment", {})
+            .get("Variables", {})
+            .get("AIRLAKE_ALERT_DELIVERY_ENABLED")
+            != flag
+        ):
+            raise RuntimeError("Delivery flag did not converge")
+        return value
+
+    if mode == "disable":
+        errors = []
+        # Each recovery step runs even if another step fails; never retry mutations.
+        try:
+            target = config(disabled_version)
+            if (
+                target.get("CodeSha256") != code_hash
+                or target.get("Environment", {})
+                .get("Variables", {})
+                .get("AIRLAKE_ALERT_DELIVERY_ENABLED")
+                != "0"
+            ):
+                raise RuntimeError("Recorded disabled version is not verified disabled")
+            current = alias()
+            if current.get("FunctionVersion") != disabled_version:
+                call(
+                    "update-alias",
+                    FunctionName=scope,
+                    Name="staging",
+                    FunctionVersion=disabled_version,
+                    RevisionId=current["RevisionId"],
+                )
+            if alias().get("FunctionVersion") != disabled_version:
+                raise RuntimeError("Disabled alias restoration did not converge")
+        except Exception:  # noqa: BLE001 -- independent recovery, no sensitive error output
+            errors.append("alias")
+        try:
+            delivery(ready(), "0")
+        except Exception:  # noqa: BLE001 -- continue mapping recovery after config failure
+            errors.append("configuration")
+        try:
+            if mapping()["State"] == "Enabled":
+                call("update-event-source-mapping", UUID=mapping_id, Enabled=False)
+                if mapping()["State"] != "Disabled":
+                    raise RuntimeError("Mapping did not disable")
+        except Exception:  # noqa: BLE001 -- alias/config restoration was already attempted
+            errors.append("mapping")
+        if errors:
+            raise RuntimeError("Staging recovery incomplete: " + ", ".join(errors))
+        return "PASS: staging alias, delivery and mapping are disabled"
+
+    state = mapping()
+    required = {
+        "AIRLAKE_ACCOUNT_ID": account,
+        "AIRLAKE_ALERT_STAGING_NAME": scope,
+        "AIRLAKE_ALERT_TEST_MODE": "1",
+        "AIRLAKE_PARTIAL_BATCH_FAILURES": "1",
+        "AIRLAKE_ALERT_TOPIC_ARN": f"arn:aws:sns:{region}:{account}:{scope}",
+        "AIRLAKE_ALERT_QUEUE_ARN": f"arn:aws:sqs:{region}:{account}:{scope}",
+        "AIRLAKE_SUBSCRIPTION_TABLE": scope + "-subscriptions",
+        "AIRLAKE_DELIVERY_TABLE": scope + "-ledger",
+    }
+    if any(expected.get(key) != value for key, value in required.items()):
+        raise RuntimeError("Reviewed staging environment safeguards differ")
+    if (
+        state.get("BatchSize") != 1
+        or state.get("MaximumBatchingWindowInSeconds") != 0
+        or state.get("FunctionResponseTypes") != ["ReportBatchItemFailures"]
+        or state.get("ScalingConfig", {}).get("MaximumConcurrency") != 2
+    ):
+        raise RuntimeError("Staging mapping safeguards differ")
+    current = alias()
+    selected = config(current["FunctionVersion"])
+    latest = ready()
+    for value in (selected, latest):
+        variables = value.get("Environment", {}).get("Variables", {})
+        if (
+            value.get("CodeSha256") != code_hash
+            or value.get("Role") != f"arn:aws:iam::{account}:role/{scope}-consumer"
+            or any(
+                variables.get(key) != wanted
+                for key, wanted in expected.items()
+                if key != "AIRLAKE_ALERT_DELIVERY_ENABLED"
+            )
+            or any(
+                key in variables
+                for key in ("TELEGRAM_TOKEN", "TELEGRAM_WEBHOOK_SECRET")
+            )
+        ):
+            raise RuntimeError("Staging code or environment safeguards differ")
+    if state["State"] == "Enabled":
+        if (
+            selected["Environment"]["Variables"].get("AIRLAKE_ALERT_DELIVERY_ENABLED")
+            != "1"
+        ):
+            raise RuntimeError("Enabled mapping has a disabled alias")
+        return "PASS: staging mapping is stably Enabled"
+    latest = delivery(latest, "1")
+    if (
+        selected["Environment"]["Variables"].get("AIRLAKE_ALERT_DELIVERY_ENABLED")
+        != "1"
+    ):
+        version = call("publish-version", FunctionName=scope, CodeSha256=code_hash)[
+            "Version"
+        ]
+        if not re.fullmatch(r"[1-9][0-9]*", str(version)):
+            raise RuntimeError("Invalid published version")
+        receipt = directory / ("enabled-version-" + str(version) + ".txt")
+        with receipt.open("x") as stream:
+            receipt.chmod(0o600)
+            stream.write(str(version) + "\n")
+        call(
+            "update-alias",
+            FunctionName=scope,
+            Name="staging",
+            FunctionVersion=str(version),
+            RevisionId=current["RevisionId"],
+        )
+    call("update-event-source-mapping", UUID=mapping_id, Enabled=True)
+    if mapping()["State"] != "Enabled":
+        raise RuntimeError("Mapping did not enable")
+    return "PASS: staging mapping is stably Enabled"
+
+
+def _control_script(
+    mode, output, digest, artifact_hash, identity_check=(), profile="airlake"
+):
+    q = shlex.quote
+    lines = [
+        "#!/bin/sh",
+        "set -eu",
+        "umask 077",
+        'export AWS_MAX_ATTEMPTS=1 AWS_RETRY_MODE=standard AWS_PAGER=""',
+        f'test "${{AIRLAKE_APPROVED_PLAN_SHA256:-}}" = {q(digest)}',
+        f"cd {q(str(ROOT))}",
+        *identity_check,
+        f"{q(sys.executable)} -B - <<'AIRLAKE_STAGING_CONTROL'",
+        inspect.getsource(_run_control),
+        "try:",
+        f"    print(_run_control({mode!r}, {str(output)!r}, {profile!r}, {artifact_hash!r}))",
+        "except Exception:",
+        "    print('FAIL: staging control incomplete; inspect state; no automatic mutation retry.')",
+        "    raise SystemExit(1) from None",
+        "AIRLAKE_STAGING_CONTROL",
+    ]
+    return "\n".join(lines) + "\n"
+
+
+def repair_control_scripts(directory, *, profile, identity_file):
+    """Write new fixed scripts only; never overwrite deployed files or call AWS."""
+    directory = directory.resolve(strict=True)
+    if (
+        directory == ROOT
+        or ROOT in directory.parents
+        or directory.stat().st_uid != os.getuid()
+        or directory.stat().st_mode & 0o777 != 0o700
+        or any((parent / ".git").exists() for parent in (directory, *directory.parents))
+    ):
+        raise ValueError("An owner-private external deployment directory is required")
+    plan, digest = load_plan(ROOT / "docs/plans/athena-alert-staging.json")
+    receipt = json.loads((directory / "preparation.json").read_text())
+    function = json.loads((directory / "function.json").read_text())
+    if (
+        receipt["plan_sha256"] != digest
+        or receipt["inventory"] != plan["names"]
+        or function["FunctionName"] != plan["names"]["lambda"]
+        or not re.fullmatch(r"[A-Za-z0-9_-]+", profile)
+        or not re.fullmatch(r"[0-9a-f]{64}", receipt["artifact_sha256"])
+    ):
+        raise ValueError("Only the existing reviewed staging deployment is supported")
+    identity_file = identity_file.resolve(strict=True)
+    check = [
+        f"{shlex.quote(sys.executable)} -B -c "
+        + shlex.quote(
+            "import json,sys; from pathlib import Path; from scripts.verify_telegram_staging_identity import load_identity; "
+            "i=load_identity(Path(sys.argv[1])); e=json.load(open(sys.argv[2]))['Environment']['Variables']; "
+            "sys.exit(0 if i['bot_id']==e['AIRLAKE_ALERT_TEST_BOT_ID'] and i['chat_id']==e['AIRLAKE_ALERT_TEST_RECIPIENT'] else 'Private identity/configuration mismatch')"
+        )
+        + " "
+        + shlex.quote(str(identity_file))
+        + " "
+        + shlex.quote(str(directory / "function.json"))
+    ]
+    targets = [directory / "enable-test-fixed.sh", directory / "disable-test-fixed.sh"]
+    if any(path.exists() or path.is_symlink() for path in targets):
+        raise FileExistsError("Fixed scripts already exist; preserve and review them")
+    for mode, target in zip(("enable", "disable"), targets, strict=True):
+        text = _control_script(
+            mode,
+            directory,
+            digest,
+            receipt["artifact_sha256"],
+            check if mode == "enable" else (),
+            profile,
+        )
+        fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, "w") as stream:
+            stream.write(text)
+    return "PASS: fixed private scripts prepared only; no AWS operations executed"
 
 
 def prepare(
@@ -452,134 +803,19 @@ def prepare(
     script = output / "deploy-disabled.sh"
     script.write_text("\n".join(steps) + "\n")
     script.chmod(0o600)
-    # Later enabling is a separate reviewed phase, not part of deploy-disabled.sh.
-    enable = [
-        "#!/bin/sh",
-        "set -eu",
-        "umask 077",
-        'export AWS_MAX_ATTEMPTS=1 AWS_PAGER=""',
-        f'test "${{AIRLAKE_APPROVED_PLAN_SHA256:-}}" = {q(digest)}',
-        f"cd {q(ROOT)}",
-        *identity_check,
-        cli(
-            "lambda",
-            "update-function-configuration",
-            "--function-name",
-            scope,
-            "--environment",
-            file("enabled-environment.json"),
-            "--query",
-            "LastUpdateStatus",
-            "--output",
-            "text",
-        ),
-        cli("lambda", "wait", "function-updated-v2", "--function-name", scope),
-        cli(
-            "lambda",
-            "publish-version",
-            "--function-name",
-            scope,
-            "--code-sha256",
-            base64.b64encode(bytes.fromhex(artifact_hash)).decode(),
-            "--query",
-            "Version",
-            "--output",
-            "text",
-        )
-        + " > "
-        + q(output / "enabled-version.txt"),
-        cli(
-            "lambda",
-            "update-alias",
-            "--function-name",
-            scope,
-            "--name",
-            "staging",
-            "--function-version",
-            "$(cat " + q(output / "enabled-version.txt") + ")",
-            "--query",
-            "AliasArn",
-            "--output",
-            "text",
-        ),
-    ]
-    enable[-1] = enable[-1].replace(
-        q("$(cat " + q(output / "enabled-version.txt") + ")"),
-        '"$(cat ' + q(output / "enabled-version.txt") + ')"',
-    )
-    enable += [
-        cli(
-            "lambda",
-            "update-event-source-mapping",
-            "--uuid",
-            "$(cat " + q(output / "mapping-uuid.txt") + ")",
-            "--enabled",
-            "--query",
-            "State",
-            "--output",
-            "text",
-        )
-    ]
-    enable[-1] = enable[-1].replace(
-        q("$(cat " + q(output / "mapping-uuid.txt") + ")"),
-        '"$(cat ' + q(output / "mapping-uuid.txt") + ')"',
-    )
-    (output / "enable-test.sh").write_text("\n".join(enable) + "\n")
-    (output / "enable-test.sh").chmod(0o600)
-    disable = [
-        "#!/bin/sh",
-        "set -eu",
-        "umask 077",
-        'export AWS_MAX_ATTEMPTS=1 AWS_PAGER=""',
-        f'test "${{AIRLAKE_APPROVED_PLAN_SHA256:-}}" = {q(digest)}',
-        cli(
-            "lambda",
-            "update-event-source-mapping",
-            "--uuid",
-            "$(cat " + q(output / "mapping-uuid.txt") + ")",
-            "--no-enabled",
-            "--query",
-            "State",
-            "--output",
-            "text",
-        ),
-        cli(
-            "lambda",
-            "update-alias",
-            "--function-name",
-            scope,
-            "--name",
-            "staging",
-            "--function-version",
-            "$(cat " + q(output / "disabled-version.txt") + ")",
-            "--query",
-            "AliasArn",
-            "--output",
-            "text",
-        ),
-    ]
-    for index in (5, 6):
-        for name in ("mapping-uuid.txt", "disabled-version.txt"):
-            substitution = "$(cat " + q(output / name) + ")"
-            disable[index] = disable[index].replace(
-                q(substitution), '"' + substitution + '"'
+    # Control scripts never query Gold or publish; enable remains a separate approval.
+    for mode in ("enable", "disable"):
+        target = output / (mode + "-test.sh")
+        target.write_text(
+            _control_script(
+                mode,
+                output,
+                digest,
+                artifact_hash,
+                identity_check if mode == "enable" else (),
             )
-    disable.append(
-        cli(
-            "lambda",
-            "update-function-configuration",
-            "--function-name",
-            scope,
-            "--environment",
-            file("disabled-environment.json"),
-            "--query",
-            "LastUpdateStatus",
-            "--output",
-            "text",
         )
-    )
-    (output / "disable-test.sh").write_text("\n".join(disable) + "\n")
-    (output / "disable-test.sh").chmod(0o600)
+        target.chmod(0o600)
     summary = {
         "status": "PREPARED ONLY; NO AWS OPERATIONS EXECUTED",
         "plan_sha256": digest,
