@@ -61,3 +61,30 @@ resource "aws_autoscaling_schedule" "trino_night_off" {
   max_size               = 0
   desired_capacity       = 0
 }
+
+# Lich tu dong bat may vao buoi sang de san sang phuc vu truy van (FinOps)
+resource "aws_autoscaling_schedule" "trino_morning_on" {
+  scheduled_action_name  = "trino-morning-on"
+  autoscaling_group_name = aws_autoscaling_group.trino.name
+  recurrence             = "0 7 * * *"
+  time_zone              = "Asia/Ho_Chi_Minh"
+  min_size               = 0
+  max_size               = 2
+  desired_capacity       = 1
+}
+
+# Chinh sach tu dong mo rong Trino Worker theo nguong CPU (NFR-02 & Bao cao ca nhan Muc 1.5)
+resource "aws_autoscaling_policy" "trino_cpu_scaling" {
+  name                      = "airlake-trino-cpu-scaling"
+  autoscaling_group_name    = aws_autoscaling_group.trino.name
+  policy_type               = "TargetTrackingScaling"
+  estimated_instance_warmup = 180
+
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
+    target_value = 75.0
+  }
+}
+
