@@ -309,3 +309,25 @@ Runtime directories, private configuration, logs and caches are ignored. Curated
 `tests/evidence/` records and dependency lockfiles remain publishable. The PDF,
 learning notes and image exports are outside this PR's selected candidates pending
 owner/archive decisions; preserve their attribution and source material.
+
+## Monitoring and Kafka Cluster Producer (Nam)
+
+### Freshness Poller & CloudWatch
+`freshness_poller.py` polls latest PM2.5 measurements for active Hanoi stations, computes sensor age in hours, and publishes `SensorAgeHours` metrics to AWS CloudWatch (Namespace `AirLake`). Supports standalone CLI (`--dry-run`), periodic cron, and AWS Lambda handler:
+
+```sh
+uv run python freshness_poller.py --dry-run
+```
+
+### Kafka Producer to AWS Cluster
+`real_producer.py` reads compressed historical CSV files from `data/raw/` and publishes measurements to Apache Kafka.
+
+To publish to the AWS EC2 Kafka cluster, set:
+```sh
+export KAFKA_BOOTSTRAP_SERVERS="10.0.0.11:9092,10.0.1.12:9092,10.0.0.13:9092"
+```
+
+The producer writes to `aq_measurements`:
+```sh
+uv run python real_producer.py --topic aq_measurements
+```

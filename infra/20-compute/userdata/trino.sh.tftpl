@@ -1,0 +1,64 @@
+#!/bin/bash
+# ==============================================================================
+# AirLake - Trino Query Engine Initialization Script
+# Auto-configured for Iceberg Catalog over AWS Glue Data Catalog & S3
+# ==============================================================================
+set -euo pipefail
+
+echo "==> [AirLake Trino] Installing dependencies and Docker..."
+dnf update -y
+dnf install -y docker
+systemctl enable --now docker
+
+mkdir -p /opt/trino/etc/catalog
+mkdir -p /opt/trino/data
+
+# 1. node.properties
+cat <<'EOF' > /opt/trino/etc/node.properties
+node.environment=production
+node.data-dir=/var/lib/trino/data
+EOF
+
+# 2. jvm.config
+cat <<'EOF' > /opt/trino/etc/jvm.config
+-server
+-Xmx6G
+-XX:InitialRAMPercentage=75
+-XX:MaxRAMPercentage=75
+-XX:+UseG1GC
+-XX:G1SelectedWasteRatio=10
+-XX:G1ReservePercent=15
+-XX:+ExplicitGCInvokesConcurrent
+-XX:+HeapDumpOnOutOfMemoryError
+-Djdk.attach.allowAttachSelf=true
+-Djdk.nio.maxCachedBufferSize=2000000
+EOF
+
+# 3. config.properties
+cat <<'EOF' > /opt/trino/etc/config.properties
+coordinator=true
+node-scheduler.include-coordinator=true
+http-server.http.port=8080
+query.max-memory=5GB
+query.max-memory-per-node=3GB
+discovery.uri=http://localhost:8080
+EOF
+
+# 4. catalog/iceberg.properties (Iceberg over AWS Glue Catalog & S3)
+cat <<EOF > /opt/trino/etc/catalog/iceberg.properties
+connector.name=iceberg
+iceberg.catalog.type=glue
+hive.metastore.glue.default-warehouse-dir=s3://${lake_bucket}/
+fs.native-s3.enabled=true
+EOF
+
+echo "==> [AirLake Trino] Starting Trino container on port 8080..."
+docker run -d \
+  --name trino \
+  --restart always \
+  --net host \
+  -v /opt/trino/etc:/etc/trino \
+  -v /opt/trino/data:/var/lib/trino/data \
+  trinodb/trino:454
+
+echo "==> [AirLake Trino] Trino setup completed successfully."

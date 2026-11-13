@@ -113,6 +113,15 @@ class SubscriptionTable:
             response["LastEvaluatedKey"] = {"chat_id": str(page + 1)}
         return response
 
+    def get_item(self, **kwargs):
+        assert kwargs.get("ConsistentRead") is True
+        target = kwargs["Key"]["chat_id"]
+        for p in self.pages:
+            for r in p:
+                if r["chat_id"] == target:
+                    return {"Item": copy.deepcopy(r)}
+        return {}
+
     def put_item(self, **kwargs):
         self.writes.append(kwargs)
         item = kwargs["Item"]

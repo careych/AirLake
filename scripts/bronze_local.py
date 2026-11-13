@@ -171,6 +171,18 @@ def prepare_cloud_checkpoint(config, checkpoint, topic, bootstrap_servers):
 
 
 def main():
+    import platform
+    import sys
+    if platform.system() == "Windows":
+        hadoop_home = os.environ.get("HADOOP_HOME") or os.environ.get("hadoop.home.dir")
+        winutils = Path(hadoop_home, "bin", "winutils.exe") if hadoop_home else None
+        if winutils is None or not winutils.is_file():
+            print(
+                "NOTICE: Local Spark on Windows requires winutils.exe. "
+                "Ensure HADOOP_HOME is set to your hadoop root folder containing bin\\winutils.exe.",
+                file=sys.stderr,
+            )
+
     try:
         from scripts.pipeline_config import from_args, parser, print_plan
     except ModuleNotFoundError:

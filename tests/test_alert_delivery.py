@@ -251,6 +251,54 @@ class AlertDeliveryTests(unittest.TestCase):
         )
         self.assertFalse(any(x["chat_id"] == "201" for x in self.subs.pages[0]))
 
+    def test_start_command_returns_station_catalog_and_help(self):
+        result = lambda_handler(self.webhook("/start", update_id=10), None, app=self.app)
+        self.assertEqual(200, result["statusCode"])
+        self.assertEqual(1, len(self.sender.sent))
+        recipient, text = self.sender.sent[-1]
+        self.assertEqual("201", recipient)
+        self.assertIn("AirLake Bot", text)
+        self.assertIn("4946812", text)
+        self.assertIn("/now", text)
+        self.assertIn("/best", text)
+
+    def test_best_command_returns_cleanest_hour_window(self):
+        result = lambda_handler(self.webhook("/best", update_id=11), None, app=self.app)
+        self.assertEqual(200, result["statusCode"])
+        self.assertEqual(1, len(self.sender.sent))
+        recipient, text = self.sender.sent[-1]
+        self.assertEqual("201", recipient)
+        self.assertIn("13:00 - 15:00 UTC", text)
+        self.assertIn("PM2.5", text)
+        self.assertIn("AQI", text)
+
+    def test_now_command_without_subscription_prompts_to_subscribe(self):
+        # Recipient 301 is not subscribed
+        result = lambda_handler(
+            self.webhook("/now", update_id=12, recipient=301), None, app=self.app
+        )
+        self.assertEqual(200, result["statusCode"])
+        self.assertEqual(1, len(self.sender.sent))
+        recipient, text = self.sender.sent[-1]
+        self.assertEqual("301", recipient)
+        self.assertIn("Bạn chưa đăng ký", text)
+
+    def test_now_command_with_subscription_returns_measurements_and_reliability(self):
+        # Recipient 101 has subscription in fixture (subs.pages[0][0])
+        self.app.observation_source = lambda stations: [self.row]
+        result = lambda_handler(
+            self.webhook("/now", update_id=13, recipient=101), None, app=self.app
+        )
+        self.assertEqual(200, result["statusCode"])
+        self.assertEqual(1, len(self.sender.sent))
+        recipient, text = self.sender.sent[-1]
+        self.assertEqual("101", recipient)
+        self.assertIn("CHẤT LƯỢNG KHÔNG KHÍ HIỆN TẠI", text)
+        self.assertIn("Nhân Chính", text)
+        self.assertIn("21.7875", text)
+        self.assertIn("AQI: 44", text)
+        self.assertIn("[TƯƠI]", text)
+
     def test_invalid_webhook_secret_or_update_never_touches_subscriptions(self):
         cases = [
             (self.webhook(secret="wrong"), 403),
