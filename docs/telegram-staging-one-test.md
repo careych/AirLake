@@ -231,6 +231,54 @@ stop/investigate rather than manually redrive. Keep staging disabled afterward.
 
 ## Rollback, costs and publication
 
+### Corrected local enable/disable controls
+
+The corrected controls require two consecutive stable mapping reads, poll every
+5 seconds with a 300-second deadline per wait, and fail on unknown states or
+timeouts. Enabling waits through Enabling/Disabling/Updating and does not report
+success until Enabled. Each AWS mutation is attempted once. Disabling restores
+the verified disabled alias, disables delivery in $LATEST, and settles/disables
+the mapping as independent steps: one failure cannot skip the others. An already
+Disabled mapping is not updated again. Only the delivery environment flag changes;
+other current variables, Lambda concurrency and mapping settings are preserved.
+CLI JSON input stays on stdin; API bodies and recipient values are never printed.
+
+After merging this correction, patch an EXISTING private deployment from the
+updated checkout with the same Python environment. This is LOCAL ONLY; it does
+not call AWS, reverify Telegram, recreate resources, refresh evidence timestamps,
+or overwrite any existing files:
+
+```sh
+: "${PRIVATE_ROOT:?Keep the existing private root}"
+: "${STAGING_DEPLOY:?Set to the existing deployed preparation directory}"
+export PRIVATE_ROOT STAGING_DEPLOY
+python -B - <<'PY'
+import os
+from pathlib import Path
+from scripts.prepare_alert_staging import repair_control_scripts
+print(repair_control_scripts(
+    Path(os.environ["STAGING_DEPLOY"]),
+    profile="khue",
+    identity_file=Path(os.environ["PRIVATE_ROOT"]) / "identity-v3/identity.json",
+))
+PY
+sh -n "$STAGING_DEPLOY/enable-test-fixed.sh"
+sh -n "$STAGING_DEPLOY/disable-test-fixed.sh"
+```
+
+The new files are mode 0600. Original scripts, UUID/version receipts, environment
+JSON, preparation record and historical-test-v1 evidence remain unchanged. The
+disabled-version receipt must still identify the reviewed delivery-disabled
+immutable version. No Lambda ZIP rebuild/redeployment is needed for these local
+script changes. If fixed files already exist, stop and review; do not overwrite.
+Existing identity freshness and one-recipient checks still apply before enabling;
+disable recovery never depends on fresh identity evidence.
+
+**STOP after patching.** The first runtime failure is still unexplained. These
+script fixes do not prove absence of an SNS publication and do not authorize a
+new execution, enabling, recovery write or notification. Obtain the specific
+approval first; preserve existing evidence and ledger records.
+
 Rollback is the scoped disable sequence above. If deployment stopped before the
 mapping/version files were captured, inspect actual resource IDs privately before
 any manual action; do not guess or rerun creation. No automatic cleanup. Retain
