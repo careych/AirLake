@@ -514,7 +514,7 @@ class DeployTests(unittest.TestCase):
             )
             self.assertEqual(
                 json.loads(schedule["Target"]["Input"])["InvocationType"],
-                "RequestResponse",
+                "Event",
             )
             self.assertLessEqual(
                 (schedule["EndDate"] - schedule["StartDate"]).total_seconds(), 1800
@@ -710,6 +710,26 @@ class PacketTests(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertIn("PASS packaged imports", result.stdout)
+
+
+class DynamoCadenceRegressionTests(unittest.TestCase):
+    def test_dynamodb_number_roundtrip_is_valid_for_runtime_freshness_metrics(self):
+        from live_data.store import pack, unpack
+
+        value = unpack(
+            pack({"observed_at": "2026-11-14T04:55:00Z", "cadence_seconds": 300})
+        )
+        self.assertIs(type(value["cadence_seconds"]), int)
+        self.assertEqual(
+            freshness(value["observed_at"], NOW, value["cadence_seconds"])["status"],
+            "recent",
+        )
+
+    def test_null_cadence_keeps_explicit_unknown_fallback(self):
+        from live_data.store import pack, unpack
+
+        value = unpack(pack({"cadence_seconds": None}))
+        self.assertIsNone(value["cadence_seconds"])
 
 
 if __name__ == "__main__":

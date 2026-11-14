@@ -1,0 +1,1620 @@
+{
+  "status": "PASS_BOUNDED_REAL_AWS_SOURCE_GLUE_ATHENA_API",
+  "recorded_at_utc": "2026-11-14T09:38:50.776901+00:00",
+  "plan_sha256": "81725ef0ca5cf55efdd56427f3b5e6a28d8fcc5b120052da7b58c671d1d73f36",
+  "source_count": 70,
+  "station_counts": {
+    "6123215": 2,
+    "4946813": 34,
+    "4946812": 34
+  },
+  "source_window_utc": {
+    "min": "2026-11-14T06:05:00Z",
+    "max": "2026-11-14T08:50:00Z"
+  },
+  "raw_identity_duplicates": 0,
+  "maximum_hourly_mean_absolute_error": 7.105427357601002e-15,
+  "glue_validation": {
+    "export_sha256": "fd3ae933ebb13c3ef989eee809c2aebc586b4a18007a8d6c54977a05233b99d9",
+    "gold": {
+      "dimension_changed_count": 0,
+      "dimension_new_count": 3,
+      "dimension_output_count": 3,
+      "dimension_sha256": "1422e0922f0ed700b2d5d9e3c0d4ad54cdf27d5b772a5f51547bd9af2fc829da",
+      "dimension_source_count": 3,
+      "duplicate_dimension_key_count": 0,
+      "duplicate_hourly_key_count": 0,
+      "hourly_changed_count": 0,
+      "hourly_new_count": 8,
+      "hourly_output_count": 8,
+      "hourly_sha256": "ca2ba1484b3bd4e1fe26e91cebbeadd7ea528268e652864fba9b34be685ab9fb",
+      "invalid_hourly_output_count": 0,
+      "invalid_pm25_count": 0,
+      "non_pm25_source_count": 0,
+      "null_dimension_key_count": 0,
+      "null_hourly_key_count": 0,
+      "orphan_location_count": 0,
+      "pm25_source_count": 70,
+      "silver_source_count": 70,
+      "valid_pm25_count": 70
+    },
+    "silver": {
+      "deduplicated_source_count": 70,
+      "duplicate_key_count": 0,
+      "duplicate_rows_removed": 0,
+      "negative_value_count": 0,
+      "new_records_count": 70,
+      "null_ingested_at_count": 0,
+      "null_key_count": 0,
+      "null_parameter_count": 0,
+      "null_units_count": 0,
+      "null_value_count": 0,
+      "output_count": 70,
+      "rejected_count": 0,
+      "source_count": 70,
+      "source_keys_already_present": 0,
+      "valid_count": 70
+    },
+    "snapshots_after": {
+      "breakpoints": [
+        1375699400361475315
+      ],
+      "bronze": [
+        133431740659656969
+      ],
+      "dimensions": [
+        1605047616004654495
+      ],
+      "hourly": [
+        3771861248592705246
+      ],
+      "silver": [
+        4099001637749704611
+      ]
+    },
+    "snapshots_before": {
+      "breakpoints": [
+        1375699400361475315
+      ],
+      "bronze": [
+        133431740659656969
+      ],
+      "dimensions": [
+        1605047616004654495
+      ],
+      "hourly": [
+        3771861248592705246
+      ],
+      "silver": [
+        4099001637749704611
+      ]
+    },
+    "source_count": 70,
+    "status": "PASS"
+  },
+  "export_provenance": {
+    "aqi_method": "simplified_hourly_mean_mvp; NOT official VN_AQI",
+    "classification": "bounded recently polled observations; freshness follows observation time",
+    "computed_at": "2026-11-14T09:16:58.267077+00:00",
+    "database": "airlake_live_20261114_9e2c740b",
+    "execution": "AWS_GLUE",
+    "snapshots": {
+      "breakpoints": [
+        1375699400361475315
+      ],
+      "bronze": [
+        133431740659656969
+      ],
+      "dimensions": [
+        1605047616004654495
+      ],
+      "hourly": [
+        3771861248592705246
+      ],
+      "silver": [
+        4099001637749704611
+      ]
+    }
+  },
+  "export_sha256": "fd3ae933ebb13c3ef989eee809c2aebc586b4a18007a8d6c54977a05233b99d9",
+  "athena": {
+    "export_sha256": "fd3ae933ebb13c3ef989eee809c2aebc586b4a18007a8d6c54977a05233b99d9",
+    "job_run_id": "jr_cb6617ddbfe3db1494c64c2a6f60e6c8f8e27215c9cb5c087044732dd6477768",
+    "operations": [
+      {
+        "identifiers": {},
+        "operation": "one_athena_select",
+        "status": "RETURNED_SUCCESS"
+      },
+      {
+        "identifiers": {},
+        "operation": "promote_verified_version",
+        "status": "RETURNED_SUCCESS"
+      }
+    ],
+    "plan_sha256": "81725ef0ca5cf55efdd56427f3b5e6a28d8fcc5b120052da7b58c671d1d73f36",
+    "query_id": "a971513f-f3e0-4fa9-9139-c3b8553b1ae1",
+    "result_object": "s3://airlake-701364614078-athena-results/a971513f-f3e0-4fa9-9139-c3b8553b1ae1.csv",
+    "rows": 8,
+    "snapshots": {
+      "breakpoints": [
+        1375699400361475315
+      ],
+      "bronze": [
+        133431740659656969
+      ],
+      "dimensions": [
+        1605047616004654495
+      ],
+      "hourly": [
+        3771861248592705246
+      ],
+      "silver": [
+        4099001637749704611
+      ]
+    },
+    "source_count": 70,
+    "statistics": {
+      "DataScannedInBytes": 685,
+      "EngineExecutionTimeInMillis": 759,
+      "QueryPlanningTimeInMillis": 139,
+      "QueryQueueTimeInMillis": 70,
+      "ResultReuseInformation": {
+        "ReusedPreviousResult": false
+      },
+      "ServicePreProcessingTimeInMillis": 35,
+      "ServiceProcessingTimeInMillis": 15,
+      "TotalExecutionTimeInMillis": 879
+    },
+    "status": "PASS_ATHENA_AND_ATOMIC_POINTER_PROMOTION"
+  },
+  "http": {
+    "current_rows": 8,
+    "function_url": "https://44nlt6u3x6yoja2ygjx64agysa0phjhz.lambda-url.ap-southeast-2.on.aws",
+    "latest_statuses": [
+      {
+        "freshness": {
+          "age_seconds": 2004.0,
+          "cadence_estimate_seconds": 300,
+          "criterion": "age <= max(15min, 2 * estimated observation spacing); 3h fallback if cadence unknown; not a freshness SLA",
+          "status": "stale",
+          "threshold_seconds": 900
+        },
+        "location_id": 4946812,
+        "observed_at": "2026-11-14T08:50:00Z"
+      },
+      {
+        "freshness": {
+          "age_seconds": 2004.0,
+          "cadence_estimate_seconds": 300,
+          "criterion": "age <= max(15min, 2 * estimated observation spacing); 3h fallback if cadence unknown; not a freshness SLA",
+          "status": "stale",
+          "threshold_seconds": 900
+        },
+        "location_id": 4946813,
+        "observed_at": "2026-11-14T08:50:00Z"
+      },
+      {
+        "freshness": {
+          "age_seconds": 5004.0,
+          "cadence_estimate_seconds": 3600,
+          "criterion": "age <= max(15min, 2 * estimated observation spacing); 3h fallback if cadence unknown; not a freshness SLA",
+          "status": "recent",
+          "threshold_seconds": 7200
+        },
+        "location_id": 6123215,
+        "observed_at": "2026-11-14T08:00:00Z"
+      }
+    ],
+    "operations": [],
+    "plan_sha256": "81725ef0ca5cf55efdd56427f3b5e6a28d8fcc5b120052da7b58c671d1d73f36",
+    "requests": [
+      {
+        "path": "/api/v1/health",
+        "signed": false,
+        "status": 403
+      },
+      {
+        "path": "/api/v1/health",
+        "signed": true,
+        "status": 200
+      },
+      {
+        "path": "/api/v1/latest",
+        "signed": true,
+        "status": 200
+      },
+      {
+        "path": "/api/v1/latest?location_id=4946812",
+        "signed": true,
+        "status": 200
+      },
+      {
+        "path": "/api/v1/latest?location_id=4946813",
+        "signed": true,
+        "status": 200
+      },
+      {
+        "path": "/api/v1/latest?location_id=6123215",
+        "signed": true,
+        "status": 200
+      },
+      {
+        "path": "/api/v1/current/hourly?limit=100",
+        "signed": true,
+        "status": 200
+      },
+      {
+        "path": "/api/v1/gold/hourly?format=csv&limit=100",
+        "signed": true,
+        "status": 200
+      }
+    ],
+    "status": "PASS_HTTP_AND_REAL_LATEST_VIEW"
+  },
+  "functions": {
+    "poller": {
+      "FunctionName": "airlake-live-20261114_9e2c740b-poller",
+      "FunctionArn": "arn:aws:lambda:ap-southeast-2:701364614078:function:airlake-live-20261114_9e2c740b-poller",
+      "Runtime": "python3.12",
+      "CodeSha256": "tDWbCn5cpM4JZrEGSRNxKsuEQJUbnfilkRGgtZdnXJw=",
+      "Role": "arn:aws:iam::701364614078:role/airlake-live-20261114_9e2c740b-poller",
+      "Timeout": 180,
+      "MemorySize": 128,
+      "State": "Active",
+      "LastUpdateStatus": "Successful",
+      "RevisionId": "9f2bb34b-53cc-4831-b625-04a9dba4c474",
+      "reserved_concurrency": 0
+    },
+    "api": {
+      "FunctionName": "airlake-live-20261114_9e2c740b-api",
+      "FunctionArn": "arn:aws:lambda:ap-southeast-2:701364614078:function:airlake-live-20261114_9e2c740b-api",
+      "Runtime": "python3.12",
+      "CodeSha256": "HkWYdajAAZrb89WKJCYkQBY+QN3OjPQ9pUxtRyE6U1w=",
+      "Role": "arn:aws:iam::701364614078:role/airlake-live-20261114_9e2c740b-api",
+      "Timeout": 15,
+      "MemorySize": 128,
+      "State": "Active",
+      "LastUpdateStatus": "Successful",
+      "RevisionId": "d02e918d-a33c-4048-a703-f88cc78d6cde",
+      "reserved_concurrency": 1
+    }
+  },
+  "output_tables": {
+    "bronze_measurements": {
+      "schema": [
+        [
+          "location_id",
+          "string"
+        ],
+        [
+          "sensors_id",
+          "string"
+        ],
+        [
+          "location",
+          "string"
+        ],
+        [
+          "datetime",
+          "string"
+        ],
+        [
+          "lat",
+          "string"
+        ],
+        [
+          "lon",
+          "string"
+        ],
+        [
+          "parameter",
+          "string"
+        ],
+        [
+          "units",
+          "string"
+        ],
+        [
+          "value",
+          "string"
+        ],
+        [
+          "kafka_ts",
+          "timestamp"
+        ]
+      ],
+      "snapshot": 133431740659656969,
+      "format_version": 2,
+      "metadata": "s3://airlake-701364614078-lake/live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/metadata/00000-4a7de4fc-48e1-4ba1-8a41-93979bb2f00b.metadata.json"
+    },
+    "aq_measurements": {
+      "schema": [
+        [
+          "location_id",
+          "int"
+        ],
+        [
+          "sensors_id",
+          "int"
+        ],
+        [
+          "parameter",
+          "string"
+        ],
+        [
+          "value",
+          "double"
+        ],
+        [
+          "units",
+          "string"
+        ],
+        [
+          "measured_at",
+          "timestamp"
+        ],
+        [
+          "ingested_at",
+          "timestamp"
+        ]
+      ],
+      "snapshot": 4099001637749704611,
+      "format_version": 2,
+      "metadata": "s3://airlake-701364614078-lake/live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aq_measurements/metadata/00001-de9aafbb-41ab-4acf-8b36-8407f5aecc30.metadata.json"
+    },
+    "aqi_breakpoints": {
+      "schema": [
+        [
+          "parameter",
+          "string"
+        ],
+        [
+          "aqi_lo",
+          "int"
+        ],
+        [
+          "aqi_hi",
+          "int"
+        ],
+        [
+          "conc_lo",
+          "double"
+        ],
+        [
+          "conc_hi",
+          "double"
+        ],
+        [
+          "source",
+          "string"
+        ],
+        [
+          "effective_from",
+          "date"
+        ],
+        [
+          "effective_to",
+          "date"
+        ],
+        [
+          "is_current",
+          "boolean"
+        ]
+      ],
+      "snapshot": 1375699400361475315,
+      "format_version": 2,
+      "metadata": "s3://airlake-701364614078-lake/live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aqi_breakpoints/metadata/00001-1de49ac9-1d0b-4f68-9c9f-e68c1f1f1572.metadata.json"
+    },
+    "dim_location": {
+      "schema": [
+        [
+          "location_id",
+          "int"
+        ],
+        [
+          "name",
+          "string"
+        ],
+        [
+          "lat",
+          "double"
+        ],
+        [
+          "lon",
+          "double"
+        ],
+        [
+          "station_type",
+          "string"
+        ]
+      ],
+      "snapshot": 1605047616004654495,
+      "format_version": 2,
+      "metadata": "s3://airlake-701364614078-lake/live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/dim_location/metadata/00001-cfcbcc2b-e733-4048-91b7-a0eea101eaa5.metadata.json"
+    },
+    "pm25_aqi_hourly": {
+      "schema": [
+        [
+          "location_id",
+          "int"
+        ],
+        [
+          "hour_start",
+          "timestamp"
+        ],
+        [
+          "pm25_avg",
+          "double"
+        ],
+        [
+          "aqi",
+          "int"
+        ]
+      ],
+      "snapshot": 3771861248592705246,
+      "format_version": 2,
+      "metadata": "s3://airlake-701364614078-lake/live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/pm25_aqi_hourly/metadata/00001-1374d3dd-adfd-4883-900d-128cf2bb25f7.metadata.json"
+    }
+  },
+  "api_auth": "AWS_IAM",
+  "scheduler": {
+    "Name": "airlake-live-20261114_9e2c740b-5m",
+    "State": "DISABLED",
+    "ScheduleExpression": "rate(5 minutes)",
+    "ScheduleExpressionTimezone": "UTC",
+    "StartDate": "2026-11-14T09:02:43.108000+00:00",
+    "EndDate": "2026-11-14T09:32:39+00:00",
+    "Target": {
+      "Arn": "arn:aws:scheduler:::aws-sdk:lambda:invoke",
+      "Input": "{\"FunctionName\": \"airlake-live-20261114_9e2c740b-poller\", \"InvocationType\": \"Event\", \"Payload\": \"{}\"}",
+      "RetryPolicy": {
+        "MaximumEventAgeInSeconds": 60,
+        "MaximumRetryAttempts": 0
+      },
+      "RoleArn": "arn:aws:iam::701364614078:role/airlake-live-20261114_9e2c740b-scheduler"
+    }
+  },
+  "run": {
+    "attempts": 4,
+    "active": false,
+    "lease_until": 0
+  },
+  "eight_original_snapshot_ids_unchanged": {
+    "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_bronze.aq_measurements": 82685161818144704,
+    "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_silver.aq_measurements": 5024076747683534255,
+    "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_silver.aqi_breakpoints": 3729176464341660763,
+    "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_gold.dim_location": 5513456602871200404,
+    "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_gold.pm25_aqi_hourly": 2020624562194805942,
+    "airlake_final_20261114_34207148.aqi_breakpoints": 3969327446946106977,
+    "airlake_final_20261114_34207148.dim_location": 5588263010185920013,
+    "airlake_final_20261114_34207148.pm25_aqi_hourly": 1448664929439847864
+  },
+  "s3_inventory": [
+    {
+      "key": "live-demo/20261114_9e2c740b/artifacts/aws-bundle.jar",
+      "bytes": 69034612,
+      "etag": "\"48e39e6df91eab90d571205cacf8291f\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/artifacts/glue_job.py",
+      "bytes": 7859,
+      "etag": "\"94b3f0261fa097cd07dd7510a2e358bb\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/artifacts/payload.zip",
+      "bytes": 79636,
+      "etag": "\"43957a2491d2545a9a73df992f0c3d79\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/artifacts/runtime.jar",
+      "bytes": 48252525,
+      "etag": "\"4905a79c37413c7f1f8237aa50d6cde0\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/0182482f8a2f0a7b68407e63c42f0e13da4551c196cd4ecb1114ccad537bfb3a.json",
+      "bytes": 862,
+      "etag": "\"7aa5dc03beb3ef195b15989f636c8578\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/0afb62bf4780529c6d9f9bdb1eca0e74feb5ed0656575bd81d7bff57d5a22dc9.json",
+      "bytes": 823,
+      "etag": "\"e05a4e865932f63490a87f725251e887\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/10285fdeed897dd24c1d67572e4a99e08f3c0b5b79c9bc5eaadabf6b45819093.json",
+      "bytes": 806,
+      "etag": "\"fd98e11334335818dda2aca4fb58b3c7\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/10b3f63526e42c3e05570f15fe46d8e28507e76dc58ad8954acb02d966f9a618.json",
+      "bytes": 806,
+      "etag": "\"cc97d13aa0eb360b33076cef9760893c\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/13fdbee03067bb4d3f69437c6e8043329efbfb0ce010e861be9d29be8dfef680.json",
+      "bytes": 823,
+      "etag": "\"5eb903c53e0ff645812528c74686301d\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/1435ee5ad480ab54f7a0d19ccabe73de2f6dd788d25a181f8d2e07d067af9f71.json",
+      "bytes": 806,
+      "etag": "\"0b4f9c3c96c68e7054fdc525532a7d65\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/18b112b615d71f9141041de6a804c183947653c080cd3137a6bc4792c260963f.json",
+      "bytes": 823,
+      "etag": "\"ec4d8e0a2abbe63f721452bf31f0d1c0\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/1939c6cbe6ebf633dd1b8385eb00f66be0567935dba16e0613d9cf75bc9c3ecc.json",
+      "bytes": 806,
+      "etag": "\"cfd7d47b3b2e6a9b347075e2c3f239b3\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/1fd86dba73a48045d970f9da7df12f09602db2453a08d29e725b7a95746fb576.json",
+      "bytes": 823,
+      "etag": "\"b1ffb7833ab97d61aedffe630a01ae73\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/277df406de1b0eaf6ece20cd8fda919ac563b5b403b6a0ce4e23229c0c3e3b4b.json",
+      "bytes": 806,
+      "etag": "\"1271b9b1fcf1ef6a5cd1ebfe8dc1eeeb\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/28285b13956c6034bc04887e5dfc3c82700f42fc20c30f7e1ece7794834c36b2.json",
+      "bytes": 823,
+      "etag": "\"77f3d10ed22fa1c211d14f9ce44fbe32\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/2cbd8c80a03934967620441e974fdfd34d7c1241a3abc8923a646fb503ac9239.json",
+      "bytes": 823,
+      "etag": "\"cfd565c49b60dc6f2c0a3c4b03731d4b\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/2e53d0122955e49d7541662b5993234a3bf383edbe173606470065e38d74fbd7.json",
+      "bytes": 806,
+      "etag": "\"ca8ba16bf51365ece4a2828c1eaab18c\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/2f8f17c563de3cc734c9065a25fda95577c122a9aae1a7eb0c305aef46a2e6d7.json",
+      "bytes": 806,
+      "etag": "\"ef4b3abe1817e88e0159c05be0d2206b\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/3033cde892aa48badba810d10532948fe24ab555c3090e42fa091d86c9b4479d.json",
+      "bytes": 806,
+      "etag": "\"e777cb3480375a2849e6dcd5b0eb5406\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/340f268354fc25232aa4163ca4de48729cedf020212bfdf94d2f3d372ef2a4cb.json",
+      "bytes": 806,
+      "etag": "\"29786acbdd3d6a9810da67b5e52575b4\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/3bd7ed8e0b299d25d1d01cb62ad83f36b912f296df1f6a2902e0b622e4bfcbd6.json",
+      "bytes": 823,
+      "etag": "\"ca0969c4028b75c26f37c3c867c1f33f\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/43b0f956f6c6f7c83d7dc197215eae6751f1ae2a388ebccb45e371ad52a82f73.json",
+      "bytes": 806,
+      "etag": "\"03f65476ec07cbd33b611fea97c4c163\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/443d462864a9c070c1e2cf55a8328702e2454dd595eb4de426a15697a9f5fad5.json",
+      "bytes": 806,
+      "etag": "\"6faa07ed560715eb74e9713c779e128b\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/44a4437539a36d6c22fc35cac185f2d41e007613ea4be31b98ff3d7d577097ba.json",
+      "bytes": 806,
+      "etag": "\"43ee110325f4c5230f1ca9b822e533c8\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/47217a3f8a0cc7894ab0d4941d4325309b4add9700026ceb181fab8cf5b61f94.json",
+      "bytes": 806,
+      "etag": "\"05e566c0031276003028624c270c9ce4\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/47f6da69590f04db5b1922ef6b4545edebb8acd37e29243f8a2c8b61556ce7e1.json",
+      "bytes": 806,
+      "etag": "\"107aec2677806a712ccaa59fe6753707\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/4979965b02abff4501e8f43b485d6327cda610bbe3f8b38f6b3ba03db70d5207.json",
+      "bytes": 719,
+      "etag": "\"8ba427a13695bd76e30e13c4a6813b65\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/49c96b6580f67d0ef83f823364f46631101e073c8e943dde2228bf1ad5df162e.json",
+      "bytes": 806,
+      "etag": "\"c9a7bea77e8da8642eee45e69d16472b\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/4d98c99cbdfa269c03994d5d3bdab5032720a3e961a2ae8ace3cf768f03abe9c.json",
+      "bytes": 805,
+      "etag": "\"1299fb998449c39679464b12ff85ca06\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/4e6eed42377eb1cf9878740436dca10d36885a5e4004333f4d164c072ce26e39.json",
+      "bytes": 823,
+      "etag": "\"5515eb1e555e52f9151452e3dc10e5a6\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/4f06c018420d3fb053dcec3bd0c71f2a385e1a6e7badb5ce52c1484df727d621.json",
+      "bytes": 805,
+      "etag": "\"346df7c95441caa823c346814c5caeea\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/50201380fe31317a4e62192d6c7bc0f823da5320601eabcdc0b76e010ec3caf0.json",
+      "bytes": 805,
+      "etag": "\"d9d8f745c95a87cbaaa337aff1c26fe9\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/5295171e70cf92c00e5c5004d3d28eb726337e15dd18a69201e207c67b8d701e.json",
+      "bytes": 806,
+      "etag": "\"9fbfe7bd20b901e47acd6e959489bfc5\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/54af35b486129a3e9cb9364f82f66573e5a5bc899b8c60d79c199b17204ceb45.json",
+      "bytes": 823,
+      "etag": "\"3cad9639105693f23306d5091de45bdd\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/575be1dd4a00d66d5fec52a038a17f8523b64ed4562c8c6dd658f4994156236c.json",
+      "bytes": 823,
+      "etag": "\"c7210de510a22efcfeba13e5563732f7\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/5dfad1294f6fd7f3fa236c900fb3d4dc206488834dfc91d1b50acbe7f4c965e3.json",
+      "bytes": 823,
+      "etag": "\"b080149e74c2739271cde9dc00c14cff\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/63646acecc5ffe28f5b05eb024913f4df0b6d51e0fa2330dcff6c64b26e8e19e.json",
+      "bytes": 823,
+      "etag": "\"3830c64db89742e08783ac2a62498690\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/6364845fcce6ee6bb79c11842a362f142ff0ca2dc2b8740e189bd8e5f343113b.json",
+      "bytes": 822,
+      "etag": "\"812e4390de20eab2b242d7e86ae5333a\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/6557cd60962b3f36213647e7ba7140b4f402ce8d416c1903ec2489d7b795be45.json",
+      "bytes": 823,
+      "etag": "\"1a977e5decce6742875dfd00cfffc03e\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/66ac4d3ad30f7ea41bd0fb282f28fabb1dca2eb27afa517f7c61344474fdf7ca.json",
+      "bytes": 806,
+      "etag": "\"36b312a067be508476c8f6819cffc1a9\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/6f8e85cf36d378b3a23316e731f97a00f1af8017caaf93de4abac12f4b06128f.json",
+      "bytes": 806,
+      "etag": "\"77052b49df3d83722dab0f8a91298912\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/70beab5439e98b0952edb7900c2b7aa109ad7ffd37a0c4ce15098c66889531ef.json",
+      "bytes": 823,
+      "etag": "\"dc4d21d1b4cb3ea4685a7bc08cda118b\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/77f601f6ed9fa5e999fe3f0253bfa530c8c7264597edd980d3815ad634846fac.json",
+      "bytes": 823,
+      "etag": "\"4f50336f3e13bcf58aaaaded7b7e6370\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/780dd371b15697b1fe9f45307d23a640b8a849a4b3717753f1973acef147c930.json",
+      "bytes": 806,
+      "etag": "\"e6bffe6eb589077ad2c31d0f29e27817\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/7bb663e768b1a460caecac68a8b9640758c47dafa43228aebc841140450e6a5c.json",
+      "bytes": 823,
+      "etag": "\"0cc4525f8129e2953bdcb7b079a646f9\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/85d74efb2eb44d5823b16538341b1a1cf356083cfb73cc941b5bc930c042a8a3.json",
+      "bytes": 823,
+      "etag": "\"ce37552e1bfd0a93804b3ccda172afa6\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/8a95612fa69baa22dd93c0c7f57a489635720e9a9f027ac1fbe191d6bd62222b.json",
+      "bytes": 823,
+      "etag": "\"b598364f5473aba03ee01bb949ee06b6\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/8dea6d97483baf48c08ac533560a38e08dffe851debbc648159b84b0b1d61a01.json",
+      "bytes": 823,
+      "etag": "\"967b4e5f7cadb755cc750450ffabcd8a\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/8e1a8d3a8eb7c66adafb40d070c7ade593699433dd749da524fcc50324be4408.json",
+      "bytes": 806,
+      "etag": "\"4e97604b1fdd288aaee8d94385a8e2e0\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/91ed517ad5b0a0b2f284502f325f0b0e07b2944697859160afcad4a7c958e504.json",
+      "bytes": 806,
+      "etag": "\"171300fa30363d6172418bb4c6341162\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/933d9b1a1d8b589f188db5f261b240a8b426db3de427035f9df66f09f5b3b33e.json",
+      "bytes": 806,
+      "etag": "\"91a571a54903c04afd48cf2314f8d177\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/9bacd72b98c5a36214924e9cc99169cff7d609398787a85a2bf71c49fd31bab4.json",
+      "bytes": 823,
+      "etag": "\"6d1b091ada9ee8be3f0999dfa072fa79\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/9fa7f090d768b460d99955004ae3b29264a86e0d382d161234ddf1121930564c.json",
+      "bytes": 823,
+      "etag": "\"6ff31aa08282ff60d6d5488e61437edc\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/a1167e97588a5acd6e16a820d889420a266c27d5047670a132f967248bfc8b5e.json",
+      "bytes": 823,
+      "etag": "\"56a15a34a536bd77bd3b4cb8765e142b\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/a21ddc3c22450bd2c23bd5786f26f1beccb3d0fbdd9bd5f5c191c78ba5dc9108.json",
+      "bytes": 823,
+      "etag": "\"1672310881a31a7f58c7fd2ecc95a490\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/a8a6acba0379ef439c691f8cf56f5a3242c4f6769e9544f1f272f1b0d36bb46e.json",
+      "bytes": 806,
+      "etag": "\"fd8494c18c40c2897d9820e50837191f\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/afbe4eae8a514d1143909be27cd2caa6cef2838e366afadbbbda2b7aae09bc92.json",
+      "bytes": 823,
+      "etag": "\"1f74f80fa5db73195b03f9b108985c24\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/b17b199e46da161871a575f99fe8db6ed62e8b518397b65bebd9f49b33012a49.json",
+      "bytes": 805,
+      "etag": "\"7500b14c4cfcb667e5921788aecd1746\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/b3d2f8cfdaf696148252f78e40b07accf64ddf8344084c90326b87e3f77ca3ef.json",
+      "bytes": 823,
+      "etag": "\"a2e3947874ac862010f5d6585508b69c\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/b6b66c185349f4d9328aa21e1919706426815c5a9a6dc887bac2e43326e1a99e.json",
+      "bytes": 823,
+      "etag": "\"628a01e6b1a011324381e974400002be\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/bb58e52a11a4c52096b6c0c50e69c7c047e9c288a244439a52070dfd5d6efba7.json",
+      "bytes": 822,
+      "etag": "\"9280bec9ed4396e8baa159492ddd1c7a\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/cbdfbf403e5ba969341e1aa02e8e026658e3a0946a0bcfff5bd3f5aca04bd1fc.json",
+      "bytes": 806,
+      "etag": "\"7828038af2955e8eac820d7cb37cbe07\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/d415ee30566f91026ca2491f09a238efa90858e472886abc0edfe3674713ad34.json",
+      "bytes": 823,
+      "etag": "\"9b69fb04e3cd9cbb233144c4d96ee1b4\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/d41fafdf1ea1be7e685c3c10b06b42171c8b69b16135c1b050ca1f1f8d8b6f82.json",
+      "bytes": 806,
+      "etag": "\"904d9ae6b8f45911b63eb27152bc4a99\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/d445ab382b54c658db26cdb084f53c30ae71465999c3559ffa74074f3d392413.json",
+      "bytes": 805,
+      "etag": "\"55e205f1558bf6878124e2bb21bd73e1\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/d4afa4a13a397e1617abbafcb748bcffd912e7ded65fc7a634dbf017fe4c72e2.json",
+      "bytes": 823,
+      "etag": "\"097288f9bc024d3717a37415970b27c8\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/dd763828967cf6ad8b7ca0594e832cf8c79b19d0aaec736b5f802bf5455e5f45.json",
+      "bytes": 823,
+      "etag": "\"d0e827fea98589752d46e3df3425c91e\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/dda40d6c2668f5c71c0fb371af2df5016b7aca02a453dfe3347aa67441819e8e.json",
+      "bytes": 806,
+      "etag": "\"cb87f0653cdd278b94550bef56c717ea\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/e5599ca52399389c44dee9d10f7f38899ddb11654d10da87336541bb913abb0c.json",
+      "bytes": 806,
+      "etag": "\"ff4b4a9a2913059341fb81051f482ecc\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/ea7ad6b5ca41b88492f494dedd1e16daa47e6d7849837a709a1a0e8d96b0c236.json",
+      "bytes": 806,
+      "etag": "\"eb3044b31df9e54ddf98c4ebb025c126\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/eb12378e937a0bc62fa2a2817ab9c0c1499cce3983eeb75fef030f334e2adff4.json",
+      "bytes": 806,
+      "etag": "\"2ca9281077f26091e49a20d92e0b77e8\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/f0afafcb69f00911e48142d4c453151067d2c49392e74a48ad591425258817da.json",
+      "bytes": 823,
+      "etag": "\"5310dc4c20e7f3251d444c63ad669145\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/f0d7f7a0aa94aad10488681795a7b50da3a62366310009096a558399864b93ba.json",
+      "bytes": 823,
+      "etag": "\"410c6b18ebf49da206edf557afb6ad2a\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/bronze/f9bb549d00fc001e736eb6b5581bde46f075cb086b8776e9a92623e1855aa78a.json",
+      "bytes": 823,
+      "etag": "\"13b6d09fedb0dcd73af742953fc326b3\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/evidence/72e69c5bce2fa255df4fc07eef49586fe42bbe87104cfb586e8ac4744fc7f039.json",
+      "bytes": 1593,
+      "etag": "\"7a6b14950b762212d642a767087554cd\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/exports/72e69c5bce2fa255df4fc07eef49586fe42bbe87104cfb586e8ac4744fc7f039/gold.json",
+      "bytes": 1769,
+      "etag": "\"aee29d3ab1dd426bf4b158ff1953b2ae\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/manifests/72e69c5bce2fa255df4fc07eef49586fe42bbe87104cfb586e8ac4744fc7f039.json",
+      "bytes": 13895,
+      "etag": "\"89a3b7c0d1b673c7cbbfd27337072227\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aq_measurements/data/00000-40-38dc6036-2536-4cd1-bb38-fd6f37b6d8ac-0-00001.parquet",
+      "bytes": 2963,
+      "etag": "\"771626f615ad2f99d5b75343a4605171\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aq_measurements/metadata/00000-dd69f80d-b45d-4094-ae20-cdf989cad212.metadata.json",
+      "bytes": 1180,
+      "etag": "\"a7c5436333847561cfd962d2de6d88e9\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aq_measurements/metadata/00001-de9aafbb-41ab-4acf-8b36-8407f5aecc30.metadata.json",
+      "bytes": 2588,
+      "etag": "\"d72090fdef944228b8a9645fa921dd20\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aq_measurements/metadata/4b040072-dbf7-4c4b-87a1-c2109b9a5730-m0.avro",
+      "bytes": 7520,
+      "etag": "\"bc4a65cce3be32e5a3a87b12701e04d6\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aq_measurements/metadata/snap-4099001637749704611-1-4b040072-dbf7-4c4b-87a1-c2109b9a5730.avro",
+      "bytes": 4495,
+      "etag": "\"ef7040bf9a28e98fc8583fb2797e7f89\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aqi_breakpoints/data/00002-208-0749da32-a6d4-482d-b0e3-eac9967ac655-0-00001.parquet",
+      "bytes": 2429,
+      "etag": "\"ce16db3197f2eebb1b24f1fcacc7f76e\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aqi_breakpoints/data/00004-210-0749da32-a6d4-482d-b0e3-eac9967ac655-0-00001.parquet",
+      "bytes": 2429,
+      "etag": "\"1272937f1bfa328b365a69133b6d829b\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aqi_breakpoints/data/00006-212-0749da32-a6d4-482d-b0e3-eac9967ac655-0-00001.parquet",
+      "bytes": 2428,
+      "etag": "\"6f6f849535c9126b161e48f855033792\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aqi_breakpoints/data/00009-215-0749da32-a6d4-482d-b0e3-eac9967ac655-0-00001.parquet",
+      "bytes": 2428,
+      "etag": "\"6408230ec550c9e7bcdaf7021230b257\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aqi_breakpoints/data/00011-217-0749da32-a6d4-482d-b0e3-eac9967ac655-0-00001.parquet",
+      "bytes": 2429,
+      "etag": "\"7ae69a7eb7ce749998a220239800fb46\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aqi_breakpoints/data/00013-219-0749da32-a6d4-482d-b0e3-eac9967ac655-0-00001.parquet",
+      "bytes": 2429,
+      "etag": "\"49e960afcaeb65da006d7dbffa39ed15\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aqi_breakpoints/data/00015-221-0749da32-a6d4-482d-b0e3-eac9967ac655-0-00001.parquet",
+      "bytes": 2429,
+      "etag": "\"7ab1cb6b0f0f3cd570e3dc9dedbc595b\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aqi_breakpoints/metadata/00000-01061a72-5ed6-4ae9-881a-acb8f969021a.metadata.json",
+      "bytes": 1286,
+      "etag": "\"dec9f682193010afcaf95fb7a63bafce\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aqi_breakpoints/metadata/00001-1de49ac9-1d0b-4f68-9c9f-e68c1f1f1572.metadata.json",
+      "bytes": 2694,
+      "etag": "\"a5b896cf72364f1563fb5b2cd0653ec8\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aqi_breakpoints/metadata/257a4cf2-279e-4cbd-a6e7-a4b97010f2bd-m0.avro",
+      "bytes": 7766,
+      "etag": "\"4e272fbc1fd64122455513de5cf9968e\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/aqi_breakpoints/metadata/snap-1375699400361475315-1-257a4cf2-279e-4cbd-a6e7-a4b97010f2bd.avro",
+      "bytes": 4499,
+      "etag": "\"0a46c7071af6d8045e098e5aaa61fb75\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/data/00000-0-f07fd13d-be53-4d99-a101-a0de32af187d-0-00001.parquet",
+      "bytes": 3670,
+      "etag": "\"f72293d4c84fd1d61c10e504373208b6\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/data/00001-1-f07fd13d-be53-4d99-a101-a0de32af187d-0-00001.parquet",
+      "bytes": 3618,
+      "etag": "\"0c05b2cb5261dba4cdfe57112d2fbaf8\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/data/00002-2-f07fd13d-be53-4d99-a101-a0de32af187d-0-00001.parquet",
+      "bytes": 3612,
+      "etag": "\"046d8688cc454051d81e7225c1ba6e98\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/data/00003-3-f07fd13d-be53-4d99-a101-a0de32af187d-0-00001.parquet",
+      "bytes": 3647,
+      "etag": "\"ef9b6f142ecb42b5e1bde2b8a400c327\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/data/00004-4-f07fd13d-be53-4d99-a101-a0de32af187d-0-00001.parquet",
+      "bytes": 3618,
+      "etag": "\"1a67e45b496a9a0a77752d9e72e603ef\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/data/00005-5-f07fd13d-be53-4d99-a101-a0de32af187d-0-00001.parquet",
+      "bytes": 3463,
+      "etag": "\"62c4e2cfca3944829c8699a756f89c8b\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/data/00006-6-f07fd13d-be53-4d99-a101-a0de32af187d-0-00001.parquet",
+      "bytes": 3619,
+      "etag": "\"53c83436db5d5c7a991ea67e71b4b3d3\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/data/00007-7-f07fd13d-be53-4d99-a101-a0de32af187d-0-00001.parquet",
+      "bytes": 3679,
+      "etag": "\"b71ed3c2199133db7c0e77f635059cb6\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/data/00008-8-f07fd13d-be53-4d99-a101-a0de32af187d-0-00001.parquet",
+      "bytes": 3619,
+      "etag": "\"387f635e524c519b41b671beb9a32d5c\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/data/00009-9-f07fd13d-be53-4d99-a101-a0de32af187d-0-00001.parquet",
+      "bytes": 3759,
+      "etag": "\"a514e24895c4781caf71b37eb7e208fa\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/data/00010-10-f07fd13d-be53-4d99-a101-a0de32af187d-0-00001.parquet",
+      "bytes": 3622,
+      "etag": "\"5739a07ad64b068e4354b726991bbc0e\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/data/00011-11-f07fd13d-be53-4d99-a101-a0de32af187d-0-00001.parquet",
+      "bytes": 3622,
+      "etag": "\"af1ab7f9bcf1cb62dfe58be026cb4e19\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/data/00012-12-f07fd13d-be53-4d99-a101-a0de32af187d-0-00001.parquet",
+      "bytes": 3621,
+      "etag": "\"4a33b7df8489543c2dd71b10c0e89200\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/data/00013-13-f07fd13d-be53-4d99-a101-a0de32af187d-0-00001.parquet",
+      "bytes": 3619,
+      "etag": "\"1ef35ad9f3d8aecd37f9f452cdb933fc\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/data/00014-14-f07fd13d-be53-4d99-a101-a0de32af187d-0-00001.parquet",
+      "bytes": 3622,
+      "etag": "\"e3348e01ffa1a0d7fc932c4965dfb68f\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/data/00015-15-f07fd13d-be53-4d99-a101-a0de32af187d-0-00001.parquet",
+      "bytes": 3646,
+      "etag": "\"729b579c6a8345d29c2a9ae0fc69bc67\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/metadata/00000-4a7de4fc-48e1-4ba1-8a41-93979bb2f00b.metadata.json",
+      "bytes": 2529,
+      "etag": "\"7668ee23fe43f2823f88f083909da756\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/metadata/c6f125c1-8a77-4be5-ab91-0a5fb6cded80-m0.avro",
+      "bytes": 8418,
+      "etag": "\"9c625662e3b60ff422e4ca4a34f4f083\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/bronze_measurements/metadata/snap-133431740659656969-1-c6f125c1-8a77-4be5-ab91-0a5fb6cded80.avro",
+      "bytes": 4500,
+      "etag": "\"2f273be0db3bb430b0e20ce47e10b475\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/dim_location/data/00000-282-0ef30bab-0ea0-453d-bdc4-820214be5324-0-00001.parquet",
+      "bytes": 1876,
+      "etag": "\"0659671cd86e520d21981fa64ed10632\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/dim_location/metadata/00000-3eba0e3f-d620-4ab1-9907-91340ad6b7be.metadata.json",
+      "bytes": 1037,
+      "etag": "\"c1cd4af80b61aae9abfbd77cc16e8f31\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/dim_location/metadata/00001-cfcbcc2b-e733-4048-91b7-a0eea101eaa5.metadata.json",
+      "bytes": 2437,
+      "etag": "\"5910b013489210f4f89adabb58efac5a\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/dim_location/metadata/7636cbae-6b1b-4018-9677-f6a987877fd8-m0.avro",
+      "bytes": 7397,
+      "etag": "\"215aab8578592e29e23054ef0b9150ae\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/dim_location/metadata/snap-1605047616004654495-1-7636cbae-6b1b-4018-9677-f6a987877fd8.avro",
+      "bytes": 4493,
+      "etag": "\"03d690d6f9f6d502a1086717437c40a3\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/pm25_aqi_hourly/data/00000-358-f77f4a37-bfe8-49dd-b204-5755dd30ba60-0-00001.parquet",
+      "bytes": 1428,
+      "etag": "\"8ebe0c535dc62fd042588a364c2e429d\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/pm25_aqi_hourly/metadata/00000-9f70d829-0224-470b-bce6-4fd18b399201.metadata.json",
+      "bytes": 989,
+      "etag": "\"b0b06434238b8babcc2be712509ca28d\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/pm25_aqi_hourly/metadata/00001-1374d3dd-adfd-4883-900d-128cf2bb25f7.metadata.json",
+      "bytes": 2395,
+      "etag": "\"c08456358033273c4d3f32d9ea7769df\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/pm25_aqi_hourly/metadata/a2a233a7-4ccf-438c-b064-f5b10066e509-m0.avro",
+      "bytes": 7277,
+      "etag": "\"e4bda9ad3809b19634084689bcb3be1a\""
+    },
+    {
+      "key": "live-demo/20261114_9e2c740b/warehouse/airlake_live_20261114_9e2c740b.db/pm25_aqi_hourly/metadata/snap-3771861248592705246-1-a2a233a7-4ccf-438c-b064-f5b10066e509.avro",
+      "bytes": 4494,
+      "etag": "\"8627ed1b7256d62c0e0f67730a1a28ce\""
+    }
+  ],
+  "s3_total_bytes": 117608167,
+  "poller_log_events": [
+    {
+      "timestamp_ms": 1794647040372,
+      "log": {
+        "_aws": {
+          "Timestamp": 1794647012000,
+          "CloudWatchMetrics": [
+            {
+              "Namespace": "AirLake/LiveDemo",
+              "Dimensions": [
+                [
+                  "Run",
+                  "Location"
+                ]
+              ],
+              "Metrics": [
+                {
+                  "Name": "FreshnessKnown",
+                  "Unit": "Count"
+                },
+                {
+                  "Name": "ObservationAgeSeconds",
+                  "Unit": "Seconds"
+                }
+              ]
+            }
+          ]
+        },
+        "Run": "20261114_9e2c740b",
+        "Location": "4946812",
+        "FreshnessKnown": 1,
+        "status": "recent",
+        "ObservationAgeSeconds": 812.0
+      }
+    },
+    {
+      "timestamp_ms": 1794647040412,
+      "log": {
+        "_aws": {
+          "Timestamp": 1794647012000,
+          "CloudWatchMetrics": [
+            {
+              "Namespace": "AirLake/LiveDemo",
+              "Dimensions": [
+                [
+                  "Run",
+                  "Location"
+                ]
+              ],
+              "Metrics": [
+                {
+                  "Name": "FreshnessKnown",
+                  "Unit": "Count"
+                },
+                {
+                  "Name": "ObservationAgeSeconds",
+                  "Unit": "Seconds"
+                }
+              ]
+            }
+          ]
+        },
+        "Run": "20261114_9e2c740b",
+        "Location": "4946813",
+        "FreshnessKnown": 1,
+        "status": "recent",
+        "ObservationAgeSeconds": 812.0
+      }
+    },
+    {
+      "timestamp_ms": 1794647040452,
+      "log": {
+        "_aws": {
+          "Timestamp": 1794647012000,
+          "CloudWatchMetrics": [
+            {
+              "Namespace": "AirLake/LiveDemo",
+              "Dimensions": [
+                [
+                  "Run",
+                  "Location"
+                ]
+              ],
+              "Metrics": [
+                {
+                  "Name": "FreshnessKnown",
+                  "Unit": "Count"
+                },
+                {
+                  "Name": "ObservationAgeSeconds",
+                  "Unit": "Seconds"
+                }
+              ]
+            }
+          ]
+        },
+        "Run": "20261114_9e2c740b",
+        "Location": "6123215",
+        "FreshnessKnown": 1,
+        "status": "recent",
+        "ObservationAgeSeconds": 3812.0
+      }
+    },
+    {
+      "timestamp_ms": 1794647040452,
+      "log": {
+        "metric": "AirLakePoll",
+        "accepted_new": 25,
+        "replayed": 45,
+        "rejected": 0,
+        "status": "PASS"
+      }
+    },
+    {
+      "timestamp_ms": 1794647210092,
+      "log": {
+        "_aws": {
+          "Timestamp": 1794647187000,
+          "CloudWatchMetrics": [
+            {
+              "Namespace": "AirLake/LiveDemo",
+              "Dimensions": [
+                [
+                  "Run",
+                  "Location"
+                ]
+              ],
+              "Metrics": [
+                {
+                  "Name": "FreshnessKnown",
+                  "Unit": "Count"
+                },
+                {
+                  "Name": "ObservationAgeSeconds",
+                  "Unit": "Seconds"
+                }
+              ]
+            }
+          ]
+        },
+        "Run": "20261114_9e2c740b",
+        "Location": "4946812",
+        "FreshnessKnown": 1,
+        "status": "stale",
+        "ObservationAgeSeconds": 987.0
+      }
+    },
+    {
+      "timestamp_ms": 1794647210132,
+      "log": {
+        "_aws": {
+          "Timestamp": 1794647187000,
+          "CloudWatchMetrics": [
+            {
+              "Namespace": "AirLake/LiveDemo",
+              "Dimensions": [
+                [
+                  "Run",
+                  "Location"
+                ]
+              ],
+              "Metrics": [
+                {
+                  "Name": "FreshnessKnown",
+                  "Unit": "Count"
+                },
+                {
+                  "Name": "ObservationAgeSeconds",
+                  "Unit": "Seconds"
+                }
+              ]
+            }
+          ]
+        },
+        "Run": "20261114_9e2c740b",
+        "Location": "4946813",
+        "FreshnessKnown": 1,
+        "status": "stale",
+        "ObservationAgeSeconds": 987.0
+      }
+    },
+    {
+      "timestamp_ms": 1794647210152,
+      "log": {
+        "_aws": {
+          "Timestamp": 1794647187000,
+          "CloudWatchMetrics": [
+            {
+              "Namespace": "AirLake/LiveDemo",
+              "Dimensions": [
+                [
+                  "Run",
+                  "Location"
+                ]
+              ],
+              "Metrics": [
+                {
+                  "Name": "FreshnessKnown",
+                  "Unit": "Count"
+                },
+                {
+                  "Name": "ObservationAgeSeconds",
+                  "Unit": "Seconds"
+                }
+              ]
+            }
+          ]
+        },
+        "Run": "20261114_9e2c740b",
+        "Location": "6123215",
+        "FreshnessKnown": 1,
+        "status": "recent",
+        "ObservationAgeSeconds": 3987.0
+      }
+    },
+    {
+      "timestamp_ms": 1794647210152,
+      "log": {
+        "metric": "AirLakePoll",
+        "accepted_new": 0,
+        "replayed": 45,
+        "rejected": 0,
+        "status": "PASS"
+      }
+    },
+    {
+      "timestamp_ms": 1794647301932,
+      "log": {
+        "_aws": {
+          "Timestamp": 1794647278000,
+          "CloudWatchMetrics": [
+            {
+              "Namespace": "AirLake/LiveDemo",
+              "Dimensions": [
+                [
+                  "Run",
+                  "Location"
+                ]
+              ],
+              "Metrics": [
+                {
+                  "Name": "FreshnessKnown",
+                  "Unit": "Count"
+                },
+                {
+                  "Name": "ObservationAgeSeconds",
+                  "Unit": "Seconds"
+                }
+              ]
+            }
+          ]
+        },
+        "Run": "20261114_9e2c740b",
+        "Location": "4946812",
+        "FreshnessKnown": 1,
+        "status": "stale",
+        "ObservationAgeSeconds": 1078.0
+      }
+    },
+    {
+      "timestamp_ms": 1794647301972,
+      "log": {
+        "_aws": {
+          "Timestamp": 1794647278000,
+          "CloudWatchMetrics": [
+            {
+              "Namespace": "AirLake/LiveDemo",
+              "Dimensions": [
+                [
+                  "Run",
+                  "Location"
+                ]
+              ],
+              "Metrics": [
+                {
+                  "Name": "FreshnessKnown",
+                  "Unit": "Count"
+                },
+                {
+                  "Name": "ObservationAgeSeconds",
+                  "Unit": "Seconds"
+                }
+              ]
+            }
+          ]
+        },
+        "Run": "20261114_9e2c740b",
+        "Location": "4946813",
+        "FreshnessKnown": 1,
+        "status": "stale",
+        "ObservationAgeSeconds": 1078.0
+      }
+    },
+    {
+      "timestamp_ms": 1794647302012,
+      "log": {
+        "_aws": {
+          "Timestamp": 1794647278000,
+          "CloudWatchMetrics": [
+            {
+              "Namespace": "AirLake/LiveDemo",
+              "Dimensions": [
+                [
+                  "Run",
+                  "Location"
+                ]
+              ],
+              "Metrics": [
+                {
+                  "Name": "FreshnessKnown",
+                  "Unit": "Count"
+                },
+                {
+                  "Name": "ObservationAgeSeconds",
+                  "Unit": "Seconds"
+                }
+              ]
+            }
+          ]
+        },
+        "Run": "20261114_9e2c740b",
+        "Location": "6123215",
+        "FreshnessKnown": 1,
+        "status": "recent",
+        "ObservationAgeSeconds": 4078.0
+      }
+    },
+    {
+      "timestamp_ms": 1794647302012,
+      "log": {
+        "metric": "AirLakePoll",
+        "accepted_new": 0,
+        "replayed": 43,
+        "rejected": 0,
+        "status": "PASS"
+      }
+    },
+    {
+      "timestamp_ms": 1794643345117,
+      "log": {
+        "metric": "AirLakePoll",
+        "status": "FAILED_OR_UNCERTAIN",
+        "exception_type": "ValueError"
+      }
+    }
+  ],
+  "cloudwatch_freshness_metrics": {
+    "4946812": [
+      {
+        "Timestamp": "2026-11-14T09:06:00+00:00",
+        "SampleCount": 1.0,
+        "Maximum": 987.0,
+        "Unit": "Seconds"
+      },
+      {
+        "Timestamp": "2026-11-14T09:07:00+00:00",
+        "SampleCount": 1.0,
+        "Maximum": 1078.0,
+        "Unit": "Seconds"
+      },
+      {
+        "Timestamp": "2026-11-14T09:03:00+00:00",
+        "SampleCount": 1.0,
+        "Maximum": 812.0,
+        "Unit": "Seconds"
+      }
+    ],
+    "4946813": [
+      {
+        "Timestamp": "2026-11-14T09:06:00+00:00",
+        "SampleCount": 1.0,
+        "Maximum": 987.0,
+        "Unit": "Seconds"
+      },
+      {
+        "Timestamp": "2026-11-14T09:07:00+00:00",
+        "SampleCount": 1.0,
+        "Maximum": 1078.0,
+        "Unit": "Seconds"
+      },
+      {
+        "Timestamp": "2026-11-14T09:03:00+00:00",
+        "SampleCount": 1.0,
+        "Maximum": 812.0,
+        "Unit": "Seconds"
+      }
+    ],
+    "6123215": [
+      {
+        "Timestamp": "2026-11-14T09:06:00+00:00",
+        "SampleCount": 1.0,
+        "Maximum": 3987.0,
+        "Unit": "Seconds"
+      },
+      {
+        "Timestamp": "2026-11-14T09:07:00+00:00",
+        "SampleCount": 1.0,
+        "Maximum": 4078.0,
+        "Unit": "Seconds"
+      },
+      {
+        "Timestamp": "2026-11-14T09:03:00+00:00",
+        "SampleCount": 1.0,
+        "Maximum": 3812.0,
+        "Unit": "Seconds"
+      }
+    ]
+  },
+  "glue_run": {
+    "Id": "jr_cb6617ddbfe3db1494c64c2a6f60e6c8f8e27215c9cb5c087044732dd6477768",
+    "JobRunState": "SUCCEEDED",
+    "GlueVersion": "5.0",
+    "WorkerType": "G.1X",
+    "NumberOfWorkers": 2,
+    "ExecutionTime": 148,
+    "DPUSeconds": 297.0,
+    "StartedOn": "2026-11-14T09:14:34.667000+00:00",
+    "CompletedOn": "2026-11-14T09:17:10.186000+00:00",
+    "effective_job_parameters": {
+      "--extra-py-files": "s3://airlake-701364614078-lake/live-demo/20261114_9e2c740b/artifacts/payload.zip",
+      "--user-jars-first": "true",
+      "--custom-logGroup-prefix": "/airlake/live-demo/20261114_9e2c740b",
+      "--manifest_sha256": "72e69c5bce2fa255df4fc07eef49586fe42bbe87104cfb586e8ac4744fc7f039",
+      "--conf": "spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions --conf spark.sql.catalog.live=org.apache.iceberg.spark.SparkCatalog --conf spark.sql.catalog.live.catalog-impl=org.apache.iceberg.aws.glue.GlueCatalog --conf spark.sql.catalog.live.io-impl=org.apache.iceberg.aws.s3.S3FileIO --conf spark.sql.catalog.live.warehouse=s3://airlake-701364614078-lake/live-demo/20261114_9e2c740b/warehouse/ --conf spark.sql.catalog.live.client.region=ap-southeast-2 --conf spark.sql.catalog.live.table-default.format-version=2 --conf spark.sql.catalog.live.table-default.write.format.default=parquet --conf spark.sql.session.timeZone=UTC --conf spark.sql.shuffle.partitions=2",
+      "--manifest_key": "live-demo/20261114_9e2c740b/manifests/72e69c5bce2fa255df4fc07eef49586fe42bbe87104cfb586e8ac4744fc7f039.json",
+      "--job-bookmark-option": "job-bookmark-disable",
+      "--TempDir": "s3://airlake-701364614078-lake/live-demo/20261114_9e2c740b/temp/",
+      "--extra-jars": "s3://airlake-701364614078-lake/live-demo/20261114_9e2c740b/artifacts/runtime.jar,s3://airlake-701364614078-lake/live-demo/20261114_9e2c740b/artifacts/aws-bundle.jar"
+    }
+  },
+  "billing_measured": false,
+  "counts": {
+    "bronze": 70,
+    "silver": 70,
+    "breakpoints": 7,
+    "dimensions": 3,
+    "hourly": 8
+  },
+  "evidence_scope": "Bounded real AWS acceptance after separately approved repairs; not continuously scheduled ingestion or public data redistribution",
+  "tests": {
+    "focused_offline_passed": 36,
+    "relevant_existing_passed": 86,
+    "isolated_spark": "PASS synthetic offline fixture only: 9 Bronze/9 Silver/3 dimensions/6 facts; not the basis of cloud PASS",
+    "gold_production_code_changed": false,
+    "full_historical_gold_48_suite": "not rerun; unchanged code hashes and actual new AWS computation verified"
+  },
+  "count_evidence": {
+    "bronze": "Actual Spark source.count in original Silver metrics: 70; independently validated all 70 raw objects and manifest hashes",
+    "silver": "Actual original Silver output.count: 70",
+    "breakpoints": "Original Gold collected and validated seven current seeded breakpoints during each pass in the fresh namespace",
+    "dimensions": "Original Gold actual count 3; independent Athena join-name comparison",
+    "hourly": "Original Gold actual count 8; all eight keys/values independently verified by one Athena SELECT"
+  },
+  "polling_outcome": {
+    "total_attempts": 4,
+    "initial_attempt": "45 records persisted, then metrics failed; failure preserved separately",
+    "fixed_manual": "PASS: 25 new, 45 replays, 0 rejected",
+    "timer_phase": "Two further completed invocations observed while schedule enabled; 0 new and 45/43 replays respectively. No additional manual invocation was submitted. Exact five-minute dispatch regularity is not claimed from this bounded window.",
+    "final_raw_distribution": {
+      "4946812": 34,
+      "4946813": 34,
+      "6123215": 2
+    },
+    "data_duplicates": 0,
+    "final_schedule": "DISABLED",
+    "final_poller_concurrency": 0
+  },
+  "source_phases": {
+    "raw_collection": "Envelope ingested_at is poll-start UTC assigned on first accepted object and retained on replay; observed_at is actual source period end",
+    "silver_processing": "Original Silver ingested_at remains its processing current_timestamp; source acquisition time is retained in Bronze kafka_ts compatibility field and raw envelope",
+    "gold_processing": "export_provenance.computed_at records actual AWS Glue processing",
+    "source_measurement_period": "One-hour source periods with observed five-minute spacing for network stations and hourly Dragon samples; polling cadence is not source freshness"
+  },
+  "api_limits": {
+    "athena_selects_used": 1,
+    "athena_scanned_bytes": 685,
+    "http_requests_used": 8,
+    "additional_requests_executed": 0,
+    "auth": "AWS_IAM; anonymous 403 confirmed",
+    "latest_aqi": "null; no instantaneous or official VN_AQI claim",
+    "current_export": "Immutable version promoted only after independent Athena match; not continuously refreshing",
+    "historical_routes": "Historical CSV still returned 72 accepted rows; old API/table resources unchanged"
+  },
+  "screenshots": {
+    "latest_view": "Private runtime artifact latest-api-verified-stopped.png, generated from the actual signed latest response; no extra AWS requests",
+    "historical_superset": "Existing five panels preserved; no re-query or retargeting performed during this budget"
+  },
+  "cost_notes": {
+    "measured_bill": false,
+    "glue_reported_dpu_seconds": 297,
+    "glue_execution_seconds": 148,
+    "athena_bytes_scanned": 685,
+    "retained_objects": 122,
+    "retained_bytes": 117608167,
+    "remaining_drivers": [
+      "Lambda execution and code versions",
+      "DynamoDB on-demand operations/storage",
+      "S3 storage/requests",
+      "Secrets Manager retained secret",
+      "CloudWatch logs/custom metrics",
+      "Glue catalog"
+    ],
+    "no_auto_cleanup": true,
+    "scheduler_disabled_no_recurring_polling": true
+  },
+  "limitations": [
+    "Bounded test only; re-enablement, counter rearming or another cloud batch requires a new reviewed scope.",
+    "Source timestamps may be stale despite a successful poll; UI accurately labels that distinction.",
+    "Five-minute rate is configured; the short enabled window does not prove exact five-minute dispatch timing. Async delivery can duplicate invocation attempts, while raw/state outputs remain idempotent.",
+    "Hourly automatic Glue/export refresh is not implemented or enabled; cross-invocation batch versioning remains owner work.",
+    "Historical Superset panels remain on their previously accepted source; latest view is a separate real API-backed snapshot.",
+    "Telegram staging/E2E remains owned by Khue; no SNS, Telegram or deployed bot changes were performed.",
+    "Public redistribution for the network sources remains uncleared; API is private IAM-authenticated."
+  ]
+}

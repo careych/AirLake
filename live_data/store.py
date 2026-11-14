@@ -37,7 +37,20 @@ def pack(item):
 def unpack(item):
     from boto3.dynamodb.types import TypeDeserializer
 
-    return {k: TypeDeserializer().deserialize(v) for k, v in item.items()}
+    value = {k: TypeDeserializer().deserialize(v) for k, v in item.items()}
+    # DynamoDB decodes numeric attributes as Decimal; freshness expects the
+    # integral cadence written by this poller, not the SDK's transport type.
+    cadence = value.get("cadence_seconds")
+    if cadence is not None:
+        if (
+            not isinstance(cadence, Decimal)
+            or not cadence.is_finite()
+            or cadence != cadence.to_integral_value()
+            or not 1 <= cadence <= 86400
+        ):
+            raise ValueError("Invalid stored observation cadence")
+        value["cadence_seconds"] = int(cadence)
+    return value
 
 
 def conditional(error):

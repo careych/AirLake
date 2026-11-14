@@ -1,9 +1,39 @@
 # Bounded current-data pilot
 
-This branch prepares a five-minute AWS Lambda poller, a private current-data
-API and one frozen Glue batch. **It has not deployed these resources.** Source
-discovery is real; unit fixtures and the new isolated Spark test are explicitly
-synthetic. Previous PR #13/#14 historical acceptance remains unchanged.
+## Actual bounded AWS acceptance — PASS
+
+After separately approved Scheduler/number-boundary repairs, real OpenAQ
+polling retained **70 distinct observations (34 / 34 / 2)**. The corrected
+manual invocation accepted 25 new observations and replayed the first 45 without
+duplication. Two additional invocations during the enabled timer window accepted
+no new upstream data and replayed 45/43 records. Four total data attempts were
+consumed, including the initial post-ingestion metrics failure. All failures
+and original receipts remain retained; no counter or data reset occurred.
+
+One real Glue 5.0 job processed 70 Bronze -> 70 Silver rows, seven breakpoints,
+three dimensions and eight Gold hourly facts. An unchanged rerun inside that
+job preserved all five snapshot IDs. Every hourly mean matched an independent
+raw-record calculation within `1e-10` (maximum error `7.105427357601002e-15`).
+One Athena SELECT independently verified all eight facts and station joins,
+scanning 685 bytes with result reuse disabled. Only then was the versioned
+export pointer promoted. All eight signed/unsigned HTTP checks passed: anonymous
+access denied, signed health/latest/three filters/current hourly accepted,
+and historical CSV still returned 72 rows. Eight original snapshots were
+independently checked unchanged.
+
+API base: `https://44nlt6u3x6yoja2ygjx64agysa0phjhz.lambda-url.ap-southeast-2.on.aws/`.
+It requires same-account IAM/SigV4 authorization. The exact one-query/eight-HTTP
+budget has been consumed; do not repeat smoke commands without new approval.
+The latest page was rendered from the actual signed API response and explicitly
+labels the poller stopped. The five historical Superset panels were preserved,
+not retargeted or queried again. No current Superset trend chart is claimed.
+
+**Final state: schedule DISABLED, poller concurrency zero, no active data lease.**
+The API stays available read-only. No recurring Glue/export refresh, continuously
+live API or production alert delivery is claimed. See the [actual execution evidence](../tests/evidence/live_openaq_aws_acceptance_2026-11-14.json)
+for job/query IDs, five schemas/snapshots, exact resource inventory, HTTP outcomes,
+actual CloudWatch age metrics, costs/limits and recovery history. The earlier
+preparation and stopped-attempt records are historical checkpoints.
 
 ## Implemented data path
 
@@ -11,7 +41,8 @@ synthetic. Previous PR #13/#14 historical acceptance remains unchanged.
 metadata validation and nine-field Bronze record adapter. Lambda writes each
 accepted observation to immutable S3 before updating DynamoDB latest state and
 then the cursor. `observed_at` is the source period end, not ingestion time.
-`ingested_at` is the first successful raw acceptance time retained on replay.
+`ingested_at` is the poll invocation UTC time assigned to the first accepted
+raw object and retained on replay; it is not an S3 commit timestamp.
 The source's measurement period is retained separately: a one-hour averaging
 period does not imply hourly reporting.
 
@@ -119,7 +150,7 @@ conditional pointer replacement before scheduling further batches.
 Account `701364614078`, region `ap-southeast-2`, operator profile `airlake`.
 New scope `20261114_9e2c740b`:
 
-| Resource | Exact proposed name |
+| Resource | Exact deployed name |
 |---|---|
 | Poller | `airlake-live-20261114_9e2c740b-poller` |
 | API | `airlake-live-20261114_9e2c740b-api` |
@@ -160,14 +191,19 @@ PLAN_SHA=$(cat "$PACKET/plan.sha256")
 live_sdk -m live_data.deploy preflight --packet "$PACKET"
 ```
 
-The new OpenAQ secret does not currently exist. After separate write approval,
-the deploy command copies the existing explicitly selected local OpenAQ key
-into plaintext SecretString internally. No token CLI value, log or private
+The scoped OpenAQ secret now exists from the approved deployment. Its value
+was copied internally from the explicitly authorized local key into plaintext
+SecretString. Do not repeat creation or retrieve/display the value. For a future
+new run, the deploy command requires fresh scope approval. No token CLI value, log or private
 packet is created. It does not read or change existing Telegram secrets.
 
-## Approved operations only — NOT EXECUTED
+## Retained execution procedure — completed; do not repeat
 
-The following require explicit exact-scope approval first:
+The bounded run and its one-query/eight-HTTP budget are complete. These commands
+document the reviewed procedure; they are not instructions to repeat it against
+retained resources. Use the recorded source-fix packet for provenance. A future
+window or batch needs separately reviewed scope/approval; never reset the current
+counter, overwrite receipts or reuse the existing one-shot output namespace.
 
 ```sh
 live_sdk -m live_data.deploy deploy --packet "$PACKET" \
@@ -203,8 +239,10 @@ open "$PACKET/latest-measurements.html"  # macOS; no further AWS request
 
 The thirty-minute deadline starts during deployment; it is not silently
 extended if preparation consumes time. Six attempts include the manual call.
-Schedule is enabled only after manual acceptance, with RequestResponse delivery,
-zero Scheduler retries and zero Lambda asynchronous retries. If the window
+Schedule is enabled only after manual acceptance, with asynchronous Event delivery,
+zero Scheduler retries and zero Lambda asynchronous retries. AWS asynchronous delivery can still duplicate an
+invocation; the durable attempt gate and observation identities bound source
+polling and prevent duplicate raw/latest updates. If the window
 expires, stop and seek a newly reviewed execution window. A timeout can leave
 an in-flight invocation for at most the configured Lambda timeout; freezing
 requires its lease to be explicitly released, not merely elapsed.
