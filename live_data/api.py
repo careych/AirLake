@@ -72,7 +72,11 @@ def latest(store, now, location=None):
 
 
 def handler(event, context, store=None, now=None):
-    if event.get("rawPath") not in ("/api/v1/latest", "/api/v1/current/hourly"):
+    if event.get("rawPath") not in (
+        "/api/v1/latest",
+        "/api/v1/current/hourly",
+        "/api/v1/history",
+    ):
         return historical_handler(event, context)
     request = event.get("requestContext", {})
     if request.get("authorizer", {}).get("iam", {}).get("accountId") != ACCOUNT:
@@ -80,6 +84,13 @@ def handler(event, context, store=None, now=None):
     if request.get("http", {}).get("method") not in ("GET", "HEAD"):
         return reply(405, {"error": "read_only"})
     try:
+        if event.get("rawPath") == "/api/v1/history":
+            from historical.api import handle
+
+            result = handle(event, store or AWSStore(clients()))
+            if request["http"]["method"] == "HEAD":
+                result["body"] = ""
+            return result
         if event.get("rawPath") == "/api/v1/current/hourly":
             from live_data.export import handle
 
