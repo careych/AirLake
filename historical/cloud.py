@@ -22,6 +22,7 @@ PREFIX = "historical-demo/" + RUN + "/"
 DATABASE = "airlake_history_" + RUN
 JOB = "airlake-history-" + RUN.replace("_", "-")
 SUPERSEDED_RUN = "20261114_7a6e91c2"
+ROLE_PROPAGATION_SECONDS = 30
 # Private API code/config that run 1's publication left deployed (not HTTP-accepted).
 SUPERSEDED_API_SHA256 = (
     "36ae59d77df60dbd7fdf3979f9c8c0e807bd1815f97f98d0bbf96cc464544af8"
@@ -423,6 +424,8 @@ def run_glue(c, p, packet, digest):
     )["PolicyDocument"]
     if policy != p["policy"]:
         raise ValueError("Role policy not established")
+    # Run 1 failed to start 5 s after role creation; give IAM time to propagate.
+    time.sleep(ROLE_PROPAGATION_SECONDS)
     r.write("create_one_history_job", lambda: c["glue"].create_job(**definition))
     r.write("start_one_history_run", lambda: c["glue"].start_job_run(JobName=JOB))
     return r.value

@@ -219,7 +219,7 @@ class HistoricalReleaseTests(unittest.TestCase):
                 "PolicyDocument": p["policy"]
             }
             clients["glue"].start_job_run.return_value = {"JobRunId": "SYNTHETIC_JOB"}
-            with patch.object(cloud, "preflight"):
+            with patch.object(cloud, "preflight"), patch.object(cloud.time, "sleep"):
                 cloud.run_glue(clients, p, packet, digest)
                 with self.assertRaises(ValueError):
                     cloud.run_glue(clients, p, packet, digest)
@@ -250,7 +250,7 @@ class HistoricalReleaseTests(unittest.TestCase):
             p, _ = cloud.load(packet)
             clients = {k: Mock() for k in ("iam", "s3", "glue")}
             clients["s3"].put_object.side_effect = TimeoutError("SYNTHETIC")
-            with patch.object(cloud, "preflight"):
+            with patch.object(cloud, "preflight"), patch.object(cloud.time, "sleep"):
                 with self.assertRaises(TimeoutError):
                     cloud.run_glue(clients, p, packet, digest)
                 with self.assertRaises(ValueError):
