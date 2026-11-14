@@ -316,5 +316,26 @@ learning notes and image exports are outside this PR's selected candidates pendi
 owner/archive decisions; preserve their attribution and source material.
 
 For the disabled-by-default polling controller and verified Gold/API refresh, see
-[bounded cloud operations](docs/live-operations.md). The new controller is prepared
-for review; its deployment and live acceptance are pending separate approval.
+[bounded cloud operations](docs/live-operations.md). The bounded controller completed its recorded AWS acceptance; scheduling and
+worker concurrency remain disabled. Its evidence distinguishes retained output
+from an unattended production service.
+
+
+The Vietnamese citizen application is documented in
+[Hanoi citizen release](docs/hanoi-citizen-release.md). The existing
+[public AWS site](https://public.dhyvgpdsnj4zi.amplifyapp.com/) serves one licensed
+station as a dated, stale bounded snapshot; a password-protected preview covers
+three stations. The six-page historical revision has passed local browser checks and awaits
+one consolidated data-and-website release approval; the cosmetic-only release
+was cancelled. Public Telegram signup and
+continuous website refresh are not enabled. Superset remains the internal BI client.
+
+The expanded [historical Hanoi product](docs/historical-product.md) now passes
+local real-data acceptance: 17,181 September 2026 PM2.5 records, 2,133 hourly
+facts and 90 daily summaries. The licensed public projection has 720 hourly and
+30 daily rows, with tested 7/30-day analytics and JSON/CSV research filters.
+The approved AWS backfill and two Athena comparisons completed. A strict local
+comparison found one experimental AQI rounding difference at a floating-point
+half-tie, so the consolidated release stopped. The additive private history API
+is deployed but awaits HTTP acceptance; both websites retain their first sparse
+bounded snapshots. See the actual recovery evidence and blocker in the guide.

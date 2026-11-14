@@ -1,0 +1,120 @@
+{
+  "status": "PASS_DEPLOYMENT_HOSTED_BROWSER_AND_USER_CONFIRMED_EXTERNAL_ACCESS",
+  "recorded_at": "2026-11-14T13:57:22.579082+00:00",
+  "scope": "approved two-phase execution; immutable bounded pilot; no continuous public refresh",
+  "promotion": {
+    "plan_sha256": "15b69f98004246be31393cc73b4ffdb5d666470f456e4d8ee3541d6901f65c41",
+    "status": "PASS_PROMOTED_AND_PRIVATE_HTTP",
+    "export_sha256": "d3226cf36a89bf6d543d4eb2f075da3c912a2f0ea8e12db48cd4fcb0dbc8b803",
+    "previous_export_sha256": "fd3ae933ebb13c3ef989eee809c2aebc586b4a18007a8d6c54977a05233b99d9",
+    "reused_query_id": "e476332e-79e9-4b8a-8e59-c36b68437a77",
+    "new_selects": 0,
+    "new_glue_runs": 0,
+    "new_poll_attempts": 0,
+    "signed_http_statuses": [
+      200,
+      200,
+      200
+    ],
+    "hourly_rows": 14
+  },
+  "hosting": {
+    "plan_sha256": "cda55682f3d3de79ed56892a468caa7d371c3c348d7d301e368b9e37327ece38",
+    "app_id": "dhyvgpdsnj4zi",
+    "public_url": "https://public.dhyvgpdsnj4zi.amplifyapp.com",
+    "protected_demo_url": "https://demo.dhyvgpdsnj4zi.amplifyapp.com",
+    "deployments": {
+      "demo": {
+        "job_id": "1",
+        "status": "SUCCEED",
+        "url": "https://demo.dhyvgpdsnj4zi.amplifyapp.com"
+      },
+      "public": {
+        "job_id": "1",
+        "status": "SUCCEED",
+        "url": "https://public.dhyvgpdsnj4zi.amplifyapp.com"
+      }
+    },
+    "public_station_id": 6123215,
+    "public_hourly_rows": 4,
+    "protected_station_count": 3,
+    "protected_hourly_rows": 14,
+    "public_redistribution_license": "https://creativecommons.org/licenses/by/4.0/",
+    "attribution": [
+      "OpenAQ",
+      "AirGradient",
+      "srgillo"
+    ],
+    "branches": {
+      "public": {
+        "basic_auth": false,
+        "auto_build": false
+      },
+      "demo": {
+        "basic_auth": true,
+        "auto_build": false
+      }
+    },
+    "anonymous_denied_paths": [
+      "/",
+      "/app.js",
+      "/config.js",
+      "/styles.css",
+      "/icon.svg",
+      "/data/<approved-demo-SHA256>.json"
+    ],
+    "anonymous_status": 401,
+    "external_device_confirmation": {
+      "status": "PASS_USER_REPORTED",
+      "date": "2026-11-14",
+      "timezone": "Asia/Ho_Chi_Minh",
+      "source": "user reply to external-device/separate-network browser verification request",
+      "public_url": "https://public.dhyvgpdsnj4zi.amplifyapp.com",
+      "confirmed": [
+        "page accessible without login",
+        "Dragon station displayed",
+        "PM2.5 40,5 µg/m³ displayed",
+        "Dữ liệu đã cũ displayed"
+      ],
+      "exact_device_and_network": "not separately specified in reply",
+      "new_agent_website_gets": 0,
+      "new_aws_operations": 0
+    },
+    "independent_remote_fetch": "TOOL_COULD_NOT_RETRIEVE_NEW_URLS_NOT_COUNTED_AS_PASS",
+    "website_gets_upper_accounting": 30,
+    "website_gets_cap": 40
+  },
+  "browser_checks": [
+    "anonymous_demo_html_js_json_css_config_icon_denied",
+    "real_https_public_dragon_four_points_twenty_gaps_stale",
+    "licensed_json_csv_download_from_real_hosted_data",
+    "390px_mobile_layout_no_overflow_same_real_https_page",
+    "authenticated_demo_three_station_filters_fourteen_facts_unlicensed_downloads_disabled"
+  ],
+  "offline_tests": {
+    "first_focused_run_passed": 101,
+    "after_adding_mock_hosting_test_passed": 17,
+    "overlapping_tests_between_runs": 16,
+    "distinct_tests_passed": 102,
+    "local_browser_checks_passed": 8,
+    "gold_spark_regression": "not rerun; existing Gold production scripts unchanged"
+  },
+  "final_aws_state": {
+    "scheduler": "DISABLED",
+    "reserved_concurrency": {
+      "poller": 0,
+      "refresh": 0
+    },
+    "run_attempts": 6,
+    "run_lease_active": false,
+    "controller_lock_active": false,
+    "api_auth_type": "AWS_IAM"
+  },
+  "limitations": [
+    "stale bounded readings, not a live feed",
+    "one publicly licensed station; other two password-protected, redistribution unresolved",
+    "no seven-day completeness evidence",
+    "Telegram public registration and continuous alerts unverified; no Telegram resources touched",
+    "billing not measured; storage and hosting traffic can incur costs"
+  ]
+}

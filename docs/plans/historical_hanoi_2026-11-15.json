@@ -1,0 +1,188 @@
+{
+  "account": "701364614078",
+  "api_function": "airlake-live-20261114_9e2c740b-api",
+  "artifacts": {
+    "api-payload.zip": "36ae59d77df60dbd7fdf3979f9c8c0e807bd1815f97f98d0bbf96cc464544af8",
+    "glue_job.py": "0b6f5d4bb3a4aa55aaa77a3480aed58fa8db4ddb5e0ca3e58df8e91330f0a4d3",
+    "manifest.json": "9aeab1ac6b628066617c3b93d14cd2dab8ee1265cbeca79d320097bd178726ae",
+    "payload.zip": "d49e1242a6acae8cc05cda69a3e543d00779825b097ca8b03f5f36998bf71567",
+    "records.jsonl": "31fcd9ee61d9989c22db2fe95b08e27c370f67cc91b7976d9ccefaa7bd666b46"
+  },
+  "athena_selects": 2,
+  "database": "airlake_history_20261114_7a6e91c2",
+  "derived_site_zip_limit_bytes": 1000000,
+  "existing_jar_sources": [
+    "s3://airlake-701364614078-lake/live-demo/20261114_9e2c740b/artifacts/runtime.jar",
+    "s3://airlake-701364614078-lake/live-demo/20261114_9e2c740b/artifacts/aws-bundle.jar"
+  ],
+  "expected_daily_rows": 90,
+  "expected_dimensions": 3,
+  "expected_hourly_rows": 2133,
+  "glue_runs": 1,
+  "glue_workers": 2,
+  "job": "airlake-history-20261114-7a6e91c2",
+  "manual_amplify_deployments": 2,
+  "new_api_inline_policy": "HistoricalResearch20261114",
+  "new_api_read_keys": [
+    "historical-demo/20261114_7a6e91c2/outputs/export.json",
+    "historical-demo/20261114_7a6e91c2/outputs/acceptance.json"
+  ],
+  "new_website_get_budget": 40,
+  "no_historical_resource_changes": true,
+  "no_polling_or_scheduler_changes": true,
+  "policy": {
+    "Statement": [
+      {
+        "Action": [
+          "s3:GetObject"
+        ],
+        "Effect": "Allow",
+        "Resource": [
+          "arn:aws:s3:::airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/*",
+          "arn:aws:s3:::airlake-701364614078-lake/live-demo/20261114_9e2c740b/artifacts/runtime.jar",
+          "arn:aws:s3:::airlake-701364614078-lake/live-demo/20261114_9e2c740b/artifacts/aws-bundle.jar"
+        ]
+      },
+      {
+        "Action": [
+          "s3:PutObject"
+        ],
+        "Effect": "Allow",
+        "Resource": [
+          "arn:aws:s3:::airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/warehouse/*",
+          "arn:aws:s3:::airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/outputs/*",
+          "arn:aws:s3:::airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/temp/*"
+        ]
+      },
+      {
+        "Action": [
+          "s3:DeleteObject",
+          "s3:AbortMultipartUpload"
+        ],
+        "Effect": "Allow",
+        "Resource": [
+          "arn:aws:s3:::airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/warehouse/*",
+          "arn:aws:s3:::airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/temp/*"
+        ]
+      },
+      {
+        "Action": [
+          "s3:ListBucket"
+        ],
+        "Condition": {
+          "StringLike": {
+            "s3:prefix": [
+              "historical-demo/20261114_7a6e91c2/*"
+            ]
+          }
+        },
+        "Effect": "Allow",
+        "Resource": "arn:aws:s3:::airlake-701364614078-lake"
+      },
+      {
+        "Action": [
+          "s3:GetBucketLocation"
+        ],
+        "Effect": "Allow",
+        "Resource": "arn:aws:s3:::airlake-701364614078-lake"
+      },
+      {
+        "Action": [
+          "glue:GetDatabase",
+          "glue:CreateDatabase",
+          "glue:GetTable",
+          "glue:GetTables",
+          "glue:CreateTable",
+          "glue:UpdateTable",
+          "glue:GetTableVersion",
+          "glue:GetTableVersions"
+        ],
+        "Effect": "Allow",
+        "Resource": [
+          "arn:aws:glue:ap-southeast-2:701364614078:catalog",
+          "arn:aws:glue:ap-southeast-2:701364614078:database/airlake_history_20261114_7a6e91c2",
+          "arn:aws:glue:ap-southeast-2:701364614078:table/airlake_history_20261114_7a6e91c2/bronze_measurements",
+          "arn:aws:glue:ap-southeast-2:701364614078:table/airlake_history_20261114_7a6e91c2/aq_measurements",
+          "arn:aws:glue:ap-southeast-2:701364614078:table/airlake_history_20261114_7a6e91c2/aqi_breakpoints",
+          "arn:aws:glue:ap-southeast-2:701364614078:table/airlake_history_20261114_7a6e91c2/dim_location",
+          "arn:aws:glue:ap-southeast-2:701364614078:table/airlake_history_20261114_7a6e91c2/pm25_aqi_hourly",
+          "arn:aws:glue:ap-southeast-2:701364614078:table/airlake_history_20261114_7a6e91c2/pm25_daily"
+        ]
+      },
+      {
+        "Action": [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        "Effect": "Allow",
+        "Resource": [
+          "arn:aws:logs:ap-southeast-2:701364614078:log-group:/airlake/history-demo/20261114_7a6e91c2/*",
+          "arn:aws:logs:ap-southeast-2:701364614078:log-group:/airlake/history-demo/20261114_7a6e91c2/*:*"
+        ]
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  "prefix": "historical-demo/20261114_7a6e91c2/",
+  "private_api_http_reads": 5,
+  "private_plan_sha256": "dd3ee0dafc6bab979a9cc9e2a339bdee39ed3728ad37b281fe3b19edaa1f4aa0",
+  "production_sha256": {
+    "scripts/gold_batch.py": "f11d7e954b8e40765f95833f5c76ee013d2bb6a44f9c97a4f79ad3b06dd45836",
+    "scripts/silver_batch.py": "71f9a2cc800e8ebde7987afea4c490c1ca9765ec41253e32766f0d1e48c12259"
+  },
+  "profile": "airlake",
+  "protected_rows": {
+    "daily": 90,
+    "hourly": 2133
+  },
+  "public_rows": {
+    "daily": 30,
+    "hourly": 720
+  },
+  "public_station_allowlist": [
+    6123215
+  ],
+  "region": "ap-southeast-2",
+  "retries": 0,
+  "role": "airlake-history-20261114-7a6e91c2",
+  "run": "20261114_7a6e91c2",
+  "source_records": 17181,
+  "status": "PREPARED_NOT_EXECUTED_AWAITING_NEW_APPROVAL",
+  "tables": [
+    "bronze_measurements",
+    "aq_measurements",
+    "aqi_breakpoints",
+    "dim_location",
+    "pm25_aqi_hourly",
+    "pm25_daily"
+  ],
+  "timeout_minutes": 10,
+  "website_app_id": "dhyvgpdsnj4zi",
+  "website_bundle_rule": "Derive only from independently verified AWS export and the frozen website_source_sha256 assets; record actual ZIP hashes before two deployments.",
+  "website_source_sha256": {
+    "citizen/__init__.py": "442347fd2c512c7e73a6ab16a105e89a99cf32a0760608ce9bbcee37f21f5da1",
+    "citizen/build.py": "2daa3c47b85adfdb0d4e8d9357dc02a21395efab66f47376d3a157b3688b7660",
+    "citizen/data.py": "0db28085ec76b13964077854c21c303b89cf0f59cb941345fa5a6f7c7c368195",
+    "citizen/hosting.py": "e6b0677a5bbc9cff7772b4794ed2d3dc95c8fe1eee7d988f6b9dc06b6b792a8c",
+    "citizen/promotion.py": "192e0c8afe27a66a1121e419891afdfd959083f048ecb6525f32152568dfb904",
+    "citizen/refresh.py": "5a96359bd6d1845b74bfaf06495037249c69cb6111332adbc760ae3a92bb1dc2",
+    "citizen/release.py": "2a3489f665999c066c13c09ef8d8548fe7439a91fd894fc0d9826979b2603fac",
+    "citizen/verify_private.py": "38bce8269940918846383fcc56dcea82b725fd23afd4844d51b136d50f365d91",
+    "citizen/web/app.js": "6fcef150aafe37745be62d07978efe05de74cc1bed9c3c7513381ab4bcc2c47e",
+    "citizen/web/history.js": "e0a7b4ef304cbb0565184a2cf25191ca4510f64bbfb693b9270b8e263bb1fcba",
+    "citizen/web/icon.svg": "b53f7e2776d94cc62920e092ce4449f9d4e104a3e1715bf867db777cc9dd0bd4",
+    "citizen/web/index.html": "b0d8f4b1aa8483b106e601581eab4f9844625574185426f167368a5902b926e0",
+    "citizen/web/styles.css": "ab57b073955393f814cf6043099a9bcba4164f57b657fae4558f078d709bc870",
+    "historical/__init__.py": "33bd4fb829870d5a63b5304c06382b8f9e413d410753ec5068e6d961f4650c33",
+    "historical/analytics.py": "74c830c291257bb81c2cc3e073479f6bf02ba0057c606bc6a87f13f411578721",
+    "historical/api.py": "42a5597604b2146d4b28af8cb43ed34333914c362a8ee2c9bfa9e6f0e9628dc8",
+    "historical/build.py": "caaddbf89193e74053cce243ae77c9f1615ee7e1be3dd7133273626bc095a9f3",
+    "historical/cloud.py": "6ce0692d04dde16b919f64a30b4edd1b56e89323fbcb38db523814139dfbae1d",
+    "historical/data.py": "ad3aee77affa6962784e9f823729e6a806cbe85cb4d66c6c749487e807922fec",
+    "historical/glue_job.py": "0b6f5d4bb3a4aa55aaa77a3480aed58fa8db4ddb5e0ca3e58df8e91330f0a4d3",
+    "historical/prepare.py": "ecfde8b8b12cbe597303e63a239bb7693d1169800bf051f16d788f4e120e3712",
+    "historical/publish.py": "ef575cd842daa49fbcd9951fa21d50973e9062847b73aa87f85b27884d871df8"
+  },
+  "worker_type": "G.1X"
+}

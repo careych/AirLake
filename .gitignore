@@ -60,3 +60,6 @@ crash.*.log
 .coverage
 .coverage.*
 coverage.xml
+
+# Private website viewer credentials are never publication assets
+preview-login.json
