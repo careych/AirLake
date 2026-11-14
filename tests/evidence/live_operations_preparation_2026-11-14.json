@@ -1,7 +1,7 @@
 {
   "status": "CODE_READY_NOT_AWS_DEPLOYED_OR_LIVE_VERIFIED",
   "base_commit": "9354d21595f6de26f6bd6adee41af248ecaed8d6",
-  "operations_plan_sha256": "b56391569c83840de5be0236ba129f4b4dbb294b082811c9d17aa2d88679bb8c",
+  "operations_plan_sha256": "03196a080157d893aac9b4aa8cd1b7c716c4f3c1d3f5ca72994cfc599b5a04ab",
   "read_only_preflight": {
     "status": "PASS_READ_ONLY",
     "remaining_poll_attempts": 2,
@@ -93,7 +93,7 @@
   "historical_acceptance_evidence_changed": false,
   "cloud_invocations_queries_writes_this_preparation": 0,
   "log_sha256": {
-    "airlake-operations-final-python.log": "e9467ddc19e0f8883b3264e9f3f6da3894f11bcff23bce1cd0df672b32f78412",
+    "airlake-operations-final-python.log": "3179c7fd081c632a0a1873dd2bbc2225a0fb011e7ab8e50fd030424d47f42d2a",
     "airlake-operations-versioned-spark.log": "514fe4bcae42201c6b53713e46d7e39a75e95229cea8de3c05bb55aaca25fbce"
   },
   "logs_note": "Optional local log fingerprints, not dependency inputs; complete validation commands and fixtures are retained in source/runbook. No temporary log is required to run the tests.",

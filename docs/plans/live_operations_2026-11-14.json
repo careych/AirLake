@@ -1,6 +1,6 @@
 {
   "status": "PREPARED_NOT_DEPLOYED_NOT_LIVE_VERIFIED",
-  "private_plan_sha256": "b56391569c83840de5be0236ba129f4b4dbb294b082811c9d17aa2d88679bb8c",
+  "private_plan_sha256": "03196a080157d893aac9b4aa8cd1b7c716c4f3c1d3f5ca72994cfc599b5a04ab",
   "account": "701364614078",
   "region": "ap-southeast-2",
   "profile": "airlake",
@@ -41,9 +41,9 @@
   "maximum_signed_api_reads": 3,
   "artifact_sha256": {
     "glue_job.py": "bf3a39a6684f8a521abd8510cda0306150a3b362024c82d24766ce20877be635",
-    "payload.zip": "c95b0322dbfb77307b68fd00f6e551dc5bd7a8bb453a74aac1371d736b76c415"
+    "payload.zip": "28d03f2d7a498e9d34de399bd4d8259908a0d0128b9951e08f01b15691ad18b7"
   },
-  "payload_bytes": 98156,
+  "payload_bytes": 98143,
   "production_sha256": {
     "scripts/gold_batch.py": "f11d7e954b8e40765f95833f5c76ee013d2bb6a44f9c97a4f79ad3b06dd45836",
     "scripts/silver_batch.py": "71f9a2cc800e8ebde7987afea4c490c1ca9765ec41253e32766f0d1e48c12259"

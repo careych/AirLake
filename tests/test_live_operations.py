@@ -600,7 +600,12 @@ class ControlTests(unittest.TestCase):
             cloud.items[("OPS", WINDOW)]["input_watermark"], "2026-11-14T11:00:00+00:00"
         )
         manifest = cloud.c["s3"].put_object.call_args.kwargs
-        self.assertEqual(manifest["IfNoneMatch"], "*")
+        # Reuse the already deployed conditional header hook, even on older SDK models.
+        event, hook = cloud.c["s3"].meta.events.register.call_args.args
+        self.assertEqual(event, "before-call.s3.PutObject")
+        params = {"headers": {}}
+        hook(params)
+        self.assertEqual(params["headers"]["If-None-Match"], "*")
         self.assertEqual(json.loads(manifest["Body"]), cloud.manifest)
 
     def test_api_rejects_pointer_snapshot_mismatch(self):

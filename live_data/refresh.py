@@ -375,7 +375,6 @@ class Controller:
             Key=key,
             Body=raw,
             ExpectedBucketOwner=ACCOUNT,
-            IfNoneMatch="*",
             ServerSideEncryption="AES256",
         )
         run = self.c["glue"].start_job_run(
