@@ -1,20 +1,39 @@
 # Bounded current-data pilot
 
-The initial Scheduler target failure was corrected through separately approved
-recovery. The scheduler exists and remains DISABLED. One real manual poll stored
-**45 observations (22 / 22 / 1)**, updated all three latest records and completed
-all cursors. The invocation then failed while rendering freshness metrics:
-DynamoDB returned numeric cadence as Decimal, which the strict validator rejected.
-The poller is stopped at concurrency zero; one attempt is recorded. No schedule
-enablement, new Glue run, Athena SELECT or API HTTP smoke has occurred.
+## Actual bounded AWS acceptance — PASS
 
-The stored-cadence conversion is corrected locally and passes 36 focused tests.
-The small replacement ZIP changes only `live_data/store.py`; existing records,
-watermarks, counters, secret, roles, API code and frozen evidence are preserved.
-See [accepted-ingestion evidence](../tests/evidence/live_openaq_ingestion_stop_2026-11-14.json)
-and [the exact repair plan](plans/live_openaq_number_fix_2026-11-14.json).
-Applying the poller code update and continuing requires new explicit approval;
-no automatic retry has occurred. Historical PR #13/#14 acceptance remains unchanged.
+After separately approved Scheduler/number-boundary repairs, real OpenAQ
+polling retained **70 distinct observations (34 / 34 / 2)**. The corrected
+manual invocation accepted 25 new observations and replayed the first 45 without
+duplication. Two additional invocations during the enabled timer window accepted
+no new upstream data and replayed 45/43 records. Four total data attempts were
+consumed, including the initial post-ingestion metrics failure. All failures
+and original receipts remain retained; no counter or data reset occurred.
+
+One real Glue 5.0 job processed 70 Bronze -> 70 Silver rows, seven breakpoints,
+three dimensions and eight Gold hourly facts. An unchanged rerun inside that
+job preserved all five snapshot IDs. Every hourly mean matched an independent
+raw-record calculation within `1e-10` (maximum error `7.105427357601002e-15`).
+One Athena SELECT independently verified all eight facts and station joins,
+scanning 685 bytes with result reuse disabled. Only then was the versioned
+export pointer promoted. All eight signed/unsigned HTTP checks passed: anonymous
+access denied, signed health/latest/three filters/current hourly accepted,
+and historical CSV still returned 72 rows. Eight original snapshots were
+independently checked unchanged.
+
+API base: `https://44nlt6u3x6yoja2ygjx64agysa0phjhz.lambda-url.ap-southeast-2.on.aws/`.
+It requires same-account IAM/SigV4 authorization. The exact one-query/eight-HTTP
+budget has been consumed; do not repeat smoke commands without new approval.
+The latest page was rendered from the actual signed API response and explicitly
+labels the poller stopped. The five historical Superset panels were preserved,
+not retargeted or queried again. No current Superset trend chart is claimed.
+
+**Final state: schedule DISABLED, poller concurrency zero, no active data lease.**
+The API stays available read-only. No recurring Glue/export refresh, continuously
+live API or production alert delivery is claimed. See the [actual execution evidence](../tests/evidence/live_openaq_aws_acceptance_2026-11-14.json)
+for job/query IDs, five schemas/snapshots, exact resource inventory, HTTP outcomes,
+actual CloudWatch age metrics, costs/limits and recovery history. The earlier
+preparation and stopped-attempt records are historical checkpoints.
 
 ## Implemented data path
 
@@ -131,7 +150,7 @@ conditional pointer replacement before scheduling further batches.
 Account `701364614078`, region `ap-southeast-2`, operator profile `airlake`.
 New scope `20261114_9e2c740b`:
 
-| Resource | Exact proposed name |
+| Resource | Exact deployed name |
 |---|---|
 | Poller | `airlake-live-20261114_9e2c740b-poller` |
 | API | `airlake-live-20261114_9e2c740b-api` |
@@ -172,19 +191,19 @@ PLAN_SHA=$(cat "$PACKET/plan.sha256")
 live_sdk -m live_data.deploy preflight --packet "$PACKET"
 ```
 
-The new OpenAQ secret does not currently exist. After separate write approval,
-the deploy command copies the existing explicitly selected local OpenAQ key
-into plaintext SecretString internally. No token CLI value, log or private
+The scoped OpenAQ secret now exists from the approved deployment. Its value
+was copied internally from the explicitly authorized local key into plaintext
+SecretString. Do not repeat creation or retrieve/display the value. For a future
+new run, the deploy command requires fresh scope approval. No token CLI value, log or private
 packet is created. It does not read or change existing Telegram secrets.
 
-## Execution commands — do not repeat the partial deployment
+## Retained execution procedure — completed; do not repeat
 
-The initial deploy command partially completed; approved recovery then created
-the disabled schedule. A manual poll accepted 45 records but failed in metrics.
-Do not repeat deployment or overwrite the failed manual receipt. Preserve the
-original packet; use the separately approved number-repair packet before any
-remaining test steps. One of six source attempts has already been consumed.
-All commands below remain gated by explicit scope approval.
+The bounded run and its one-query/eight-HTTP budget are complete. These commands
+document the reviewed procedure; they are not instructions to repeat it against
+retained resources. Use the recorded source-fix packet for provenance. A future
+window or batch needs separately reviewed scope/approval; never reset the current
+counter, overwrite receipts or reuse the existing one-shot output namespace.
 
 ```sh
 live_sdk -m live_data.deploy deploy --packet "$PACKET" \
