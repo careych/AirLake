@@ -21,10 +21,20 @@ def load(store):
     if len(raw) > 500000 or sha(raw) != pointer.get("sha256"):
         raise RuntimeError("Export hash mismatch")
     value = json.loads(raw)
-    if value["provenance"]["database"] != DATABASE or not pointer.get(
-        "athena_query_id"
-    ):
+    from live_data.refresh import allowed_database, validate_export
+
+    database = value["provenance"]["database"]
+    if not allowed_database(database) or not pointer.get("athena_query_id"):
         raise RuntimeError("Export is not independently accepted")
+    if database != DATABASE:
+        digest = value["provenance"].get("input_manifest_sha256", "")
+        validate_export(raw, digest)
+        if (
+            key != PREFIX + "exports/" + digest + "/gold.json"
+            or pointer.get("database") != database
+            or pointer.get("snapshots") != value["provenance"]["snapshots"]
+        ):
+            raise RuntimeError("Pointer version/snapshots mismatch")
     dimensions = {r["location_id"]: r for r in value["dimensions"]}
     if len(dimensions) != len(value["dimensions"]) or set(dimensions) - set(PILOTS):
         raise RuntimeError("Invalid dimension keys")
@@ -126,6 +136,8 @@ def handle(event, store):
             "metadata": {
                 "provenance": provenance,
                 "athena_query_id": pointer["athena_query_id"],
+                "export_sha256": pointer["sha256"],
+                "previous_verified_version_available": bool(pointer.get("previous")),
                 "pm25_units": "µg/m³",
                 "timezone": "UTC",
                 "refresh": "versioned export promoted only after independent Athena verification; not continuous",

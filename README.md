@@ -314,3 +314,7 @@ Runtime directories, private configuration, logs and caches are ignored. Curated
 `tests/evidence/` records and dependency lockfiles remain publishable. The PDF,
 learning notes and image exports are outside this PR's selected candidates pending
 owner/archive decisions; preserve their attribution and source material.
+
+For the disabled-by-default polling controller and verified Gold/API refresh, see
+[bounded cloud operations](docs/live-operations.md). The new controller is prepared
+for review; its deployment and live acceptance are pending separate approval.

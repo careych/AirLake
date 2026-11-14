@@ -40,7 +40,11 @@ def expected(facts, bronze):
             raise ValueError("Hourly mean mismatch")
 
 
-def execute(spark, values):
+def execute(spark, values, database=DATABASE):
+    from live_data.refresh import allowed_database
+
+    if not allowed_database(database):
+        raise ValueError("Output database escaped isolated live scope")
     # PySpark materializes collected TIMESTAMP values in the driver process TZ.
     # Keep its naive datetime conversion aligned with the UTC Spark session.
     os.environ["TZ"] = "UTC"
@@ -55,14 +59,14 @@ def execute(spark, values):
         or spark._jvm.org.apache.iceberg.IcebergBuild.version() != "1.12.0"
     ):
         raise ValueError("Wrong Spark/Iceberg configuration")
-    bronze_id = f"live.{DATABASE}.bronze_measurements"
-    silver.SILVER_TABLE = f"live.{DATABASE}.aq_measurements"
+    bronze_id = f"live.{database}.bronze_measurements"
+    silver.SILVER_TABLE = f"live.{database}.aq_measurements"
     silver.BRONZE_TABLE = bronze_id
     gold.BRONZE_TABLE = bronze_id
     gold.SILVER_TABLE = silver.SILVER_TABLE
-    gold.BREAKPOINT_TABLE = f"live.{DATABASE}.aqi_breakpoints"
-    gold.DIMENSION_TABLE = f"live.{DATABASE}.dim_location"
-    gold.HOURLY_TABLE = f"live.{DATABASE}.pm25_aqi_hourly"
+    gold.BREAKPOINT_TABLE = f"live.{database}.aqi_breakpoints"
+    gold.DIMENSION_TABLE = f"live.{database}.dim_location"
+    gold.HOURLY_TABLE = f"live.{database}.pm25_aqi_hourly"
     rows = []
     keys = set()
     for value in values:
@@ -84,7 +88,7 @@ def execute(spark, values):
         ", ".join(f"{n} STRING" for n in silver.BRONZE_COLUMNS[:-1])
         + ", kafka_ts TIMESTAMP",
     )
-    spark.sql(f"CREATE NAMESPACE IF NOT EXISTS live.{DATABASE}")
+    spark.sql(f"CREATE NAMESPACE IF NOT EXISTS live.{database}")
     frame.writeTo(bronze_id).using("iceberg").tableProperty(
         "format-version", "2"
     ).create()
@@ -125,7 +129,7 @@ def execute(spark, values):
         "dimensions": dimensions,
         "provenance": {
             "execution": "AWS_GLUE",
-            "database": DATABASE,
+            "database": database,
             "snapshots": after,
             "computed_at": datetime.now(UTC).isoformat(),
             "classification": "bounded recently polled observations; freshness follows observation time",
@@ -182,15 +186,26 @@ def main():
         if sha(data) != entry["sha256"]:
             raise ValueError("Raw object integrity mismatch")
         values.append(json.loads(data))
+    from live_data.refresh import version_database
+
+    database = DATABASE
+    if "--refresh_database" in sys.argv:
+        refresh = getResolvedOptions(sys.argv, ["refresh_database"])
+        database = refresh["refresh_database"]
+        if database != version_database(args["manifest_sha256"]):
+            raise ValueError("Refresh database must match immutable input version")
     glue = s.client("glue", config=c)
     try:
-        glue.get_database(Name=DATABASE)
+        glue.get_database(Name=database)
     except glue.exceptions.EntityNotFoundException:
         pass
     else:
         raise ValueError("Output database exists; no automatic rerun")
     spark = GlueContext(SparkContext.getOrCreate()).spark_session
-    export, evidence = execute(spark, values)
+    export, evidence = execute(spark, values, database)
+    if database != DATABASE:
+        export["provenance"]["input_manifest_sha256"] = args["manifest_sha256"]
+        evidence["export_sha256"] = sha(encode(export))
     key = PREFIX + "exports/" + args["manifest_sha256"] + "/gold.json"
 
     def no_overwrite(params, **kwargs):

@@ -1,0 +1,107 @@
+{
+  "status": "CODE_READY_NOT_AWS_DEPLOYED_OR_LIVE_VERIFIED",
+  "base_commit": "9354d21595f6de26f6bd6adee41af248ecaed8d6",
+  "operations_plan_sha256": "b56391569c83840de5be0236ba129f4b4dbb294b082811c9d17aa2d88679bb8c",
+  "read_only_preflight": {
+    "status": "PASS_READ_ONLY",
+    "remaining_poll_attempts": 2,
+    "writes_authorized": false
+  },
+  "existing_resource_state": {
+    "schedule": "DISABLED",
+    "poller_reserved_concurrency": 0,
+    "poller_attempts": 4,
+    "poller_active_lease": false,
+    "active_glue_jobs": 0,
+    "new_controller_deployed": false
+  },
+  "latest_accepted_observations": {
+    "checked_at_utc": "2026-11-14T10:36:15+00:00",
+    "mode": "READ_ONLY_LATEST_ACCEPTED_STATE_NOT_UPSTREAM_POLL",
+    "stations": [
+      {
+        "location_id": 4946812,
+        "observed_at": "2026-11-14T08:50:00Z",
+        "ingested_at": "2026-11-14T09:03:32Z",
+        "freshness": {
+          "status": "stale",
+          "age_seconds": 6375.0,
+          "threshold_seconds": 900,
+          "criterion": "age <= max(15min, 2 * estimated observation spacing); 3h fallback if cadence unknown; not a freshness SLA",
+          "cadence_estimate_seconds": 300
+        }
+      },
+      {
+        "location_id": 4946813,
+        "observed_at": "2026-11-14T08:50:00Z",
+        "ingested_at": "2026-11-14T09:03:32Z",
+        "freshness": {
+          "status": "stale",
+          "age_seconds": 6375.0,
+          "threshold_seconds": 900,
+          "criterion": "age <= max(15min, 2 * estimated observation spacing); 3h fallback if cadence unknown; not a freshness SLA",
+          "cadence_estimate_seconds": 300
+        }
+      },
+      {
+        "location_id": 6123215,
+        "observed_at": "2026-11-14T08:00:00Z",
+        "ingested_at": "2026-11-14T09:03:32Z",
+        "freshness": {
+          "status": "stale",
+          "age_seconds": 9375.0,
+          "threshold_seconds": 7200,
+          "criterion": "age <= max(15min, 2 * estimated observation spacing); 3h fallback if cadence unknown; not a freshness SLA",
+          "cadence_estimate_seconds": 3600
+        }
+      }
+    ]
+  },
+  "offline_tests": {
+    "passed": 118,
+    "failed": 0,
+    "errors": 0,
+    "groups": {
+      "live_operations": 30,
+      "live_data": 36,
+      "clean_api": 26,
+      "final_demo": 17,
+      "gold_orchestration": 9
+    }
+  },
+  "isolated_spark_adapter": {
+    "classification": "SYNTHETIC_OFFLINE_ONLY",
+    "bronze": 9,
+    "silver": 9,
+    "dimensions": 3,
+    "hourly": 6,
+    "five_snapshots_unchanged_on_rerun": true,
+    "versioned_namespace": true,
+    "java": 17,
+    "iceberg": "1.12.0",
+    "python_worker_and_driver": "3.12",
+    "initial_environment_failures": "Temporary-directory permissions and Python worker mismatch were resolved with an external TMPDIR and explicit Python paths before the successful run."
+  },
+  "checks": {
+    "ruff": "PASS",
+    "format": "PASS",
+    "ast": "PASS",
+    "shell_syntax": "PASS",
+    "sdk_update_job_model": "PASS"
+  },
+  "production_transformations_changed": false,
+  "historical_acceptance_evidence_changed": false,
+  "cloud_invocations_queries_writes_this_preparation": 0,
+  "log_sha256": {
+    "airlake-operations-final-python.log": "e9467ddc19e0f8883b3264e9f3f6da3894f11bcff23bce1cd0df672b32f78412",
+    "airlake-operations-versioned-spark.log": "514fe4bcae42201c6b53713e46d7e39a75e95229cea8de3c05bb55aaca25fbce"
+  },
+  "logs_note": "Optional local log fingerprints, not dependency inputs; complete validation commands and fixtures are retained in source/runbook. No temporary log is required to run the tests.",
+  "scope_limitations": [
+    "Not indefinite unattended service; retained six-poll budget requires separately approved extension after consumption.",
+    "A crashed durable controller lock requires explicit evidence-backed operator reconciliation.",
+    "Three-station latest observations are currently stale; no fresh upstream observations were claimed or fabricated.",
+    "Superset historical panels unchanged; newest API view is a manually refreshed snapshot.",
+    "New deployment, scheduled dispatch, new Glue/Athena result and promoted API need separate live acceptance."
+  ]
+}

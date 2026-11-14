@@ -1,0 +1,60 @@
+{
+  "status": "PREPARED_NOT_DEPLOYED_NOT_LIVE_VERIFIED",
+  "private_plan_sha256": "b56391569c83840de5be0236ba129f4b4dbb294b082811c9d17aa2d88679bb8c",
+  "account": "701364614078",
+  "region": "ap-southeast-2",
+  "profile": "airlake",
+  "run": "20261114_9e2c740b",
+  "new_lambda_and_role": "airlake-live-20261114_9e2c740b-refresh",
+  "new_log_group": "/aws/lambda/airlake-live-20261114_9e2c740b-refresh",
+  "existing_schedule": "airlake-live-20261114_9e2c740b-5m",
+  "existing_glue_job": "airlake-live-20261114_9e2c740b-gold",
+  "existing_api": "airlake-live-20261114_9e2c740b-api",
+  "existing_poller": "airlake-live-20261114_9e2c740b-poller",
+  "existing_state_table": "airlake-live-20261114_9e2c740b-state",
+  "additional_inline_policies": {
+    "airlake-live-20261114_9e2c740b-refresh": "LiveOperationsV1",
+    "airlake-live-20261114_9e2c740b-glue": "LiveOperationsV1",
+    "airlake-live-20261114_9e2c740b-scheduler": "LiveOperationsV1"
+  },
+  "s3_scope": "s3://airlake-701364614078-lake/live-demo/20261114_9e2c740b/",
+  "derived_database": "airlake_live_20261114_9e2c740b_r<first-16-lowercase-hex-of-input-manifest-sha256>",
+  "tables": [
+    "bronze_measurements",
+    "aq_measurements",
+    "aqi_breakpoints",
+    "dim_location",
+    "pm25_aqi_hourly"
+  ],
+  "duration_minutes": 45,
+  "remaining_poller_attempts": 2,
+  "cumulative_poller_attempt_cap": 6,
+  "maximum_additional_raw_observations": 600,
+  "baseline_raw_observations": 70,
+  "maximum_controller_ticks": 12,
+  "maximum_glue_runs": 1,
+  "glue_workers": 2,
+  "glue_worker_type": "G.1X",
+  "glue_timeout_minutes": 10,
+  "glue_retries": 0,
+  "maximum_athena_selects": 1,
+  "maximum_signed_api_reads": 3,
+  "artifact_sha256": {
+    "glue_job.py": "bf3a39a6684f8a521abd8510cda0306150a3b362024c82d24766ce20877be635",
+    "payload.zip": "c95b0322dbfb77307b68fd00f6e551dc5bd7a8bb453a74aac1371d736b76c415"
+  },
+  "payload_bytes": 98156,
+  "production_sha256": {
+    "scripts/gold_batch.py": "f11d7e954b8e40765f95833f5c76ee013d2bb6a44f9c97a4f79ad3b06dd45836",
+    "scripts/silver_batch.py": "71f9a2cc800e8ebde7987afea4c490c1ca9765ec41253e32766f0d1e48c12259"
+  },
+  "stop": "Disable exact schedule; set poller and refresh reserved concurrency to zero; verify inactive leases; no deletion or counter reset.",
+  "new_data_condition": "No changed manifest means no Glue/Athena; prior verified export remains current.",
+  "costs": "Lambda, one bounded Glue run (nominal 20 DPU-minutes plus startup/billing overhead), S3, DynamoDB, CloudWatch, Athena; no measured bill or guaranteed dollar cap.",
+  "untouched": [
+    "historical acceptance tables and evidence",
+    "Telegram/SNS resources",
+    "PR #12",
+    "original Superset metadata and five historical panels"
+  ]
+}
