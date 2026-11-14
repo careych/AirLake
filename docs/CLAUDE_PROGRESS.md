@@ -29,8 +29,11 @@ Updated 2026-11-15 (Asia/Ho_Chi_Minh). Labels: VERIFIED (this session), REPORTED
   export (contains the wrong row); 0 signed HTTP checks ever ran on history route.
 - Amplify `dhyvgpdsnj4zi`: public + demo still job 1 (old 4/14-row release).
 - Scheduler `airlake-live-20261114_9e2c740b-5m` DISABLED.
-- Run-2 packet `/private/tmp/airlake-history-run2-20261115`, plan sha
-  `d8c4eeda8fa774d068b0d9df8e8234dcbec91b2fc8508ded07d6f6eb44d2aed6`; read-only preflight PASS.
+- Run-2 packet `/private/tmp/airlake-history-run2-20261115`, FROZEN plan sha
+  `aaed01a18972f82a5c7c4869edc9047bd3d192c70586d588280bd3ecb3a726bd` (commit `a9eabf6`);
+  read-only preflight PASS. Demo Dragon-only (owner decision), stop-only website failure.
+- Current demo (job 1): 3 stations / 14 hourly rows, restricted downloads off; anonymous
+  `/`, data JSON, config.js, app.js all 401; public 404 for demo data (VERIFIED).
 - AWS python needs `botocore[crt]` (aws login provider): scratch venv used.
 
 ## Next action
