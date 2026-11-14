@@ -304,7 +304,9 @@ def publish_site(c, p, packet, digest):
     for path, h in p["publication_input_sha256"].items():
         if sha(Path(path).read_bytes()) != h:
             raise ValueError("Private prepared input changed")
-    for output, mode in ((pub, "public"), (demo, "instructor")):
+    # Owner decision 2026-11-15: the protected demo stays Dragon-only until the
+    # two network stations' display/redistribution rights are verified.
+    for output, mode in ((pub, "public"), (demo, p["demo_mode"])):
         build(
             output,
             packet / "cloud-export.json",
@@ -323,13 +325,17 @@ def publish_site(c, p, packet, digest):
         demo,
         Path(files["credentials"]),
         Path(files["previous_hosting_receipt"]),
+        demo_mode=p["demo_mode"],
+        failure_containment="stop_only",
     )
     child_plan, child_hash = release.load(child)
     if (
         child_plan["branches"]["public"]["stations"] != 1
         or child_plan["branches"]["public"]["hourly"] != 720
-        or child_plan["branches"]["demo"]["stations"] != 3
-        or child_plan["branches"]["demo"]["hourly"] != 2133
+        or child_plan["demo_mode"] != "public"
+        or child_plan["failure_containment"] != "stop_only"
+        or child_plan["branches"]["demo"]["stations"] != 1
+        or child_plan["branches"]["demo"]["hourly"] != 720
         or sum((child / (b + ".zip")).stat().st_size for b in ("public", "demo"))
         > 1000000
     ):

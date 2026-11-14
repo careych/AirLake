@@ -205,7 +205,10 @@ def prepare(packet, source, publication_inputs=None, previous_api_zip=None):
         "manual_amplify_deployments": 2 if public_files else 0,
         "website_app_id": "dhyvgpdsnj4zi",
         "public_rows": {"hourly": 720, "daily": 30},
-        "protected_rows": {"hourly": 2133, "daily": 90},
+        "protected_rows": {"hourly": 720, "daily": 30},
+        "demo_mode": "public",
+        "demo_stations": [6123215],
+        "website_failure_containment": "stop_only",
         "api_function": "airlake-live-20261114_9e2c740b-api",
         "new_api_inline_policy": "HistoricalResearch20261114",
         "new_api_read_keys": [
