@@ -13,6 +13,9 @@ from pathlib import Path
 def main():
     a = argparse.ArgumentParser(description=__doc__)
     a.add_argument("--runtime-jar", required=True)
+    a.add_argument(
+        "--refresh-digest", help="Exercise a versioned operations output namespace"
+    )
     args = a.parse_args()
     from final_demo.prepare import JARS
     from live_data.contract import sha
@@ -22,7 +25,9 @@ def main():
     from pyspark.sql import SparkSession
 
     from ingestion.openaq import PILOTS
+    from live_data.contract import DATABASE
     from live_data.glue_job import execute
+    from live_data.refresh import version_database
 
     with tempfile.TemporaryDirectory(prefix="airlake-live-spark-") as root:
         spark = (
@@ -61,7 +66,13 @@ def main():
                     values.append(
                         {"record": record, "ingested_at": "2026-11-14T05:00:00Z"}
                     )
-            export, evidence = execute(spark, values)
+            export, evidence = execute(
+                spark,
+                values,
+                version_database(args.refresh_digest)
+                if args.refresh_digest
+                else DATABASE,
+            )
             assert len(export["facts"]) == 6 and len(export["dimensions"]) == 3
             assert evidence["source_count"] == 9
             assert evidence["snapshots_before"] == evidence["snapshots_after"]
