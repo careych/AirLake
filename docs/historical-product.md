@@ -185,3 +185,21 @@ status and authorised protected comparison of 693 common hours; explain gaps.
 UTC versus Vietnam dates and attribution. 4:00–5:00 recorded Glue JobRunId,
 six snapshots, two Athena IDs, signed API results and Amplify jobs. Network
 fallback recordings/screenshots must be labelled as past executions.
+
+## Actual approved attempt and stop — 15 November Vietnam time
+
+The owner approved the frozen historical plan. Role/job creation and four
+immutable uploads returned success. Glue run
+`jr_9a8887bfb5c3c6588c86d46b7325b2baa50cd61c0163b3589662dbf9d8841176`
+FAILED at startup, with ExecutionTime 0 and an assume-role error. The subsequent
+read-only role check matches the exact intended Glue service trust and inline
+policy, with no boundary. Submission was about five seconds after role creation;
+IAM propagation is plausible but not proven. No speculative permission change
+or automatic retry ran.
+
+The database is absent and there are no output tables. Four retained S3 objects
+total 8,721,537 bytes. Zero Athena SELECTs, API writes/HTTP tests or Amplify
+deployments ran. Original API and websites are unchanged; scheduler DISABLED,
+poller/refresh reserved concurrency 0. See
+`tests/evidence/historical_startup_2026-11-15.json`. A separate exact startup
+recovery approval is required before another job start; never erase the receipt.
