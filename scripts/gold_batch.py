@@ -1,5 +1,8 @@
 import hashlib
+import math
 from datetime import date
+from decimal import ROUND_HALF_UP, Decimal
+from fractions import Fraction
 
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
@@ -76,6 +79,29 @@ BREAKPOINTS = [
 BREAKPOINT_SOURCE = "QD1459-TCMT-2019"
 BREAKPOINT_EFFECTIVE_FROM = date(2019, 11, 12)
 PM25_UNITS = "µg/m³"
+
+
+def exact_hourly_aqi(values, breakpoints=BREAKPOINTS) -> tuple[Fraction, int]:
+    """Pure reference for the Spark policy: exact micro-unit mean, HALF_UP AQI."""
+    micro = [
+        int(
+            Decimal(v if isinstance(v, str) else repr(float(v))).quantize(
+                Decimal("0.000001"), rounding=ROUND_HALF_UP
+            )
+            * 1_000_000
+        )
+        for v in values
+    ]
+    mean = Fraction(sum(micro), len(micro) * 1_000_000)
+    top = max(c_hi for _, _, _, c_hi in breakpoints)
+    if mean >= Fraction(top):
+        return mean, max(a_hi for _, a_hi, _, _ in breakpoints)
+    a_lo, a_hi, c_lo, c_hi = next(
+        b for b in breakpoints if Fraction(b[2]) <= mean < Fraction(b[3])
+    )
+    width = Fraction(c_hi) - Fraction(c_lo)
+    raw = (a_hi - a_lo) * (mean - Fraction(c_lo)) / width
+    return mean, a_lo + math.floor(raw + Fraction(1, 2))
 
 
 def _invalid_numeric(column: str):
@@ -409,19 +435,88 @@ def build_hourly_aqi_source(
             f"or units; expected units {PM25_UNITS!r}"
         )
 
-    hourly = pm25.groupBy(
-        "location_id",
-        F.date_trunc("hour", "measured_at").alias("hour_start"),
-    ).agg(F.avg("value").alias("pm25_avg"))
+    # Exact AQI policy: each finite reading is quantized HALF_UP to 1e-6 ug/m3
+    # (lossless for the 2-decimal OpenAQ sources) and summed as BIGINT micro-units.
+    # Band selection and HALF_UP rounding then use integer arithmetic, so the
+    # result does not depend on distributed floating-point summation order.
+    micro = F.expr("try_cast(value AS DECIMAL(13,6))") * F.lit(1_000_000)
+    pm25 = pm25.withColumn("_micro", micro.cast("bigint"))
+    quantized_count = pm25.filter(
+        F.col("_micro").isNotNull()
+        & (F.col("_micro").cast("double") / F.lit(1e6) != F.col("value"))
+    ).count()
+    hourly = (
+        pm25.groupBy(
+            "location_id",
+            F.date_trunc("hour", "measured_at").alias("hour_start"),
+        )
+        .agg(
+            F.avg("value").alias("_double_avg"),
+            F.sum("_micro").alias("_micro_sum"),
+            F.count("_micro").alias("_micro_n"),
+            F.count(F.lit(1)).alias("_n"),
+        )
+        .withColumn(
+            "_exact", (F.col("_micro_n") == F.col("_n")) & (F.col("_n") <= 100_000)
+        )
+        .withColumn(
+            "pm25_avg",
+            F.when(
+                F.col("_exact"),
+                # Both operands are exact doubles below 2**53: one correctly rounded division.
+                F.col("_micro_sum").cast("double")
+                / (F.col("_n").cast("double") * F.lit(1e6)),
+            ).otherwise(F.col("_double_avg")),
+        )
+    )
     if (
-        hourly.filter(_invalid_numeric("pm25_avg") | (F.col("pm25_avg") < 0))
+        hourly.filter(
+            _invalid_numeric("_double_avg")
+            | _invalid_numeric("pm25_avg")
+            | (F.col("pm25_avg") < 0)
+        )
         .limit(1)
         .count()
     ):
         raise RuntimeError("PM2.5 hourly aggregate is invalid or non-finite")
     breakpoint_window = Window.partitionBy("effective_from", "effective_to")
-    applicable_breakpoints = breakpoints.withColumn(
-        "_max_conc_hi", F.max("conc_hi").over(breakpoint_window)
+    applicable_breakpoints = (
+        breakpoints.withColumn("_max_conc_hi", F.max("conc_hi").over(breakpoint_window))
+        .withColumn("_lo_micro", (F.col("conc_lo") * F.lit(1_000_000)).cast("bigint"))
+        .withColumn("_hi_micro", (F.col("conc_hi") * F.lit(1_000_000)).cast("bigint"))
+        .withColumn(
+            "_max_hi_micro", (F.col("_max_conc_hi") * F.lit(1_000_000)).cast("bigint")
+        )
+    )
+    total = F.col("h._micro_sum")
+    count = F.col("h._n")
+    exact_in_band = (
+        F.col("h._exact")
+        & (total >= count * F.col("b._lo_micro"))
+        & (
+            (total < count * F.col("b._hi_micro"))
+            | (
+                (F.col("b.conc_hi") == F.col("b._max_conc_hi"))
+                & (total >= count * F.col("b._hi_micro"))
+            )
+        )
+    )
+    double_in_band = (
+        ~F.col("h._exact")
+        & (F.col("h.pm25_avg") >= F.col("b.conc_lo"))
+        & (
+            (F.col("h.pm25_avg") < F.col("b.conc_hi"))
+            | (
+                (F.col("b.conc_hi") == F.col("b._max_conc_hi"))
+                & (F.col("h.pm25_avg") >= F.col("b.conc_hi"))
+            )
+        )
+    )
+    # round_half_up(A * (S - n*lo) / (n*W)) == floor((2A(S - n*lo) + nW) / (2nW)).
+    exact_aqi = F.col("b.aqi_lo") + F.expr(
+        "(2 * cast(b.aqi_hi - b.aqi_lo AS BIGINT) * (h._micro_sum - h._n * b._lo_micro)"
+        " + h._n * (b._hi_micro - b._lo_micro))"
+        " div (2 * h._n * (b._hi_micro - b._lo_micro))"
     )
 
     candidates = (
@@ -434,20 +529,18 @@ def build_hourly_aqi_source(
                 F.col("b.effective_to").isNull()
                 | (F.to_date("h.hour_start") <= F.col("b.effective_to"))
             )
-            & (F.col("h.pm25_avg") >= F.col("b.conc_lo"))
-            & (
-                (F.col("h.pm25_avg") < F.col("b.conc_hi"))
-                | (
-                    (F.col("b.conc_hi") == F.col("b._max_conc_hi"))
-                    & (F.col("h.pm25_avg") >= F.col("b.conc_hi"))
-                )
-            )
+            & (exact_in_band | double_in_band)
         )
         .select(
             F.col("h.location_id").alias("location_id"),
             F.col("h.hour_start").alias("hour_start"),
             F.col("h.pm25_avg").alias("pm25_avg"),
             F.when(
+                F.col("h._exact") & (total >= count * F.col("b._max_hi_micro")),
+                F.col("b.aqi_hi"),
+            )
+            .when(F.col("h._exact"), exact_aqi)
+            .when(
                 F.col("h.pm25_avg") >= F.col("b._max_conc_hi"),
                 F.col("b.aqi_hi"),
             )
@@ -489,6 +582,8 @@ def build_hourly_aqi_source(
         "hourly_output_count": hourly_count,
         "invalid_pm25_count": invalid_count,
         "duplicate_hourly_key_count": duplicate_key_count,
+        "pm25_quantized_value_count": quantized_count,
+        "inexact_aqi_hour_count": hourly.filter(~F.col("_exact")).count(),
     }
 
 

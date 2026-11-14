@@ -337,6 +337,39 @@ class HistoricalReleaseTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 publish.api_preflight(clients, {"previous_api_sha256": "a" * 64})
 
+    def test_api_accepts_only_exact_superseded_run_one_revision(self):
+        clients = {k: Mock() for k in ("lambda", "iam")}
+        old_key = "historical-demo/" + cloud.SUPERSEDED_RUN + "/outputs/export.json"
+        config = {
+            "CodeSha256": base64.b64encode(bytes.fromhex("b" * 64)).decode(),
+            "Role": f"arn:aws:iam::{ACCOUNT}:role/{publish.API}",
+            "Runtime": "python3.12",
+            "Handler": "live_data.api.handler",
+            "State": "Active",
+            "LastUpdateStatus": "Successful",
+            "Environment": {"Variables": {"AIRLAKE_HISTORY_EXPORT_KEY": old_key}},
+        }
+        plan = {
+            "previous_api_sha256": "a" * 64,
+            "superseded_api": {"code_sha256": "b" * 64, "export_key": old_key},
+        }
+        clients["lambda"].get_function_configuration.return_value = config
+        clients["lambda"].get_function_url_config.return_value = {"AuthType": "AWS_IAM"}
+        self.assertNotIn(cloud.SUPERSEDED_RUN, cloud.PREFIX)
+        self.assertNotEqual("HistoricalResearch20261114", publish.POLICY)
+        with patch.object(publish, "absent"):
+            publish.api_preflight(clients, plan)
+            for change in (
+                {"AIRLAKE_HISTORY_EXPORT_KEY": cloud.PREFIX + "outputs/export.json"},
+                {},
+            ):
+                config["Environment"]["Variables"] = change
+                with self.assertRaises(ValueError):
+                    publish.api_preflight(clients, plan)
+            config["Environment"]["Variables"] = {}
+            config["CodeSha256"] = base64.b64encode(bytes.fromhex("a" * 64)).decode()
+            publish.api_preflight(clients, plan)  # original API, no history route
+
     def test_missing_cloud_acceptance_or_signed_http_blocks_publication(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -78,6 +78,20 @@ def execute(spark, values, audit, database, catalog="history", execution="AWS_GL
         for k, v in reference.items()
     ):
         raise ValueError("Actual Gold differs from independent archive reference")
+    # Exact source-decimal AQI gate: a DOUBLE half-tie must fail here, not later.
+    source_values = {}
+    for v in values:
+        r = v["record"]
+        hour = datetime.fromisoformat(r["datetime"]).astimezone(UTC)
+        key = (int(r["location_id"]), hour.strftime("%Y-%m-%dT%H:00:00Z"))
+        source_values.setdefault(key, []).append(r["value"])
+    if set(source_values) != set(actual) or any(
+        r["aqi"] != gold.exact_hourly_aqi(source_values[k])[1]
+        or r["pm25_avg"] != float(gold.exact_hourly_aqi(source_values[k])[0])
+        for r in facts
+        for k in [(r["location_id"], r["hour_start"])]
+    ):
+        raise ValueError("Actual Gold AQI differs from exact source reference")
     if (
         first["silver_source_count"] != len(values)
         or first["orphan_location_count"]
@@ -211,7 +225,7 @@ def main():
     )
     bucket, prefix = args["history_bucket"], args["history_prefix"]
     if bucket != "airlake-701364614078-lake" or not re.fullmatch(
-        r"historical-demo/20261114_[a-f0-9]{8}/", prefix
+        r"historical-demo/2026111[45]_[a-f0-9]{8}/", prefix
     ):
         raise ValueError("AWS output scope rejected")
     c = Config(retries={"total_max_attempts": 1})

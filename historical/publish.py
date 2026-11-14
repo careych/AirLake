@@ -12,7 +12,7 @@ from historical.build import build
 from live_data.contract import ACCOUNT, BUCKET, NAME, REGION, sha
 
 API = NAME + "-api"
-POLICY = "HistoricalResearch20261114"
+POLICY = "HistoricalResearch20261115"  # run 1's HistoricalResearch20261114 is kept
 
 
 def api_zip(previous, root):
@@ -41,18 +41,26 @@ def api_zip(previous, root):
 
 def api_preflight(c, p):
     f = c["lambda"].get_function_configuration(FunctionName=API)
-    expected = base64.b64encode(bytes.fromhex(p["previous_api_sha256"])).decode()
+    variables = f.get("Environment", {}).get("Variables", {})
+    history = {k: v for k, v in variables.items() if k.startswith("AIRLAKE_HISTORY_")}
+    superseded = p.get("superseded_api") or {}
+
+    def code(hex_digest):
+        return base64.b64encode(bytes.fromhex(hex_digest)).decode()
+
+    # Either the original API, or exactly run 1's unaccepted history revision.
+    original = f["CodeSha256"] == code(p["previous_api_sha256"]) and not history
+    replaced = bool(superseded) and (
+        f["CodeSha256"] == code(superseded["code_sha256"])
+        and history.get("AIRLAKE_HISTORY_EXPORT_KEY") == superseded["export_key"]
+    )
     if (
-        f["CodeSha256"] != expected
+        not (original or replaced)
         or f["Role"] != f"arn:aws:iam::{ACCOUNT}:role/{API}"
         or f.get("Runtime") != "python3.12"
         or f.get("Handler") != "live_data.api.handler"
         or f.get("State") != "Active"
         or f.get("LastUpdateStatus") != "Successful"
-        or any(
-            k.startswith("AIRLAKE_HISTORY_")
-            for k in f.get("Environment", {}).get("Variables", {})
-        )
     ):
         raise ValueError("Existing private API changed; preserve its revision")
     if c["lambda"].get_function_url_config(FunctionName=API)["AuthType"] != "AWS_IAM":

@@ -15,10 +15,17 @@ from live_data.contract import ACCOUNT, BUCKET, REGION, sha
 from live_data.deploy import clients
 
 ROOT = Path(__file__).resolve().parents[1]
-RUN = "20261114_7a6e91c2"
+# Run 2 reprocesses the same frozen source with the exact AQI policy. Run 1
+# (20261114_7a6e91c2) stays untouched as evidence of the DOUBLE half-tie.
+RUN = "20261115_90a13b9f"
 PREFIX = "historical-demo/" + RUN + "/"
 DATABASE = "airlake_history_" + RUN
-JOB = "airlake-history-20261114-7a6e91c2"
+JOB = "airlake-history-" + RUN.replace("_", "-")
+SUPERSEDED_RUN = "20261114_7a6e91c2"
+# Private API code/config that run 1's publication left deployed (not HTTP-accepted).
+SUPERSEDED_API_SHA256 = (
+    "36ae59d77df60dbd7fdf3979f9c8c0e807bd1815f97f98d0bbf96cc464544af8"
+)
 TABLES = (
     "bronze_measurements",
     "aq_measurements",
@@ -183,6 +190,10 @@ def prepare(packet, source, publication_inputs=None, previous_api_zip=None):
             path: sha(Path(path).read_bytes()) for path in public_files.values()
         },
         "previous_api_sha256": sha(previous) if public_files else None,
+        "superseded_api": {
+            "code_sha256": SUPERSEDED_API_SHA256,
+            "export_key": "historical-demo/" + SUPERSEDED_RUN + "/outputs/export.json",
+        },
         "website_source_sha256": {
             str(path.relative_to(ROOT)): sha(path.read_bytes())
             for path in website_sources
