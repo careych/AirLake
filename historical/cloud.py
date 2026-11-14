@@ -638,12 +638,15 @@ def main():
             "verify-athena",
             "publish-api",
             "smoke-api",
+            "amend",
+            "smoke-api-resume",
             "publish-site",
         ),
     )
     a.add_argument("--packet", type=Path, required=True)
     a.add_argument("--source", type=Path)
     a.add_argument("--confirm-plan-sha256")
+    a.add_argument("--confirm-amendment-sha256")
     a.add_argument("--previous-api-zip", type=Path)
     for key in (
         "metadata",
@@ -675,11 +678,32 @@ def main():
     p, h = load(x.packet)
     if (
         x.command
-        in ("run-glue", "verify-athena", "publish-api", "smoke-api", "publish-site")
+        in (
+            "run-glue",
+            "verify-athena",
+            "publish-api",
+            "smoke-api",
+            "amend",
+            "smoke-api-resume",
+            "publish-site",
+        )
         and x.confirm_plan_sha256 != h
     ):
         a.exit(1, "STOP: new bounded historical AWS approval required\n")
+    if x.command == "amend":  # local only: freezes the bounded recovery for approval
+        from historical.publish import prepare_amendment
+
+        print(json.dumps({"amendment_sha256": prepare_amendment(x.packet, h)}))
+        return
+    from historical.publish import load_amendment
+
+    amendment = load_amendment(x.packet, h, x.confirm_amendment_sha256)
     c = clients()
+    if x.command == "smoke-api-resume":
+        from historical.publish import smoke_api_resume
+
+        print(json.dumps(smoke_api_resume(c, p, x.packet, h, amendment)))
+        return
     if x.command in ("publish-api", "smoke-api", "publish-site"):
         from historical.publish import publish_api, publish_site, smoke_api
 
@@ -689,11 +713,10 @@ def main():
             c["amplify"] = __import__(
                 "citizen.hosting", fromlist=["clients"]
             ).clients()["amplify"]
-        action = {
-            "publish-api": publish_api,
-            "smoke-api": smoke_api,
-            "publish-site": publish_site,
-        }[x.command]
+        if x.command == "publish-site":
+            print(json.dumps(publish_site(c, p, x.packet, h, amendment)))
+            return
+        action = {"publish-api": publish_api, "smoke-api": smoke_api}[x.command]
         print(json.dumps(action(c, p, x.packet, h)))
         return
     result = (

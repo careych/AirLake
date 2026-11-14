@@ -396,6 +396,117 @@ class HistoricalReleaseTests(unittest.TestCase):
                 publish.publish_site(client, {}, root, "digest")
             self.assertEqual(client.mock_calls, [])
 
+    def test_signed_query_bytes_match_what_lambda_urls_canonicalize(self):
+        from botocore.auth import SigV4Auth
+        from botocore.awsrequest import AWSRequest
+        from botocore.credentials import Credentials
+
+        url = publish.signed_url(
+            "https://x.lambda-url.ap-southeast-2.on.aws/api/v1/history"
+            "?station_id=6123215&limit=1000&start=2026-09-23T17:00:00Z"
+        )
+        self.assertTrue(url.endswith("start=2026-09-23T17%3A00%3A00Z"))
+        signer = SigV4Auth(Credentials("SYNTHETIC", "SYNTHETIC"), "lambda", "x")
+        self.assertEqual(
+            signer.canonical_query_string(AWSRequest(method="GET", url=url)),
+            "limit=1000&start=2026-09-23T17%3A00%3A00Z&station_id=6123215",
+        )
+        plain = "https://x.lambda-url.ap-southeast-2.on.aws/api/v1/latest"
+        self.assertEqual(publish.signed_url(plain), plain)
+
+    def resume_fixture(self, root, statuses=(200, 200, 403)):
+        ex = {
+            "provenance": {"window_end_utc": "2026-09-30T17:00:00Z"},
+            "facts": [],
+            "daily": [],
+        }
+        (root / "cloud-export.json").write_text(json.dumps(ex))
+        (root / "acceptance.json").write_text(json.dumps({"export_sha256": "E"}))
+        paths = publish.smoke_paths(ex)
+        (root / "history-http.json").write_text(
+            json.dumps(
+                {
+                    "status": "RUNNING",
+                    "requests": [
+                        {"path": a, "status": b}
+                        for a, b in zip(paths, statuses, strict=False)
+                    ],
+                }
+            )
+        )
+        (root / "api-publication.json").write_text(
+            json.dumps({"operations": [{"identifiers": {"CodeSha256": "C"}}]})
+        )
+        c = {"lambda": Mock()}
+        c["lambda"].get_function_configuration.return_value = {
+            "CodeSha256": "C",
+            "Environment": {"Variables": {"AIRLAKE_HISTORY_EXPORT_SHA256": "E"}},
+        }
+        c["lambda"].get_function_url_config.return_value = {
+            "AuthType": "AWS_IAM",
+            "FunctionUrl": "https://x.lambda-url.ap-southeast-2.on.aws/",
+        }
+        return c, paths
+
+    def test_resume_reads_only_the_three_unverified_paths_once(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            c, paths = self.resume_fixture(root)
+            digest = "D" * 64
+            with self.assertRaises(ValueError):
+                publish.smoke_api_resume(c, {}, root, digest, None)
+            confirm = publish.prepare_amendment(root, digest)
+            with self.assertRaises(ValueError):
+                publish.load_amendment(root, digest, "0" * 64)
+            amendment = publish.load_amendment(root, digest, confirm)
+            self.assertEqual(amendment["remaining_paths"], paths[2:])
+            self.assertFalse(publish.api_accepted(root, amendment))
+            bodies = [
+                {"count": 168},
+                {
+                    "total": 14,
+                    "metadata": {
+                        "export_sha256": "d3226cf36a89bf6d543d4eb2f075da3c912a2f0ea8e12db48cd4fcb0dbc8b803"
+                    },
+                },
+                {"count": 3},
+            ]
+            seen = []
+
+            def get(path):
+                seen.append(path)
+                return Mock(
+                    status_code=200, json=Mock(return_value=bodies[len(seen) - 1])
+                )
+
+            result = publish.smoke_api_resume(c, {}, root, digest, amendment, get)
+            self.assertEqual(seen, paths[2:])
+            self.assertEqual(result["status"], "PASS_REMAINING_THREE_SIGNED_READS")
+            self.assertTrue(publish.api_accepted(root, amendment))
+            self.assertFalse(publish.api_accepted(root, None))
+            with self.assertRaises(ValueError):
+                publish.smoke_api_resume(c, {}, root, digest, amendment, get)
+            self.assertEqual(len(seen), 3)
+
+    def test_resume_refuses_any_other_first_attempt_or_changed_api(self):
+        for statuses in ((200, 403), (200, 200, 500), (200, 200, 200, 403)):
+            with tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                self.resume_fixture(root, statuses)
+                with self.assertRaises(ValueError):
+                    publish.prepare_amendment(root, "D" * 64)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            c, _ = self.resume_fixture(root)
+            amendment = publish.load_amendment(
+                root, "D" * 64, publish.prepare_amendment(root, "D" * 64)
+            )
+            c["lambda"].get_function_configuration.return_value["CodeSha256"] = "X"
+            get = Mock()
+            with self.assertRaises(ValueError):
+                publish.smoke_api_resume(c, {}, root, "D" * 64, amendment, get)
+            get.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()
