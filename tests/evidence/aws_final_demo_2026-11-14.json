@@ -1,0 +1,624 @@
+{
+  "status": "PASS_AWS_COMPUTE_ATHENA_AND_IAM_HTTP",
+  "recorded_at_utc": "2026-11-14T04:44:22.794928+00:00",
+  "scope": "one bounded historical AWS Gold computation and immutable-export API; not continuous ingestion or public redistribution",
+  "plan_sha256": "cfeeb43ce529e381bcd545050878811d344dc5e9c7d96c7fe1767e2b3cdec81d",
+  "source_main": "bac10f8033c27779993326c94b21549cef5a9645",
+  "account": "701364614078",
+  "region": "ap-southeast-2",
+  "source_snapshots": {
+    "bronze": {
+      "database": "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_bronze",
+      "snapshot": "82685161818144704",
+      "table": "aq_measurements"
+    },
+    "silver": {
+      "database": "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_silver",
+      "snapshot": "5024076747683534255",
+      "table": "aq_measurements"
+    }
+  },
+  "reference_evidence_sha256": "21d76b6bd19d906bce9601d6ae4b3e6724a9cab62c23cb5d2f94b10b5815a50a",
+  "source_records": 559,
+  "output_counts": {
+    "aqi_breakpoints": 7,
+    "dim_location": 3,
+    "pm25_aqi_hourly": 72
+  },
+  "glue": {
+    "DPUSeconds": 287.0,
+    "ExecutionTime": 143,
+    "GlueVersion": "5.0",
+    "Id": "jr_e4b46ccd1668c6e0b28c514317dc8028ab9ad678712a309250dfe4725d6f9509",
+    "JobRunState": "SUCCEEDED",
+    "NumberOfWorkers": 2,
+    "WorkerType": "G.1X",
+    "cloudwatch_logs": [
+      {
+        "group": "/airlake/final-demo/20261114_34207148/error",
+        "streams": [
+          "jr_e4b46ccd1668c6e0b28c514317dc8028ab9ad678712a309250dfe4725d6f9509",
+          "jr_e4b46ccd1668c6e0b28c514317dc8028ab9ad678712a309250dfe4725d6f9509_g-65cb659a21c87b5363fa2737cddc0d886a775d0e"
+        ]
+      },
+      {
+        "group": "/airlake/final-demo/20261114_34207148/output",
+        "streams": [
+          "jr_e4b46ccd1668c6e0b28c514317dc8028ab9ad678712a309250dfe4725d6f9509"
+        ]
+      }
+    ],
+    "job_parameters": {
+      "--TempDir": "s3://airlake-701364614078-lake/final-demo/20261114_34207148/temp/",
+      "--conf": "spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions --conf spark.sql.catalog.demo=org.apache.iceberg.spark.SparkCatalog --conf spark.sql.catalog.demo.catalog-impl=org.apache.iceberg.aws.glue.GlueCatalog --conf spark.sql.catalog.demo.io-impl=org.apache.iceberg.aws.s3.S3FileIO --conf spark.sql.catalog.demo.warehouse=s3://airlake-701364614078-lake/final-demo/20261114_34207148/warehouse/ --conf spark.sql.catalog.demo.client.region=ap-southeast-2 --conf spark.sql.catalog.demo.table-default.format-version=2 --conf spark.sql.catalog.demo.table-default.write.format.default=parquet --conf spark.sql.session.timeZone=UTC --conf spark.sql.shuffle.partitions=2",
+      "--custom-logGroup-prefix": "/airlake/final-demo/20261114_34207148",
+      "--extra-jars": "s3://airlake-701364614078-lake/final-demo/20261114_34207148/artifacts/runtime.jar,s3://airlake-701364614078-lake/final-demo/20261114_34207148/artifacts/aws-bundle.jar",
+      "--extra-py-files": "s3://airlake-701364614078-lake/final-demo/20261114_34207148/artifacts/payload.zip",
+      "--job-bookmark-option": "job-bookmark-disable",
+      "--plan_sha256": "cfeeb43ce529e381bcd545050878811d344dc5e9c7d96c7fe1767e2b3cdec81d",
+      "--plan_uri": "s3://airlake-701364614078-lake/final-demo/20261114_34207148/artifacts/plan.json",
+      "--user-jars-first": "true"
+    },
+    "validation": {
+      "dimension_count": 3,
+      "execution": "AWS_GLUE",
+      "export_sha256": "8775e0daf60b6000f44af460ca680d56a182a3c51c89fbe032ff7eb4194c8826",
+      "first_metrics": {
+        "dimension_changed_count": 0,
+        "dimension_new_count": 3,
+        "dimension_output_count": 3,
+        "dimension_sha256": "1422e0922f0ed700b2d5d9e3c0d4ad54cdf27d5b772a5f51547bd9af2fc829da",
+        "dimension_source_count": 3,
+        "duplicate_dimension_key_count": 0,
+        "duplicate_hourly_key_count": 0,
+        "hourly_changed_count": 0,
+        "hourly_new_count": 72,
+        "hourly_output_count": 72,
+        "hourly_sha256": "925658ea10a6082f0ad9d4c071517f1fe8b238176296cc2065ea4e5dec717140",
+        "invalid_hourly_output_count": 0,
+        "invalid_pm25_count": 0,
+        "non_pm25_source_count": 0,
+        "null_dimension_key_count": 0,
+        "null_hourly_key_count": 0,
+        "orphan_location_count": 0,
+        "pm25_source_count": 559,
+        "silver_source_count": 559,
+        "valid_pm25_count": 559
+      },
+      "hourly_count": 72,
+      "reference_comparison": "PASS; absolute float tolerance 1e-12",
+      "second_metrics": {
+        "dimension_changed_count": 0,
+        "dimension_new_count": 0,
+        "dimension_output_count": 3,
+        "dimension_sha256": "1422e0922f0ed700b2d5d9e3c0d4ad54cdf27d5b772a5f51547bd9af2fc829da",
+        "dimension_source_count": 3,
+        "duplicate_dimension_key_count": 0,
+        "duplicate_hourly_key_count": 0,
+        "hourly_changed_count": 0,
+        "hourly_new_count": 0,
+        "hourly_output_count": 72,
+        "hourly_sha256": "925658ea10a6082f0ad9d4c071517f1fe8b238176296cc2065ea4e5dec717140",
+        "invalid_hourly_output_count": 0,
+        "invalid_pm25_count": 0,
+        "non_pm25_source_count": 0,
+        "null_dimension_key_count": 0,
+        "null_hourly_key_count": 0,
+        "orphan_location_count": 0,
+        "pm25_source_count": 559,
+        "silver_source_count": 559,
+        "valid_pm25_count": 559
+      },
+      "silver_duplicate_keys": 0,
+      "silver_null_keys": 0,
+      "snapshots_after": {
+        "breakpoints": [
+          3969327446946106977
+        ],
+        "dimensions": [
+          5588263010185920013
+        ],
+        "hourly": [
+          1448664929439847864
+        ]
+      },
+      "snapshots_before": {
+        "breakpoints": [
+          3969327446946106977
+        ],
+        "dimensions": [
+          5588263010185920013
+        ],
+        "hourly": [
+          1448664929439847864
+        ]
+      },
+      "source_silver_count": 559,
+      "status": "PASS"
+    }
+  },
+  "glue_role": "airlake-final-glue-20261114_34207148",
+  "maximum_pm25_mean_absolute_error": 2.6645352591003757e-15,
+  "float_absolute_tolerance": 1e-12,
+  "output_database": "airlake_final_20261114_34207148",
+  "output_tables": {
+    "aqi_breakpoints": {
+      "schema": [
+        [
+          "parameter",
+          "string"
+        ],
+        [
+          "aqi_lo",
+          "int"
+        ],
+        [
+          "aqi_hi",
+          "int"
+        ],
+        [
+          "conc_lo",
+          "double"
+        ],
+        [
+          "conc_hi",
+          "double"
+        ],
+        [
+          "source",
+          "string"
+        ],
+        [
+          "effective_from",
+          "date"
+        ],
+        [
+          "effective_to",
+          "date"
+        ],
+        [
+          "is_current",
+          "boolean"
+        ]
+      ],
+      "metadata": "s3://airlake-701364614078-lake/final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/aqi_breakpoints/metadata/00001-dc68d55c-aa08-4286-b467-8460eeb0f6ce.metadata.json",
+      "format_version": 2,
+      "snapshot": 3969327446946106977
+    },
+    "dim_location": {
+      "schema": [
+        [
+          "location_id",
+          "int"
+        ],
+        [
+          "name",
+          "string"
+        ],
+        [
+          "lat",
+          "double"
+        ],
+        [
+          "lon",
+          "double"
+        ],
+        [
+          "station_type",
+          "string"
+        ]
+      ],
+      "metadata": "s3://airlake-701364614078-lake/final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/dim_location/metadata/00001-e05c38ed-259c-49d8-997d-b4959e054f65.metadata.json",
+      "format_version": 2,
+      "snapshot": 5588263010185920013
+    },
+    "pm25_aqi_hourly": {
+      "schema": [
+        [
+          "location_id",
+          "int"
+        ],
+        [
+          "hour_start",
+          "timestamp"
+        ],
+        [
+          "pm25_avg",
+          "double"
+        ],
+        [
+          "aqi",
+          "int"
+        ]
+      ],
+      "metadata": "s3://airlake-701364614078-lake/final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/pm25_aqi_hourly/metadata/00001-c55e2f0f-9579-4fa5-824b-24e945715168.metadata.json",
+      "format_version": 2,
+      "snapshot": 1448664929439847864
+    }
+  },
+  "original_five_current_snapshot_ids_unchanged": {
+    "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_bronze.aq_measurements": 82685161818144704,
+    "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_silver.aq_measurements": 5024076747683534255,
+    "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_silver.aqi_breakpoints": 3729176464341660763,
+    "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_gold.dim_location": 5513456602871200404,
+    "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_gold.pm25_aqi_hourly": 2020624562194805942
+  },
+  "cloudwatch_acceptance_markers": [
+    {
+      "timestamp": 1794630532844,
+      "event_id": "40021598238457286776515178500459451685331864565952348161",
+      "message_sha256": "e7139847c4009db983318fb6933e3d8c7ea1db871feaee79ee8d193c3c939b2d"
+    }
+  ],
+  "athena": {
+    "operations": [
+      {
+        "identifiers": {},
+        "operation": "athena.start_one_select",
+        "status": "RETURNED_SUCCESS"
+      }
+    ],
+    "plan_sha256": "cfeeb43ce529e381bcd545050878811d344dc5e9c7d96c7fe1767e2b3cdec81d",
+    "query_id": "ecba19bd-d8a1-442b-b818-d008db7616c5",
+    "query_sha256": "d5b8e10095955e84bd57d395db24defe157d23c3f27ba1858b941f2ff665adf4",
+    "result_object": "s3://airlake-701364614078-athena-results/ecba19bd-d8a1-442b-b818-d008db7616c5.csv",
+    "rows": 72,
+    "statistics": {
+      "DataScannedInBytes": 1598,
+      "EngineExecutionTimeInMillis": 834,
+      "QueryPlanningTimeInMillis": 157,
+      "QueryQueueTimeInMillis": 51,
+      "ResultReuseInformation": {
+        "ReusedPreviousResult": false
+      },
+      "ServicePreProcessingTimeInMillis": 57,
+      "ServiceProcessingTimeInMillis": 40,
+      "TotalExecutionTimeInMillis": 982
+    },
+    "status": "PASS"
+  },
+  "api": {
+    "status": "PASS",
+    "function": {
+      "FunctionName": "airlake-final-api-20261114_34207148",
+      "FunctionArn": "arn:aws:lambda:ap-southeast-2:701364614078:function:airlake-final-api-20261114_34207148",
+      "Runtime": "python3.12",
+      "Role": "arn:aws:iam::701364614078:role/airlake-final-api-20261114_34207148",
+      "Handler": "final_demo.lambda_api.handler",
+      "CodeSize": 32461,
+      "Timeout": 10,
+      "MemorySize": 128,
+      "CodeSha256": "If5ifWwWduTlGLeWJ3CUq68IIEs54AufOum3Ns0bJBk=",
+      "Version": "$LATEST",
+      "RevisionId": "887fb1d7-8f67-413e-bbfd-b614a8ba0644",
+      "State": "Active",
+      "LastUpdateStatus": "Successful",
+      "Architectures": [
+        "arm64"
+      ]
+    },
+    "environment_variable_names": [
+      "AIRLAKE_EXPORT_SHA256",
+      "AIRLAKE_FINAL_RUN"
+    ],
+    "auth_type": "AWS_IAM",
+    "function_url": "https://whgdwrmccvrmwipegu3jkvweii0vwaiy.lambda-url.ap-southeast-2.on.aws/",
+    "cors_present": false,
+    "reserved_concurrency": 1,
+    "code_hash_matches_local_zip": true,
+    "execution_policy": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+            "logs:PutLogEvents"
+          ],
+          "Resource": [
+            "arn:aws:logs:ap-southeast-2:701364614078:log-group:/aws/lambda/airlake-final-api-20261114_34207148",
+            "arn:aws:logs:ap-southeast-2:701364614078:log-group:/aws/lambda/airlake-final-api-20261114_34207148:*"
+          ]
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "s3:GetObject"
+          ],
+          "Resource": "arn:aws:s3:::airlake-701364614078-lake/final-demo/20261114_34207148/exports/gold.json"
+        }
+      ]
+    }
+  },
+  "http_smoke": {
+    "status": "PASS",
+    "requests": [
+      {
+        "path": "/api/v1/health",
+        "signed": false,
+        "status": 403
+      },
+      {
+        "path": "/api/v1/health",
+        "signed": true,
+        "status": 200
+      },
+      {
+        "path": "/api/v1/gold/hourly?limit=100",
+        "signed": true,
+        "status": 200
+      },
+      {
+        "path": "/api/v1/gold/hourly?format=csv&limit=100",
+        "signed": true,
+        "status": 200
+      },
+      {
+        "path": "/api/v1/stations",
+        "signed": true,
+        "status": 200
+      },
+      {
+        "path": "/api/v1/gold/hourly?location_id=4946812&limit=100",
+        "signed": true,
+        "status": 200
+      },
+      {
+        "path": "/api/v1/gold/hourly?location_id=4946813&limit=100",
+        "signed": true,
+        "status": 200
+      },
+      {
+        "path": "/api/v1/gold/hourly?location_id=6123215&limit=100",
+        "signed": true,
+        "status": 200
+      }
+    ],
+    "function_url": "https://whgdwrmccvrmwipegu3jkvweii0vwaiy.lambda-url.ap-southeast-2.on.aws",
+    "data_provenance": {
+      "account": "701364614078",
+      "region": "ap-southeast-2",
+      "catalog": "AwsDataCatalog",
+      "database": "airlake_final_20261114_34207148",
+      "hourly_table": "pm25_aqi_hourly",
+      "dimension_table": "dim_location",
+      "hourly_snapshot": "1448664929439847864",
+      "dimension_snapshot": "5588263010185920013",
+      "acceptance_completed_at_utc": null,
+      "evidence_sha256": "21d76b6bd19d906bce9601d6ae4b3e6724a9cab62c23cb5d2f94b10b5815a50a",
+      "athena_called_per_request": false,
+      "execution": "AWS_GLUE",
+      "source_snapshots": {
+        "bronze": {
+          "database": "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_bronze",
+          "table": "aq_measurements",
+          "snapshot": "82685161818144704"
+        },
+        "silver": {
+          "database": "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_silver",
+          "table": "aq_measurements",
+          "snapshot": "5024076747683534255"
+        }
+      },
+      "export_sha256": "8775e0daf60b6000f44af460ca680d56a182a3c51c89fbe032ff7eb4194c8826"
+    }
+  },
+  "published_lambda_version": "1",
+  "s3": {
+    "bucket": "airlake-701364614078-lake",
+    "prefix": "final-demo/20261114_34207148/",
+    "objects": [
+      {
+        "key": "final-demo/20261114_34207148/artifacts/aws-bundle.jar",
+        "bytes": 69034612,
+        "etag": "48e39e6df91eab90d571205cacf8291f"
+      },
+      {
+        "key": "final-demo/20261114_34207148/artifacts/glue_job.py",
+        "bytes": 8141,
+        "etag": "a7b574684c00c2db0b458ac1645dd7b6"
+      },
+      {
+        "key": "final-demo/20261114_34207148/artifacts/payload.zip",
+        "bytes": 41683,
+        "etag": "c8e52bc462f1f0e8d2c30a55a3fa5ae6"
+      },
+      {
+        "key": "final-demo/20261114_34207148/artifacts/plan.json",
+        "bytes": 1923,
+        "etag": "5bb1403f12eaeff59cd6cd7acfc87613"
+      },
+      {
+        "key": "final-demo/20261114_34207148/artifacts/reference.json",
+        "bytes": 10723,
+        "etag": "6305a6dc63db9d837ba234d595448ea0"
+      },
+      {
+        "key": "final-demo/20261114_34207148/artifacts/runtime.jar",
+        "bytes": 48252525,
+        "etag": "4905a79c37413c7f1f8237aa50d6cde0"
+      },
+      {
+        "key": "final-demo/20261114_34207148/evidence/glue-result.json",
+        "bytes": 2285,
+        "etag": "d588f97e5615176b18b685b38f843419"
+      },
+      {
+        "key": "final-demo/20261114_34207148/exports/gold.json",
+        "bytes": 11355,
+        "etag": "bbb1bddd4d06cd244bfdec7def49e8ea"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/aqi_breakpoints/data/00002-317-5eab3494-fc37-490c-b1bd-35cac2d6a3f3-0-00001.parquet",
+        "bytes": 2429,
+        "etag": "8121a9c3b06be7bc299a585229a3d5ac"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/aqi_breakpoints/data/00004-319-5eab3494-fc37-490c-b1bd-35cac2d6a3f3-0-00001.parquet",
+        "bytes": 2429,
+        "etag": "de1444ca4cdc4b29695caedffa77b424"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/aqi_breakpoints/data/00006-321-5eab3494-fc37-490c-b1bd-35cac2d6a3f3-0-00001.parquet",
+        "bytes": 2428,
+        "etag": "1e2de87ec7db2925751dcdf603efa74d"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/aqi_breakpoints/data/00009-324-5eab3494-fc37-490c-b1bd-35cac2d6a3f3-0-00001.parquet",
+        "bytes": 2428,
+        "etag": "07c3b436d7d14e3115ab65fb3ecb6587"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/aqi_breakpoints/data/00011-326-5eab3494-fc37-490c-b1bd-35cac2d6a3f3-0-00001.parquet",
+        "bytes": 2429,
+        "etag": "21bd4d22fc776f7d77f99f301881e0d0"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/aqi_breakpoints/data/00013-328-5eab3494-fc37-490c-b1bd-35cac2d6a3f3-0-00001.parquet",
+        "bytes": 2429,
+        "etag": "0f6b16ffa3df6ef57f822d1035c7e0f4"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/aqi_breakpoints/data/00015-330-5eab3494-fc37-490c-b1bd-35cac2d6a3f3-0-00001.parquet",
+        "bytes": 2429,
+        "etag": "4d854c8ee4ef4f7038aba56e3b661cd0"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/aqi_breakpoints/metadata/00000-4ea6bea1-e50b-4c18-ada2-4792d720361e.metadata.json",
+        "bytes": 1288,
+        "etag": "da9cf557ac006e9737a0bff150a9b71b"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/aqi_breakpoints/metadata/00001-dc68d55c-aa08-4286-b467-8460eeb0f6ce.metadata.json",
+        "bytes": 2696,
+        "etag": "53660b914f437bd9c9a3d6fe2c83fa29"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/aqi_breakpoints/metadata/7fd3a611-6674-4663-a2e1-b827be739a53-m0.avro",
+        "bytes": 7763,
+        "etag": "5511256c76a204fc7b2d24a1fe7f4247"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/aqi_breakpoints/metadata/snap-3969327446946106977-1-7fd3a611-6674-4663-a2e1-b827be739a53.avro",
+        "bytes": 4496,
+        "etag": "876482ca0ef4df66a2a1b78d1a9f7910"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/dim_location/data/00000-391-c519b252-6825-462e-9f8e-a01eb1e35b74-0-00001.parquet",
+        "bytes": 1877,
+        "etag": "c2474bd8ee19599184eb32046e00e576"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/dim_location/metadata/00000-a3cd9d93-01c9-42f8-aa38-2822aa58649c.metadata.json",
+        "bytes": 1039,
+        "etag": "9b17956134cf2204a9d44ca7a19b7221"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/dim_location/metadata/00001-e05c38ed-259c-49d8-997d-b4959e054f65.metadata.json",
+        "bytes": 2439,
+        "etag": "272b423893be8b273dc8b2aa3aaa7ff4"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/dim_location/metadata/217b65ce-b7f9-413e-8595-24e3e197c532-m0.avro",
+        "bytes": 7401,
+        "etag": "8b6e147b02195a153b6d79a55427bec2"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/dim_location/metadata/snap-5588263010185920013-1-217b65ce-b7f9-413e-8595-24e3e197c532.avro",
+        "bytes": 4496,
+        "etag": "0e481564409bc8cf44578a1d311366da"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/pm25_aqi_hourly/data/00000-466-9403da9e-43a1-4a22-acb9-058259da6d8b-0-00001.parquet",
+        "bytes": 2218,
+        "etag": "f89ae6713aab3a9a1e8e4c2ff1a6e389"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/pm25_aqi_hourly/metadata/00000-eb4aecc7-9e20-411d-94e7-8e6a0337ae57.metadata.json",
+        "bytes": 991,
+        "etag": "f2a0ee1a302a2987e86b58b8fd5e53e0"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/pm25_aqi_hourly/metadata/00001-c55e2f0f-9579-4fa5-824b-24e945715168.metadata.json",
+        "bytes": 2399,
+        "etag": "b8eca8030ffef2c75d01a8444737a68b"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/pm25_aqi_hourly/metadata/8e3743ba-cd55-4ce2-896e-7ff26369caa4-m0.avro",
+        "bytes": 7287,
+        "etag": "40d3346c226bcea2f88ce62750294a23"
+      },
+      {
+        "key": "final-demo/20261114_34207148/warehouse/airlake_final_20261114_34207148.db/pm25_aqi_hourly/metadata/snap-1448664929439847864-1-8e3743ba-cd55-4ce2-896e-7ff26369caa4.avro",
+        "bytes": 4498,
+        "etag": "5e4bfc2a00797542d0f5784a5fb05fc2"
+      }
+    ],
+    "object_count": 29,
+    "total_bytes": 117431136,
+    "inventory_scope": "post-Glue run prefix; API reads do not write this prefix",
+    "etag_semantics": "opaque object identifier, not a SHA-256 integrity claim"
+  },
+  "artifact_sha256": {
+    "api.zip": "21fe627d6c1676e4e518b796277094abaf08204b39e00b9f3ae9b736cd1b2419",
+    "aws-bundle.jar": "dd7e49ffa4ac9b215bed846581991259e3aec9bb2fa08d6cec029c46cd66d957",
+    "glue_job.py": "89725c79b38437c9cd50488ec0a72dbed4e3693661b20b054046559895c426d7",
+    "payload.zip": "9bf6782d7991283f843e264300ed966edfe839f45e08473dad57235243068d80",
+    "reference.json": "9d374f9f7f77a84c2fc422bd69be768f5b162235e19dc17a67d9a61c65a1cbf8",
+    "runtime.jar": "8dd8c90e54ed1a20f2461309d047a255ee56382eb7c0a46162b27a4936fd86dc"
+  },
+  "production_sha256": {
+    "scripts/gold_batch.py": "f11d7e954b8e40765f95833f5c76ee013d2bb6a44f9c97a4f79ad3b06dd45836",
+    "scripts/silver_batch.py": "71f9a2cc800e8ebde7987afea4c490c1ca9765ec41253e32766f0d1e48c12259"
+  },
+  "offline_tests": {
+    "python_passed": 341,
+    "focused_included": 17,
+    "failures": 0,
+    "errors": 0,
+    "fixtures": "mocked AWS/Spark, synthetic unit fixtures; live cloud evidence recorded separately",
+    "gold_48_suite": "not rerun; production Gold/Silver unchanged; actual AWS Glue output independently compared"
+  },
+  "execution_notes": [
+    "Separate user approvals covered one Glue deployment/run, one Athena SELECT and at most ten API HTTP requests; eight requests performed.",
+    "A single ten-second local before-call delay allowed IAM propagation before CreateFunction; no cloud write retry or request-parameter modification.",
+    "Unchanged rerun occurred inside the same Glue job; no atomic multi-table rollback is claimed.",
+    "Preparation evidence is an earlier checkpoint and retains its original pre-execution claims and hashes."
+  ],
+  "cost": {
+    "glue_execution_seconds": 143,
+    "reported_dpu_seconds": 287,
+    "athena_scanned_bytes": 1598,
+    "http_requests": 8,
+    "billing_measured": false,
+    "other_drivers": [
+      "S3 storage/requests",
+      "Glue catalog",
+      "CloudWatch logs",
+      "Lambda requests/duration"
+    ],
+    "retained_resources_can_incur_cost": true
+  },
+  "limitations": [
+    "Historical bounded batch; simplified hourly MVP AQI, not official VN_AQI.",
+    "No scheduled or continuously deployed ingestion.",
+    "API caches a hash-verified S3 export; no Athena call or refresh per request.",
+    "AWS-hosted authenticated Superset charts not verified; existing local dashboard preserved against previous accepted tables.",
+    "Telegram staging remains a separate task; no SNS, Telegram or Lambda bot changes.",
+    "Provider redistribution clearance remains outstanding; API requires same-account IAM authorization."
+  ],
+  "cleanup": {
+    "executed": false,
+    "separate_approval_required": true,
+    "resources": [
+      "new database and its three tables",
+      "exact final-demo S3 run prefix",
+      "Athena result CSV and associated metadata for recorded query ID",
+      "new Glue job, two execution roles/inline policies",
+      "new Lambda function URL, versions and function",
+      "new job and Lambda log groups"
+    ],
+    "do_not_touch": "original source tables/snapshots, old acceptance prefixes, Superset, Telegram, Terraform, EC2"
+  }
+}

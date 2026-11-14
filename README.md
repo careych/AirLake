@@ -292,6 +292,11 @@ separate diagnostic cleanup. Do not commit credentials or downloaded datasets.
 
 ## Team architecture and handoff
 
+The [Clean Data API](docs/clean-data-api.md) exposes the retained, hash-verified
+real Gold batch as localhost JSON/CSV with station/UTC filters and pagination.
+It serves historical data without per-request Athena calls; live snapshot
+comparison is a separate, explicitly approved two-SELECT verification.
+
 The [technical specification](AirLake_DacTa_KyThuat.md) contains target AWS/serving
 requirements as well as local data contracts. The [project context](AirLake_PROJECT_CONTEXT.md)
 records ownership, verified status, historical surveys and pending decisions.
@@ -310,24 +315,27 @@ Runtime directories, private configuration, logs and caches are ignored. Curated
 learning notes and image exports are outside this PR's selected candidates pending
 owner/archive decisions; preserve their attribution and source material.
 
-## Monitoring and Kafka Cluster Producer (Nam)
+For the disabled-by-default polling controller and verified Gold/API refresh, see
+[bounded cloud operations](docs/live-operations.md). The bounded controller completed its recorded AWS acceptance; scheduling and
+worker concurrency remain disabled. Its evidence distinguishes retained output
+from an unattended production service.
 
-### Freshness Poller & CloudWatch
-`freshness_poller.py` polls latest PM2.5 measurements for active Hanoi stations, computes sensor age in hours, and publishes `SensorAgeHours` metrics to AWS CloudWatch (Namespace `AirLake`). Supports standalone CLI (`--dry-run`), periodic cron, and AWS Lambda handler:
 
-```sh
-uv run python freshness_poller.py --dry-run
-```
+The Vietnamese citizen application is documented in
+[Hanoi citizen release](docs/hanoi-citizen-release.md). The existing
+[public AWS site](https://public.dhyvgpdsnj4zi.amplifyapp.com/) serves one licensed
+station as a dated, stale bounded snapshot; a password-protected preview covers
+three stations. The six-page historical revision has passed local browser checks and awaits
+one consolidated data-and-website release approval; the cosmetic-only release
+was cancelled. Public Telegram signup and
+continuous website refresh are not enabled. Superset remains the internal BI client.
 
-### Kafka Producer to AWS Cluster
-`real_producer.py` reads compressed historical CSV files from `data/raw/` and publishes measurements to Apache Kafka.
-
-To publish to the AWS EC2 Kafka cluster, set:
-```sh
-export KAFKA_BOOTSTRAP_SERVERS="10.0.0.11:9092,10.0.1.12:9092,10.0.0.13:9092"
-```
-
-The producer writes to `aq_measurements`:
-```sh
-uv run python real_producer.py --topic aq_measurements
-```
+The expanded [historical Hanoi product](docs/historical-product.md) now passes
+local real-data acceptance: 17,181 September 2026 PM2.5 records, 2,133 hourly
+facts and 90 daily summaries. The licensed public projection has 720 hourly and
+30 daily rows, with tested 7/30-day analytics and JSON/CSV research filters.
+The approved AWS backfill and two Athena comparisons completed. A strict local
+comparison found one experimental AQI rounding difference at a floating-point
+half-tie, so the consolidated release stopped. The additive private history API
+is deployed but awaits HTTP acceptance; both websites retain their first sparse
+bounded snapshots. See the actual recovery evidence and blocker in the guide.

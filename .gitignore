@@ -15,7 +15,6 @@ env/
 .env.*
 !.env.example
 .aws/
-trust.json
 
 # Terraform runtime state and private inputs; retain provider lockfiles
 .terraform/
@@ -62,10 +61,5 @@ crash.*.log
 .coverage.*
 coverage.xml
 
-# Personal / internal reference documents (Timeline & Reports)
-*.pdf
-/AirLake.pdf
-/AirLake Timeline & Role Assignment - Timeline.pdf
-BAO_CAO_*.md
-*~
-*.bak
+# Private website viewer credentials are never publication assets
+preview-login.json

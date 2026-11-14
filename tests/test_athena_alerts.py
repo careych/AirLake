@@ -198,6 +198,32 @@ class AthenaReaderTests(unittest.TestCase):
             ]
         )
 
+    def test_default_catalog_case_is_normalized_but_other_catalog_is_rejected(self):
+        base_config = configuration()
+        config = replace(
+            base_config,
+            catalog="AwsDataCatalog",
+            allowed_tables=(
+                ("AwsDataCatalog", base_config.database, base_config.hourly_table),
+                ("AwsDataCatalog", base_config.database, base_config.dimension_table),
+            ),
+        )
+        self.executor(config)  # Populate metadata for Athena's default catalog.
+        execution = self.client.get_query_execution.return_value["QueryExecution"]
+        context = execution["QueryExecutionContext"]
+        context["Catalog"] = "awsdatacatalog"
+        rows = self.executor(config).read_pinned_hourly_rows()
+        self.assertEqual(1, len(rows))
+
+        context["Catalog"] = "other_catalog"
+        with self.assertRaisesRegex(InvalidAlert, "context"):
+            self.executor(config).read_pinned_hourly_rows()
+
+        context["Catalog"] = "AwsDataCatalog"
+        context["Database"] = "other_database"
+        with self.assertRaisesRegex(InvalidAlert, "context"):
+            self.executor(config).read_pinned_hourly_rows()
+
     def test_identifier_allowlist_and_snapshot_injection_reject_offline(self):
         for change in (
             {"database": "gold;DROP"},

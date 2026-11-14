@@ -1,0 +1,50 @@
+{
+  "account": "701364614078",
+  "api": "airlake-final-api-20261114_34207148",
+  "api_role": "airlake-final-api-20261114_34207148",
+  "aqi": "simplified_hourly_mean_mvp; NOT official VN_AQI",
+  "artifacts": {
+    "api.zip": "21fe627d6c1676e4e518b796277094abaf08204b39e00b9f3ae9b736cd1b2419",
+    "aws-bundle.jar": "dd7e49ffa4ac9b215bed846581991259e3aec9bb2fa08d6cec029c46cd66d957",
+    "glue_job.py": "89725c79b38437c9cd50488ec0a72dbed4e3693661b20b054046559895c426d7",
+    "payload.zip": "9bf6782d7991283f843e264300ed966edfe839f45e08473dad57235243068d80",
+    "reference.json": "9d374f9f7f77a84c2fc422bd69be768f5b162235e19dc17a67d9a61c65a1cbf8",
+    "runtime.jar": "8dd8c90e54ed1a20f2461309d047a255ee56382eb7c0a46162b27a4936fd86dc"
+  },
+  "bucket": "airlake-701364614078-lake",
+  "database": "airlake_final_20261114_34207148",
+  "expected": {
+    "breakpoints": 7,
+    "dimensions": 3,
+    "hourly": 72,
+    "silver": 559
+  },
+  "glue_role": "airlake-final-glue-20261114_34207148",
+  "glue_version": "5.0",
+  "job": "airlake-final-20261114_34207148",
+  "log_prefix": "/airlake/final-demo/20261114_34207148",
+  "max_retries": 0,
+  "prefix": "final-demo/20261114_34207148/",
+  "production_sha256": {
+    "scripts/gold_batch.py": "f11d7e954b8e40765f95833f5c76ee013d2bb6a44f9c97a4f79ad3b06dd45836",
+    "scripts/silver_batch.py": "71f9a2cc800e8ebde7987afea4c490c1ca9765ec41253e32766f0d1e48c12259"
+  },
+  "region": "ap-southeast-2",
+  "run": "20261114_34207148",
+  "schema_version": 1,
+  "sources": {
+    "bronze": {
+      "database": "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_bronze",
+      "snapshot": "82685161818144704",
+      "table": "aq_measurements"
+    },
+    "silver": {
+      "database": "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_silver",
+      "snapshot": "5024076747683534255",
+      "table": "aq_measurements"
+    }
+  },
+  "timeout_minutes": 10,
+  "worker_type": "G.1X",
+  "workers": 2
+}

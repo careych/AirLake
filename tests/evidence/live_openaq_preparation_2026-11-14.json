@@ -1,0 +1,413 @@
+{
+  "status": "PREPARED_OFFLINE_AND_READ_ONLY_SOURCE_AWS_CHECKS_PASS; NOT_DEPLOYED",
+  "source_main": "82d3064",
+  "plan_sha256": "9bf5e59246563014f132f5de2042644eaccb4bdedbb4c4ee263414e564577c8b",
+  "run": "20261114_9e2c740b",
+  "aws_inventory": {
+    "profile": "airlake",
+    "region": "ap-southeast-2",
+    "mode": "READ_ONLY",
+    "account": "701364614078",
+    "openaq_secret_metadata": [],
+    "tables": [
+      "AirLake_Subscriptions",
+      "airlake-alert-staging-v1-ledger",
+      "airlake-alert-staging-v1-subscriptions"
+    ],
+    "historical_api": {
+      "FunctionName": "airlake-final-api-20261114_34207148",
+      "Runtime": "python3.12",
+      "State": "Active",
+      "Role": "arn:aws:iam::701364614078:role/airlake-final-api-20261114_34207148"
+    },
+    "historical_api_environment_names": [
+      "AIRLAKE_EXPORT_SHA256",
+      "AIRLAKE_FINAL_RUN"
+    ],
+    "bucket_access": 200,
+    "status": "PASS"
+  },
+  "new_scope_preflight": {
+    "status": "PASS_READ_ONLY",
+    "scope": "20261114_9e2c740b",
+    "write_permissions": "not established by reads"
+  },
+  "source_survey": {
+    "status": "PASS_READ_ONLY_DISCOVERY",
+    "checked_at_utc": "2026-11-14T05:07:58Z",
+    "scope": "First 30 matches within 20km of 21.0285,105.8542; all three pilots plus five most recent candidate locations; not an administrative or city-wide census",
+    "stations": [
+      {
+        "location_id": 4946812,
+        "name": "Công viên Nhân Chính - Khuất Duy Tiến",
+        "coordinates": {
+          "latitude": 21.0031,
+          "longitude": 105.7947
+        },
+        "is_mobile": false,
+        "original_pilot": true,
+        "provider": {
+          "id": 67,
+          "name": "Hanoi Air Quality Monitoring Network"
+        },
+        "licenses": null,
+        "sensors": [
+          {
+            "sensor_id": 13502151,
+            "units": "µg/m³",
+            "last_observed_at": "2026-11-14T04:50:00Z",
+            "age_seconds": 1078.0,
+            "seven_day_found_as_reported": ">2",
+            "seven_day_samples": 2,
+            "sample_period_seconds": [
+              3600.0,
+              3600.0
+            ],
+            "coverage_note": "Two samples prove availability, not seven-day completeness; provider aggregate coverage metadata is not treated as validated uptime"
+          }
+        ]
+      },
+      {
+        "location_id": 4946813,
+        "name": "Số 1 đường Giải Phóng - phường Bạch Mai - ĐHBK ",
+        "coordinates": {
+          "latitude": 21.0052,
+          "longitude": 105.8418
+        },
+        "is_mobile": false,
+        "original_pilot": true,
+        "provider": {
+          "id": 67,
+          "name": "Hanoi Air Quality Monitoring Network"
+        },
+        "licenses": null,
+        "sensors": [
+          {
+            "sensor_id": 13502154,
+            "units": "µg/m³",
+            "last_observed_at": "2026-11-14T04:50:00Z",
+            "age_seconds": 1078.0,
+            "seven_day_found_as_reported": ">2",
+            "seven_day_samples": 2,
+            "sample_period_seconds": [
+              3600.0,
+              3600.0
+            ],
+            "coverage_note": "Two samples prove availability, not seven-day completeness; provider aggregate coverage metadata is not treated as validated uptime"
+          }
+        ]
+      },
+      {
+        "location_id": 6123215,
+        "name": "Dragon",
+        "coordinates": {
+          "latitude": 20.9933,
+          "longitude": 105.9441
+        },
+        "is_mobile": false,
+        "original_pilot": true,
+        "provider": {
+          "id": 66,
+          "name": "AirGradient"
+        },
+        "licenses": [
+          {
+            "id": 41,
+            "name": "CC BY 4.0",
+            "attribution": {
+              "name": "srgillo",
+              "url": null
+            },
+            "dateFrom": "2023-07-15",
+            "dateTo": null
+          }
+        ],
+        "sensors": [
+          {
+            "sensor_id": 14581375,
+            "units": "µg/m³",
+            "last_observed_at": "2026-11-14T04:00:00Z",
+            "age_seconds": 4078.0,
+            "seven_day_found_as_reported": ">2",
+            "seven_day_samples": 2,
+            "sample_period_seconds": [
+              3600.0,
+              3600.0
+            ],
+            "coverage_note": "Two samples prove availability, not seven-day completeness; provider aggregate coverage metadata is not treated as validated uptime"
+          }
+        ]
+      },
+      {
+        "location_id": 2161292,
+        "name": "Số 46, phố Lưu Quang Vũ",
+        "coordinates": {
+          "latitude": 21.0152,
+          "longitude": 105.7999
+        },
+        "is_mobile": false,
+        "original_pilot": false,
+        "provider": {
+          "id": 67,
+          "name": "Hanoi Air Quality Monitoring Network"
+        },
+        "licenses": null,
+        "sensors": [
+          {
+            "sensor_id": 7772032,
+            "units": "µg/m³",
+            "last_observed_at": "2026-11-13T02:00:00Z",
+            "age_seconds": 97678.0,
+            "seven_day_found_as_reported": ">2",
+            "seven_day_samples": 2,
+            "sample_period_seconds": [
+              3600.0,
+              3600.0
+            ],
+            "coverage_note": "Two samples prove availability, not seven-day completeness; provider aggregate coverage metadata is not treated as validated uptime"
+          }
+        ]
+      },
+      {
+        "location_id": 2161306,
+        "name": "Minh Khai - Bắc Từ Liêm",
+        "coordinates": {
+          "latitude": 21.05,
+          "longitude": 105.74
+        },
+        "is_mobile": false,
+        "original_pilot": false,
+        "provider": {
+          "id": 67,
+          "name": "Hanoi Air Quality Monitoring Network"
+        },
+        "licenses": null,
+        "sensors": [
+          {
+            "sensor_id": 7772087,
+            "units": "µg/m³",
+            "last_observed_at": "2026-11-13T02:00:00Z",
+            "age_seconds": 97678.0,
+            "seven_day_found_as_reported": ">2",
+            "seven_day_samples": 2,
+            "sample_period_seconds": [
+              3600.0,
+              3600.0
+            ],
+            "coverage_note": "Two samples prove availability, not seven-day completeness; provider aggregate coverage metadata is not treated as validated uptime"
+          }
+        ]
+      },
+      {
+        "location_id": 2161290,
+        "name": "An Khánh",
+        "coordinates": {
+          "latitude": 21.0024,
+          "longitude": 105.7181
+        },
+        "is_mobile": false,
+        "original_pilot": false,
+        "provider": {
+          "id": 67,
+          "name": "Hanoi Air Quality Monitoring Network"
+        },
+        "licenses": null,
+        "sensors": [
+          {
+            "sensor_id": 7772012,
+            "units": "µg/m³",
+            "last_observed_at": "2025-06-10T03:00:00Z",
+            "age_seconds": 45108478.0,
+            "seven_day_found_as_reported": 0,
+            "seven_day_samples": 0,
+            "sample_period_seconds": [],
+            "coverage_note": "Two samples prove availability, not seven-day completeness; provider aggregate coverage metadata is not treated as validated uptime"
+          }
+        ]
+      },
+      {
+        "location_id": 2161296,
+        "name": "Đào Duy Từ",
+        "coordinates": {
+          "latitude": 21.0354,
+          "longitude": 105.8529
+        },
+        "is_mobile": false,
+        "original_pilot": false,
+        "provider": {
+          "id": 67,
+          "name": "Hanoi Air Quality Monitoring Network"
+        },
+        "licenses": null,
+        "sensors": [
+          {
+            "sensor_id": 7772040,
+            "units": "µg/m³",
+            "last_observed_at": "2025-06-10T03:00:00Z",
+            "age_seconds": 45108478.0,
+            "seven_day_found_as_reported": 0,
+            "seven_day_samples": 0,
+            "sample_period_seconds": [],
+            "coverage_note": "Two samples prove availability, not seven-day completeness; provider aggregate coverage metadata is not treated as validated uptime"
+          }
+        ]
+      },
+      {
+        "location_id": 2161320,
+        "name": "Vân Hà",
+        "coordinates": {
+          "latitude": 21.1476,
+          "longitude": 105.9159
+        },
+        "is_mobile": false,
+        "original_pilot": false,
+        "provider": {
+          "id": 67,
+          "name": "Hanoi Air Quality Monitoring Network"
+        },
+        "licenses": null,
+        "sensors": [
+          {
+            "sensor_id": 7772059,
+            "units": "µg/m³",
+            "last_observed_at": "2025-06-10T03:00:00Z",
+            "age_seconds": 45108478.0,
+            "seven_day_found_as_reported": 0,
+            "seven_day_samples": 0,
+            "sample_period_seconds": [],
+            "coverage_note": "Two samples prove availability, not seven-day completeness; provider aggregate coverage metadata is not treated as validated uptime"
+          }
+        ]
+      }
+    ]
+  },
+  "genuine_source_shape_validation": {
+    "checked_at": "2026-11-14T05:17:21Z",
+    "mode": "READ_ONLY_REAL_SOURCE_VALIDATION; NO_PUBLISH",
+    "stations": [
+      {
+        "location_id": 4946812,
+        "sensor_id": 13502151,
+        "fetched": 2,
+        "bronze_contract_valid": 2,
+        "rejected": 0,
+        "sample_observed_at": [
+          "2026-11-14T03:20:00Z",
+          "2026-11-14T03:25:00Z"
+        ],
+        "measurement_period_seconds": [
+          3600.0,
+          3600.0
+        ],
+        "observed_spacing_seconds": [
+          300.0
+        ],
+        "cadence_note": "bounded sample, not a reporting SLA"
+      },
+      {
+        "location_id": 4946813,
+        "sensor_id": 13502154,
+        "fetched": 2,
+        "bronze_contract_valid": 2,
+        "rejected": 0,
+        "sample_observed_at": [
+          "2026-11-14T03:20:00Z",
+          "2026-11-14T03:25:00Z"
+        ],
+        "measurement_period_seconds": [
+          3600.0,
+          3600.0
+        ],
+        "observed_spacing_seconds": [
+          300.0
+        ],
+        "cadence_note": "bounded sample, not a reporting SLA"
+      },
+      {
+        "location_id": 6123215,
+        "sensor_id": 14581375,
+        "fetched": 2,
+        "bronze_contract_valid": 2,
+        "rejected": 0,
+        "sample_observed_at": [
+          "2026-11-14T04:00:00Z",
+          "2026-11-14T05:00:00Z"
+        ],
+        "measurement_period_seconds": [
+          3600.0,
+          3600.0
+        ],
+        "observed_spacing_seconds": [
+          3600.0
+        ],
+        "cadence_note": "bounded sample, not a reporting SLA"
+      }
+    ]
+  },
+  "tests": {
+    "new_focused_passed": 34,
+    "relevant_existing_passed": 86,
+    "existing_breakdown": {
+      "incremental_openaq": 14,
+      "clean_api": 26,
+      "final_demo": 17,
+      "gold_orchestration": 9,
+      "pipeline_config": 20
+    },
+    "execution_note": "119 passed in one run with 33 initial focused cases; final affected suite reran 34 focused cases after package/guard fixes. The 86 unchanged regression cases were not repeated merely to increase evidence.",
+    "failures_remaining": 0,
+    "errors_remaining": 0,
+    "isolated_spark": {
+      "status": "PASS_SYNTHETIC_OFFLINE_ONLY",
+      "bronze": 9,
+      "silver": 9,
+      "dimensions": 3,
+      "hourly": 6,
+      "all_five_snapshots_unchanged": true,
+      "source": "tests/live_glue_integration.py",
+      "production_transformations": "actual unchanged scripts/silver_batch.py and scripts/gold_batch.py",
+      "isolation": "fresh process, local Hadoop catalog and disposable temporary warehouse; no AWS SDK calls or project runtime paths",
+      "corrected_new_adapter_defect": "Set Python driver TZ=UTC to align collected Spark timestamps with Spark UTC session; original production modules unchanged"
+    },
+    "historical_gold_48_suite": "not rerun; original source hashes preserved; new adapter exercised by the isolated Spark test"
+  },
+  "production_sha256": {
+    "scripts/gold_batch.py": "f11d7e954b8e40765f95833f5c76ee013d2bb6a44f9c97a4f79ad3b06dd45836",
+    "scripts/silver_batch.py": "71f9a2cc800e8ebde7987afea4c490c1ca9765ec41253e32766f0d1e48c12259"
+  },
+  "artifacts_sha256": {
+    "aws-bundle.jar": "dd7e49ffa4ac9b215bed846581991259e3aec9bb2fa08d6cec029c46cd66d957",
+    "glue_job.py": "96b2b435ae4d459893d097d12cbb9385225418527a2f25a6e92b5c372a6a9805",
+    "payload.zip": "1e459875a8c0019adbf3d58a24262440163e40ddce8cf43da54c6d47213a535c",
+    "runtime.jar": "8dd8c90e54ed1a20f2461309d047a255ee56382eb7c0a46162b27a4936fd86dc"
+  },
+  "checks": [
+    "Ruff lint/format",
+    "Python AST and targeted secret scan",
+    "cached JAR checksums",
+    "ZIP imports outside repository",
+    "SDK CreateJob request model validation"
+  ],
+  "cloud_execution": {
+    "new_aws_writes": 0,
+    "secret_values_retrieved_from_aws": 0,
+    "poller_invocations": 0,
+    "schedulers_created_or_enabled": 0,
+    "new_glue_runs": 0,
+    "athena_selects": 0,
+    "new_api_http_reads": 0,
+    "new_dashboard_screenshot": "not captured; no deployed current-data path yet"
+  },
+  "limitations": [
+    "OpenAQ availability was verified read-only; genuine records were not published or stored in S3.",
+    "No OpenAQ secret currently exists in AWS; plan proposes one exact new secret name with a plaintext key copied internally from an explicitly authorized local source after approval.",
+    "Survey covers only bounded 20km candidate sample, not the full administrative Hanoi boundary or seven-day completeness.",
+    "Measurement period is distinct from observed reporting spacing and five-minute poll interval.",
+    "Two-hour overlap is bounded late-arrival support; arbitrary old corrections are not silently imported.",
+    "Historical API and all five Superset panels are preserved; latest HTML remains undeployed and only offline rendering is tested.",
+    "One frozen Glue batch and initial versioned API promotion are prepared; hourly scheduling and continuous export refresh are deferred pending real acceptance.",
+    "Existing Telegram alerts accept closed Gold hours, not instantaneous latest rows; no staging or public alerts changed.",
+    "Public redistribution terms for network pilots remain unknown; IAM-private demo only.",
+    "Effective write/SCP permissions remain unproven by read checks; no bill measured."
+  ]
+}

@@ -10,6 +10,7 @@ import re
 import sqlite3
 import time
 from datetime import UTC, datetime, timedelta
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 PILOTS = {4946812: 13502151, 4946813: 13502154, 6123215: 14581375}
@@ -56,6 +57,28 @@ class UnavailableStation(RuntimeError):
     """A configured source no longer exists; retain its cursor and continue others."""
 
 
+def retry_delay(headers, attempt, now=None):
+    """At most 30 seconds; a longer source cooldown requires a later bounded run."""
+    value = next(
+        (str(v) for k, v in headers.items() if k.lower() == "retry-after"), None
+    )
+    if value is None:
+        delay = 2**attempt
+    elif value.isdecimal() and len(value) <= 3:
+        delay = int(value)
+    else:
+        try:
+            deadline = parsedate_to_datetime(value)
+            if deadline.tzinfo is None:
+                raise ValueError("Retry time needs timezone")
+            delay = math.ceil((deadline - (now or datetime.now(UTC))).total_seconds())
+        except (ValueError, TypeError, OverflowError):
+            raise RuntimeError("Invalid source retry delay") from None
+    if delay > 30:
+        raise RuntimeError("OpenAQ rate-limit delay exceeds bounded run; resume later")
+    return max(1, delay)
+
+
 class API:
     def __init__(self, key, session=None, sleep=time.sleep):
         if not key:
@@ -96,12 +119,8 @@ class API:
                 )
             if attempt == 2:
                 raise RuntimeError("OpenAQ transient/rate-limit retry budget exhausted")
-            retry = response.headers.get("Retry-After", str(2**attempt))
-            if not retry.isdecimal() or int(retry) > 30:
-                raise RuntimeError(
-                    "OpenAQ rate-limit delay exceeds bounded run; resume later"
-                )
-            self.sleep(max(1, int(retry)))
+            self.sleep(retry_delay(response.headers, attempt))
+
         raise RuntimeError("No OpenAQ response")
 
     def metadata(self, location, sensor):

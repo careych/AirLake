@@ -1,0 +1,73 @@
+{
+  "status": "PREPARED_OFFLINE_ONLY; NO_GLUE_RUN_OR_LAMBDA_DEPLOYMENT",
+  "plan_sha256": "cfeeb43ce529e381bcd545050878811d344dc5e9c7d96c7fe1767e2b3cdec81d",
+  "source_main": "bac10f8033c27779993326c94b21549cef5a9645",
+  "new_namespace": "airlake_final_20261114_34207148",
+  "new_s3_prefix": "s3://airlake-701364614078-lake/final-demo/20261114_34207148/",
+  "read_only_aws_inventory": "PASS; pins present; AES256; not Lake Formation registered",
+  "read_only_new_scope_preflight": "PASS; unused names, private bucket and fully empty S3 prefix",
+  "tests": {
+    "python": 341,
+    "focused_final_demo": 17,
+    "failures": 0,
+    "errors": 0,
+    "mode": "mocked AWS/Spark; synthetic fixtures; existing localhost API regressions"
+  },
+  "source_snapshots": {
+    "bronze": {
+      "database": "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_bronze",
+      "snapshot": "82685161818144704",
+      "table": "aq_measurements"
+    },
+    "silver": {
+      "database": "airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_silver",
+      "snapshot": "5024076747683534255",
+      "table": "aq_measurements"
+    }
+  },
+  "expected_counts": {
+    "breakpoints": 7,
+    "dimensions": 3,
+    "hourly": 72,
+    "silver": 559
+  },
+  "compatibility": "Glue 5.0 / Spark 3.5.4 / Python 3.11 / Java17; custom verified Iceberg1.12 supported by AWS configuration docs, not yet executed on Glue",
+  "offline_checks": [
+    "Ruff lint/format PASS",
+    "Python3.11 AST PASS",
+    "JAR checksum and original production code package hashes PASS",
+    "targeted secret and personal-path scan PASS"
+  ],
+  "source_sha256": {
+    "final_demo/control.py": "3c03439b234b372fe029d8ab65003f8d1bb7fa1b6fb31166722fe448f80cf9ac",
+    "final_demo/__init__.py": "4d9eef2af6474f148a524f162bcd6902dd1cf95eda90b7f1247831fdb176001d",
+    "final_demo/lambda_api.py": "b6a3dc7bcc38d91bb97087b77a6b14b3e530a77a3a616041b7ceaa22ac2c2724",
+    "final_demo/glue_job.py": "89725c79b38437c9cd50488ec0a72dbed4e3693661b20b054046559895c426d7",
+    "final_demo/contract.py": "3ed9fcebabe0133efcdf927f51df91ba41df701710ae08bd32e8a09c15ac934a",
+    "final_demo/prepare.py": "547343cd6f1d5034ef42507bfd227613933e9e0e9e0b599e0bcad440e5f20f4b",
+    "final_demo/http_smoke.py": "3f0f42350365b77bcccd0ed8296f8c60eca1ca6e087812af1c5339b70242f0ff",
+    "final_demo/athena_check.py": "0f1c957d0b022dd32b0228174eb1db8a3cff7bda35f38097dac26d641d22211a",
+    "tests/test_final_demo.py": "020ca0158107f596114840469d5eb6020e5425497732f315ebd6a931acf81c5c",
+    "docs/aws-final-demo.md": "29cfb26b41345ff5c3e9522b55f7f1d616132f6cb135622a3f70c4eca6a9f5f9",
+    "docs/plans/aws_final_demo_2026-11-14.json": "cfeeb43ce529e381bcd545050878811d344dc5e9c7d96c7fe1767e2b3cdec81d"
+  },
+  "aws_writes": 0,
+  "glue_job_runs": 0,
+  "athena_queries": 0,
+  "lambda_deployments": 0,
+  "api_http_invocations": 0,
+  "existing_superset_observation": {
+    "instance": "i-0743653781d8224dc",
+    "state": "running",
+    "alb": "airlake-superset-alb",
+    "target_health": "healthy",
+    "authenticated_charts": "NOT VERIFIED; working local UI preserved"
+  },
+  "unresolved": [
+    "Actual custom-JAR Glue runtime compatibility awaits one approved execution",
+    "Effective IAM/SCP permissions and regional compute availability are not proven by reads",
+    "Actual API URL and output snapshots do not exist until approved deployment",
+    "Athena verification requires separate one-SELECT approval",
+    "Provider redistribution terms remain uncleared; IAM-authenticated demo only"
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "status": "PASS_LOCAL_UX_AND_READ_ONLY_PREFLIGHT_RELEASE_NOT_YET_EXECUTED",
+  "scope": "existing Amplify branches only; immutable previously accepted observations",
+  "main_base": "9354d21595f6de26f6bd6adee41af248ecaed8d6",
+  "operations_dependency_commit": "165834c",
+  "public_hourly_rows": 4,
+  "protected_hourly_rows": 14,
+  "public_station_id": 6123215,
+  "protected_station_count": 3,
+  "source_records_already_accepted": 120,
+  "source_export_sha256": "d3226cf36a89bf6d543d4eb2f075da3c912a2f0ea8e12db48cd4fcb0dbc8b803",
+  "browser": {
+    "status": "PASS_LOCAL_BROWSER_REAL_VERIFIED_DATA_NOT_AWS_HOSTING",
+    "checks": [
+      "public_real_four_hourly_points_and_twenty_explicit_gaps",
+      "single_hour_unit_meaningful_axes_keyboard_readout_separate_ingestion_time",
+      "fifth_status_page_and_browser_history",
+      "licensed_json_csv_attribution_and_vietnam_time_filters",
+      "empty_filter_disables_download_and_real_example_is_licensed",
+      "no_unverified_telegram_delivery_or_public_signup_claim",
+      "offline_retains_real_data_and_no_openaq_or_aws_browser_calls",
+      "mobile_no_horizontal_overflow",
+      "tablet_mobile_readable_chart_labels_and_44px_navigation",
+      "three_real_station_filters_fourteen_point_comparison_restricted_download_blocked",
+      "zero_missing_late_stale_states_use_actual_observation_time",
+      "corrupt_data_fail_closed_friendly_error"
+    ],
+    "passed": 12,
+    "public_stations": 1,
+    "public_hours": 4,
+    "instructor_stations": 3,
+    "instructor_hours": 14,
+    "aws_calls": 0,
+    "athena_queries": 0
+  },
+  "offline_tests": {
+    "focused_run_passed": 113,
+    "operations_and_controller_run_passed": 36,
+    "release_safety_followup": "see final test record; counts overlap"
+  },
+  "state_verified_at": "2026-11-14T14:49:32.421787+00:00",
+  "scheduler": "DISABLED",
+  "concurrency": {
+    "poller": 0,
+    "refresh": 0
+  },
+  "api_auth": "AWS_IAM",
+  "source_metadata_checked_at": "2026-11-14T14:54:45.140692+00:00",
+  "source_metadata_gets": 3,
+  "source_metadata_http_statuses": [
+    200,
+    200,
+    200
+  ],
+  "new_source_measurements_ingested_in_ux_task": 0,
+  "source_metadata_newer_than_served_snapshot": true,
+  "new_glue_runs": 0,
+  "new_athena_queries": 0,
+  "new_private_api_requests": 0,
+  "local_refresh_status": "PREPARED_LOCAL_ONLY_NOT_DEPLOYED",
+  "local_refresh_predecessor_preserved": true,
+  "website_realtime": false,
+  "telegram_delivery_verified": false,
+  "billing": "not measured",
+  "external_access": "previous website version user-confirmed; revised version awaits scoped deployment and verification"
+}

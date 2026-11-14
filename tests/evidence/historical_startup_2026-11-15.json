@@ -1,0 +1,61 @@
+{
+  "api_updated": false,
+  "concurrency": {
+    "poller": 0,
+    "refresh": 0
+  },
+  "database": "ABSENT",
+  "execution_seconds": 0,
+  "job": "airlake-history-20261114-7a6e91c2",
+  "job_run_id": "jr_9a8887bfb5c3c6588c86d46b7325b2baa50cd61c0163b3589662dbf9d8841176",
+  "local_acceptance": "Still valid; 17181 source records / 2133 hourly facts / 90 daily rows locally. No AWS transformation success is claimed.",
+  "new_api_reads": 0,
+  "new_athena_queries": 0,
+  "new_website_gets": 0,
+  "original_plan_sha256": "dd3ee0dafc6bab979a9cc9e2a339bdee39ed3728ad37b281fe3b19edaa1f4aa0",
+  "read_only_role_check": {
+    "attached_policies": 0,
+    "checked_at": "2026-11-14T17:43:04.401279+00:00",
+    "job_retries": 0,
+    "job_role_matches": true,
+    "job_started_at": "2026-11-15 00:39:36.203000+07:00",
+    "job_timeout": 10,
+    "job_version": "5.0",
+    "job_workers": 2,
+    "permissions_boundary_present": false,
+    "policy_matches_frozen_scope": true,
+    "role_arn": "arn:aws:iam::701364614078:role/airlake-history-20261114-7a6e91c2",
+    "role_created_at": "2026-11-14T17:39:31+00:00",
+    "trust_matches_glue_service": true
+  },
+  "recorded_date_vietnam": "2026-11-15",
+  "release": "STOPPED_BEFORE_ATHENA_API_AMPLIFY",
+  "root_cause_limit": "Glue could not assume the fresh role. Submitted about five seconds after role creation; propagation is plausible but not established. Trust and inline permissions match the intended scope on later read-only checks. No automatic retry or role change performed.",
+  "s3_objects": [
+    {
+      "bytes": 10734,
+      "etag": "\"0fba23f1abba5a29f32f1e3ee3ab406e\"",
+      "key": "historical-demo/20261114_7a6e91c2/artifacts/glue_job.py"
+    },
+    {
+      "bytes": 127775,
+      "etag": "\"fd681ba4d388508a726fa20301243a94\"",
+      "key": "historical-demo/20261114_7a6e91c2/artifacts/payload.zip"
+    },
+    {
+      "bytes": 251840,
+      "etag": "\"1e0844f869481f8f1069287e234555c9\"",
+      "key": "historical-demo/20261114_7a6e91c2/inputs/manifest.json"
+    },
+    {
+      "bytes": 8331188,
+      "etag": "\"429886e9719932a912a3a02312d2905b\"",
+      "key": "historical-demo/20261114_7a6e91c2/inputs/records.jsonl"
+    }
+  ],
+  "scheduler": "DISABLED",
+  "startup_error": "AccountId:701364614078 and JobName:airlake-history-20261114-7a6e91c2 and JobRunId:jr_9a8887bfb5c3c6588c86d46b7325b2baa50cd61c0163b3589662dbf9d8841176 failed to execute with exception Role arn:aws:iam::701364614078:role/airlake-history-20261114-7a6e91c2 should be given assume role permissions for Glue Service.\n (Service: AWSGlueJobExecutor; Status Code: 400; Error Code: InvalidInputException; Request ID: 90662e2a-318f-4c1d-b606-cab4f48acd32; Proxy: null)",
+  "status": "FAILED",
+  "tables": [],
+  "website_deployed": false
+}

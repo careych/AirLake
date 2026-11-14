@@ -25,6 +25,7 @@ def _run_control(
     import re
     import shlex
     import subprocess
+    import tempfile
     import time
     from pathlib import Path
 
@@ -48,13 +49,48 @@ def _run_control(
         raise ValueError("Invalid staging control inputs")
     code_hash = base64.b64encode(bytes.fromhex(artifact_hash)).decode()
     clock, sleep = clock or time.monotonic, sleep or time.sleep
+    context = {"phase": "validate", "operation": "local inputs"}
+    control_started = clock()
+
+    class ControlFailure(RuntimeError):
+        def __init__(
+            self, message, *, phase, operation, exit_code, elapsed_ms
+        ):
+            super().__init__(message)
+            self.phase = phase
+            self.operation = operation
+            self.exit_code = exit_code
+            self.elapsed_ms = elapsed_ms
+
+    def diagnostic(exc):
+        if isinstance(exc, ControlFailure):
+            return (
+                f"phase={exc.phase}, operation={exc.operation}, "
+                f"exit={exc.exit_code}, elapsed_ms={exc.elapsed_ms}"
+            )
+        return f"phase={context['phase']}, operation=state-check, detail={exc}"
+
+    def state_failure(message):
+        return ControlFailure(
+            message,
+            phase=context["phase"],
+            operation=context["operation"],
+            exit_code="state-check",
+            elapsed_ms=round((clock() - control_started) * 1000),
+        )
+
     if call is None:
 
-        def call(operation, **parameters):
-            # JSON goes over stdin, never process arguments, files or shared logs.
-            result = subprocess.run(
-                shlex.split(f"aws --profile {profile} --region {region}")
-                + [
+        def raw_call(operation, **parameters):
+            # CLI JSON is stored in a private 0600 file, never in process arguments.
+            operation_started = clock()
+            fd, name = tempfile.mkstemp(prefix=".aws-cli-input-", dir=directory)
+            input_path = Path(name)
+            try:
+                os.fchmod(fd, 0o600)
+                with os.fdopen(fd, "w", encoding="utf-8") as stream:
+                    json.dump(parameters, stream, separators=(",", ":"))
+                args = shlex.split(f"aws --profile {profile} --region {region}") + [
                     "--no-cli-pager",
                     "--output",
                     "json",
@@ -65,23 +101,61 @@ def _run_control(
                     "lambda",
                     operation,
                     "--cli-input-json",
-                    "file:///dev/stdin",
-                ],
-                input=json.dumps(parameters),
-                capture_output=True,
-                text=True,
-                check=False,
-                timeout=20,
-                env=dict(
-                    os.environ,
-                    AWS_MAX_ATTEMPTS="1",
-                    AWS_RETRY_MODE="standard",
-                    AWS_PAGER="",
-                ),
-            )
-            if result.returncode:
-                raise RuntimeError("Staging Lambda operation failed")
-            return json.loads(result.stdout)
+                    input_path.as_uri(),
+                ]
+                result = subprocess.run(
+                    args,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    timeout=20,
+                    env=dict(
+                        os.environ,
+                        AWS_MAX_ATTEMPTS="1",
+                        AWS_RETRY_MODE="standard",
+                        AWS_PAGER="",
+                    ),
+                )
+                if result.returncode:
+                    raise ControlFailure(
+                        "AWS operation failed",
+                        phase=context["phase"],
+                        operation=operation,
+                        exit_code=result.returncode,
+                        elapsed_ms=round((clock() - operation_started) * 1000),
+                    )
+                return json.loads(result.stdout)
+            finally:
+                input_path.unlink(missing_ok=True)
+
+        call = raw_call
+
+    raw_call = call
+
+    def call(operation, **parameters):
+        context["operation"] = operation
+        operation_started = clock()
+        try:
+            return raw_call(operation, **parameters)
+        except ControlFailure:
+            raise
+        except subprocess.TimeoutExpired as exc:
+            raise ControlFailure(
+                "AWS operation timed out",
+                phase=context["phase"],
+                operation=operation,
+                exit_code="timeout",
+                elapsed_ms=round((clock() - operation_started) * 1000),
+            ) from exc
+        except Exception as exc:  # noqa: BLE001 -- report type only; do not leak SDK text
+            code = getattr(exc, "returncode", None)
+            raise ControlFailure(
+                "AWS operation failed",
+                phase=context["phase"],
+                operation=operation,
+                exit_code=code if isinstance(code, int) else "unknown",
+                elapsed_ms=round((clock() - operation_started) * 1000),
+            ) from None
 
     def config(qualifier=None):
         args = {"FunctionName": scope}
@@ -92,7 +166,7 @@ def _run_control(
             function_arn,
             function_arn + ":" + str(qualifier),
         }:
-            raise RuntimeError("Unexpected staging function scope")
+            raise state_failure("Unexpected staging function scope")
         return result
 
     def ready():
@@ -100,7 +174,7 @@ def _run_control(
         while clock() < deadline:
             value = config()
             if clock() >= deadline:
-                raise RuntimeError("Lambda configuration wait timed out")
+                raise state_failure("Lambda configuration wait timed out")
             if (
                 value.get("State") == "Active"
                 and value.get("LastUpdateStatus") == "Successful"
@@ -109,23 +183,23 @@ def _run_control(
             if value.get("State") not in {"Active", "Pending"} or value.get(
                 "LastUpdateStatus"
             ) not in {"InProgress", "Successful"}:
-                raise RuntimeError("Unexpected Lambda configuration state")
+                raise state_failure("Unexpected Lambda configuration state")
             sleep(5)
-        raise RuntimeError("Lambda configuration wait timed out")
+        raise state_failure("Lambda configuration wait timed out")
 
     def mapping():
         deadline, previous = clock() + 300, None
         while clock() < deadline:
             value = call("get-event-source-mapping", UUID=mapping_id)
             if clock() >= deadline:
-                raise RuntimeError("Mapping wait timed out")
+                raise state_failure("Mapping wait timed out")
             if (
                 value.get("UUID") != mapping_id
                 or value.get("FunctionArn") != function_arn + ":staging"
                 or value.get("EventSourceArn")
                 != f"arn:aws:sqs:{region}:{account}:{scope}"
             ):
-                raise RuntimeError("Unexpected staging mapping scope")
+                raise state_failure("Unexpected staging mapping scope")
             state = value.get("State")
             if state in {"Enabled", "Disabled"}:
                 if state == previous:
@@ -134,14 +208,14 @@ def _run_control(
             elif state in {"Enabling", "Disabling", "Updating"}:
                 previous = None
             else:
-                raise RuntimeError("Unexpected mapping state")
+                raise state_failure("Unexpected mapping state")
             sleep(5)
-        raise RuntimeError("Mapping wait timed out")
+        raise state_failure("Mapping wait timed out")
 
     def alias():
         value = call("get-alias", FunctionName=scope, Name="staging")
         if value.get("AliasArn") != function_arn + ":staging":
-            raise RuntimeError("Unexpected staging alias scope")
+            raise state_failure("Unexpected staging alias scope")
         return value
 
     def delivery(value, flag):
@@ -155,7 +229,7 @@ def _run_control(
                 for k, v in variables.items()
             )
         ):
-            raise RuntimeError("Existing environment cannot be safely preserved")
+            raise state_failure("Existing environment cannot be safely preserved")
         if variables.get("AIRLAKE_ALERT_DELIVERY_ENABLED") != flag:
             merged = dict(variables, AIRLAKE_ALERT_DELIVERY_ENABLED=flag)
             call(
@@ -171,12 +245,13 @@ def _run_control(
             .get("AIRLAKE_ALERT_DELIVERY_ENABLED")
             != flag
         ):
-            raise RuntimeError("Delivery flag did not converge")
+            raise state_failure("Delivery flag did not converge")
         return value
 
     if mode == "disable":
         errors = []
         # Each recovery step runs even if another step fails; never retry mutations.
+        context["phase"] = "restore_alias"
         try:
             target = config(disabled_version)
             if (
@@ -186,7 +261,7 @@ def _run_control(
                 .get("AIRLAKE_ALERT_DELIVERY_ENABLED")
                 != "0"
             ):
-                raise RuntimeError("Recorded disabled version is not verified disabled")
+                raise state_failure("Recorded disabled version is not verified disabled")
             current = alias()
             if current.get("FunctionVersion") != disabled_version:
                 call(
@@ -197,24 +272,27 @@ def _run_control(
                     RevisionId=current["RevisionId"],
                 )
             if alias().get("FunctionVersion") != disabled_version:
-                raise RuntimeError("Disabled alias restoration did not converge")
-        except Exception:  # noqa: BLE001 -- independent recovery, no sensitive error output
-            errors.append("alias")
+                raise state_failure("Disabled alias restoration did not converge")
+        except Exception as exc:  # noqa: BLE001 -- independent recovery
+            errors.append("alias: " + diagnostic(exc))
+        context["phase"] = "restore_delivery_flag"
         try:
             delivery(ready(), "0")
-        except Exception:  # noqa: BLE001 -- continue mapping recovery after config failure
-            errors.append("configuration")
+        except Exception as exc:  # noqa: BLE001 -- continue mapping recovery
+            errors.append("configuration: " + diagnostic(exc))
+        context["phase"] = "disable_mapping"
         try:
             if mapping()["State"] == "Enabled":
                 call("update-event-source-mapping", UUID=mapping_id, Enabled=False)
                 if mapping()["State"] != "Disabled":
-                    raise RuntimeError("Mapping did not disable")
-        except Exception:  # noqa: BLE001 -- alias/config restoration was already attempted
-            errors.append("mapping")
+                    raise state_failure("Mapping did not disable")
+        except Exception as exc:  # noqa: BLE001 -- prior recovery steps were attempted
+            errors.append("mapping: " + diagnostic(exc))
         if errors:
-            raise RuntimeError("Staging recovery incomplete: " + ", ".join(errors))
+            raise state_failure("Staging recovery incomplete: " + ", ".join(errors))
         return "PASS: staging alias, delivery and mapping are disabled"
 
+    context["phase"] = "validate_mapping"
     state = mapping()
     required = {
         "AIRLAKE_ACCOUNT_ID": account,
@@ -227,14 +305,15 @@ def _run_control(
         "AIRLAKE_DELIVERY_TABLE": scope + "-ledger",
     }
     if any(expected.get(key) != value for key, value in required.items()):
-        raise RuntimeError("Reviewed staging environment safeguards differ")
+        raise state_failure("Reviewed staging environment safeguards differ")
     if (
         state.get("BatchSize") != 1
         or state.get("MaximumBatchingWindowInSeconds") != 0
         or state.get("FunctionResponseTypes") != ["ReportBatchItemFailures"]
         or state.get("ScalingConfig", {}).get("MaximumConcurrency") != 2
     ):
-        raise RuntimeError("Staging mapping safeguards differ")
+        raise state_failure("Staging mapping safeguards differ")
+    context["phase"] = "validate_alias_and_versions"
     current = alias()
     selected = config(current["FunctionVersion"])
     latest = ready()
@@ -253,28 +332,31 @@ def _run_control(
                 for key in ("TELEGRAM_TOKEN", "TELEGRAM_WEBHOOK_SECRET")
             )
         ):
-            raise RuntimeError("Staging code or environment safeguards differ")
+            raise state_failure("Staging code or environment safeguards differ")
     if state["State"] == "Enabled":
         if (
             selected["Environment"]["Variables"].get("AIRLAKE_ALERT_DELIVERY_ENABLED")
             != "1"
         ):
-            raise RuntimeError("Enabled mapping has a disabled alias")
+            raise state_failure("Enabled mapping has a disabled alias")
         return "PASS: staging mapping is stably Enabled"
+    context["phase"] = "enable_latest_delivery"
     latest = delivery(latest, "1")
     if (
         selected["Environment"]["Variables"].get("AIRLAKE_ALERT_DELIVERY_ENABLED")
         != "1"
     ):
+        context["phase"] = "publish_enabled_version"
         version = call("publish-version", FunctionName=scope, CodeSha256=code_hash)[
             "Version"
         ]
         if not re.fullmatch(r"[1-9][0-9]*", str(version)):
-            raise RuntimeError("Invalid published version")
+            raise state_failure("Invalid published version")
         receipt = directory / ("enabled-version-" + str(version) + ".txt")
         with receipt.open("x") as stream:
             receipt.chmod(0o600)
             stream.write(str(version) + "\n")
+        context["phase"] = "move_alias_to_enabled_version"
         call(
             "update-alias",
             FunctionName=scope,
@@ -282,11 +364,11 @@ def _run_control(
             FunctionVersion=str(version),
             RevisionId=current["RevisionId"],
         )
+    context["phase"] = "enable_mapping"
     call("update-event-source-mapping", UUID=mapping_id, Enabled=True)
     if mapping()["State"] != "Enabled":
-        raise RuntimeError("Mapping did not enable")
+        raise state_failure("Mapping did not enable")
     return "PASS: staging mapping is stably Enabled"
-
 
 def _control_script(
     mode, output, digest, artifact_hash, identity_check=(), profile="airlake"
@@ -304,8 +386,11 @@ def _control_script(
         inspect.getsource(_run_control),
         "try:",
         f"    print(_run_control({mode!r}, {str(output)!r}, {profile!r}, {artifact_hash!r}))",
-        "except Exception:",
-        "    print('FAIL: staging control incomplete; inspect state; no automatic mutation retry.')",
+        "except Exception as exc:",
+        "    if all(hasattr(exc, key) for key in ('phase', 'operation', 'exit_code', 'elapsed_ms')):",
+        "        print(f'FAIL: staging control phase={exc.phase} operation={exc.operation} exit={exc.exit_code} elapsed_ms={exc.elapsed_ms} detail={exc}; no automatic mutation retry.')",
+        "    else:",
+        "        print(f'FAIL: staging control failed: {type(exc).__name__}: {exc}; no automatic mutation retry.')",
         "    raise SystemExit(1) from None",
         "AIRLAKE_STAGING_CONTROL",
     ]

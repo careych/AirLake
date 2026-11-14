@@ -1,0 +1,625 @@
+{
+  "acceptance_limit": "Athena matches AWS output; AWS experimental AQI differs from local reference in one protected-station row by one integer. Full release acceptance is NOT PASS. No HTTP smoke or Amplify deployment ran after discovery. Prior API routes and selected current export are preserved. No rollback or cleanup was executed.",
+  "api": {
+    "api_auth": "AWS_IAM",
+    "api_current_pointer_sha256": "d3226cf36a89bf6d543d4eb2f075da3c912a2f0ea8e12db48cd4fcb0dbc8b803",
+    "api_http_checks": 0,
+    "api_last_update_status": "Successful",
+    "api_original_environment_preserved": true,
+    "api_sha256": "36ae59d77df60dbd7fdf3979f9c8c0e807bd1815f97f98d0bbf96cc464544af8"
+  },
+  "athena_verification": {
+    "daily_all_rows_match": "PASS",
+    "export_sha256": "93448903b10d98acd9476150f935bee5bc62e3f251b14a41d16137d77a2143f1",
+    "hourly_all_rows_match": "PASS",
+    "job_run_id": "jr_e638645259ce84a12bf14b5b6e17f5273878e3864c9d51c008f9a882af66d182",
+    "queries": [
+      {
+        "kind": "hourly",
+        "query_id": "8dac46b6-a303-48ed-be59-fb55058ff4cd",
+        "result_object": "s3://airlake-701364614078-athena-results/8dac46b6-a303-48ed-be59-fb55058ff4cd.csv",
+        "rows": 2133,
+        "scan_bytes": 19954,
+        "sql_sha256": "15553df515a6f9ac3409ac400b1bbec20554fc1217baefd373bb6f5b7c206179",
+        "status": "PASS_ALL_ROWS"
+      },
+      {
+        "kind": "daily",
+        "query_id": "5f17f274-3880-4287-a4cf-7b65453291a1",
+        "result_object": "s3://airlake-701364614078-athena-results/5f17f274-3880-4287-a4cf-7b65453291a1.csv",
+        "rows": 90,
+        "scan_bytes": 1452,
+        "sql_sha256": "9e3658e62f4d4c40d2b42f2bedc54ddfc70c552f52193c350c69dfd1a916b494",
+        "status": "PASS_ALL_ROWS"
+      }
+    ],
+    "snapshots": {
+      "breakpoints": [
+        4123203274393754669
+      ],
+      "bronze": [
+        461961184944945269
+      ],
+      "daily": [
+        119429952175159713
+      ],
+      "dimensions": [
+        6754039012695459303
+      ],
+      "hourly": [
+        2268777218832059049
+      ],
+      "silver": [
+        7834328326871981359
+      ]
+    },
+    "status": "PASS",
+    "verified_at": "2026-11-14T17:54:45.872143+00:00"
+  },
+  "cloudwatch_log_inventory": [
+    {
+      "log_group": "/airlake/history-demo/20261114_7a6e91c2/error",
+      "retention_days": null,
+      "streams": [
+        {
+          "last_event_timestamp": 1794678596913,
+          "name": "jr_e638645259ce84a12bf14b5b6e17f5273878e3864c9d51c008f9a882af66d182"
+        },
+        {
+          "last_event_timestamp": 1794678633826,
+          "name": "jr_e638645259ce84a12bf14b5b6e17f5273878e3864c9d51c008f9a882af66d182_g-bbf2b5f6534d0e5f991bf5b93b658815546e21ae"
+        }
+      ]
+    },
+    {
+      "log_group": "/airlake/history-demo/20261114_7a6e91c2/output",
+      "retention_days": null,
+      "streams": [
+        {
+          "last_event_timestamp": 1794678657796,
+          "name": "jr_e638645259ce84a12bf14b5b6e17f5273878e3864c9d51c008f9a882af66d182"
+        }
+      ]
+    }
+  ],
+  "concurrency": {
+    "api": 1,
+    "poller": 0,
+    "refresh": 0
+  },
+  "cross_environment_comparison": {
+    "api_phase": "CODE_AND_HISTORY_CONFIG_UPDATED_HTTP_NOT_RUN",
+    "aqi_difference_counts_by_station": {
+      "4946812": 1
+    },
+    "aqi_differences": 1,
+    "daily_value_or_quality_differences": 0,
+    "hourly_key_sets_equal": true,
+    "hourly_pm25_outside_accepted_tolerance": 0,
+    "licensed_dragon_aqi_differences": 0,
+    "max_aqi_integer_difference": 1,
+    "max_pm25_absolute_difference_in_affected_rows": 7.105427357601002e-15,
+    "new_private_http_requests": 0,
+    "new_website_requests": 0,
+    "status": "STOP_CROSS_ENVIRONMENT_AQI_DIFFERENCE",
+    "website_phase": "NOT_STARTED"
+  },
+  "exact_source_rounding_diagnosis": {
+    "affected_rows": 1,
+    "all_pm25_values_within_original_tolerance": true,
+    "aqi_is_exact_half_tie": true,
+    "double_interpolation_reproduces_both_recorded_roundings": {
+      "cloud": true,
+      "local": true
+    },
+    "limitation": "Spark floating-point aggregation order differs across runtimes; unchanged DOUBLE interpolation and HALF_UP rounding amplify tiny mean differences at one exact tie. No Gold code or data changed.",
+    "mathematical_half_up_matches_cloud": false,
+    "mathematical_half_up_matches_local": true,
+    "public_dragon_aqi_differences": 0,
+    "source_sample_count": 12,
+    "status": "EXACT_SOURCE_RATIONAL_DIAGNOSIS"
+  },
+  "hosting": {
+    "demo": {
+      "basic_auth": true,
+      "last_job_id": "1",
+      "last_status": "SUCCEED"
+    },
+    "public": {
+      "basic_auth": false,
+      "last_job_id": "1",
+      "last_status": "SUCCEED"
+    }
+  },
+  "new_website_gets": 0,
+  "original_failure_preserved": true,
+  "original_plan_sha256": "dd3ee0dafc6bab979a9cc9e2a339bdee39ed3728ad37b281fe3b19edaa1f4aa0",
+  "recorded_date_vietnam": "2026-11-15",
+  "recovery_job": {
+    "billing": "NOT_MEASURED",
+    "execution_seconds": 160,
+    "job_run_id": "jr_e638645259ce84a12bf14b5b6e17f5273878e3864c9d51c008f9a882af66d182",
+    "reported_dpu_seconds": 320.0,
+    "startup_cause": "Original role became assumable without any IAM change; propagation remains plausible, not conclusively proven.",
+    "state": "SUCCEEDED"
+  },
+  "repair_plan_sha256": "865160ea497480d570b2e8b6db8fbcaabe9271154959d04a24bcc9b7e92aac24",
+  "retained_prefix": {
+    "bytes": 9601253,
+    "object_count": 43,
+    "objects": [
+      {
+        "bytes": 10734,
+        "etag": "\"0fba23f1abba5a29f32f1e3ee3ab406e\"",
+        "key": "historical-demo/20261114_7a6e91c2/artifacts/glue_job.py"
+      },
+      {
+        "bytes": 127775,
+        "etag": "\"fd681ba4d388508a726fa20301243a94\"",
+        "key": "historical-demo/20261114_7a6e91c2/artifacts/payload.zip"
+      },
+      {
+        "bytes": 251840,
+        "etag": "\"1e0844f869481f8f1069287e234555c9\"",
+        "key": "historical-demo/20261114_7a6e91c2/inputs/manifest.json"
+      },
+      {
+        "bytes": 8331188,
+        "etag": "\"429886e9719932a912a3a02312d2905b\"",
+        "key": "historical-demo/20261114_7a6e91c2/inputs/records.jsonl"
+      },
+      {
+        "bytes": 1168,
+        "etag": "\"3f0f47d630d701b32c304f400043a3ed\"",
+        "key": "historical-demo/20261114_7a6e91c2/outputs/acceptance.json"
+      },
+      {
+        "bytes": 1772,
+        "etag": "\"b978ebd9e857ca613eb89a972353dca6\"",
+        "key": "historical-demo/20261114_7a6e91c2/outputs/evidence.json"
+      },
+      {
+        "bytes": 520062,
+        "etag": "\"55f281082fb1d2179833f1e6490fe99c\"",
+        "key": "historical-demo/20261114_7a6e91c2/outputs/export.json"
+      },
+      {
+        "bytes": 68060,
+        "etag": "\"59775562847f66063a80e2a2845e6306\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aq_measurements/data/00000-16-36916e6a-2985-4d6a-935f-5d7f65162db7-0-00001.parquet"
+      },
+      {
+        "bytes": 69146,
+        "etag": "\"4e29d707e459e345d164415045d21743\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aq_measurements/data/00001-17-36916e6a-2985-4d6a-935f-5d7f65162db7-0-00001.parquet"
+      },
+      {
+        "bytes": 1189,
+        "etag": "\"142e6f81a1c88f8eb03da270aa143732\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aq_measurements/metadata/00000-2c8f9120-bacd-42bd-a4d1-fb6076240a27.metadata.json"
+      },
+      {
+        "bytes": 2623,
+        "etag": "\"7ec2cd9deb4a4b185b5ed76427147484\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aq_measurements/metadata/00001-e5b70864-5739-4dbf-9220-4f971cced848.metadata.json"
+      },
+      {
+        "bytes": 7606,
+        "etag": "\"9bfa483e88586098178969234d3ed856\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aq_measurements/metadata/90ec49ef-e056-4ddc-a13b-b6e5ad920d58-m0.avro"
+      },
+      {
+        "bytes": 4502,
+        "etag": "\"c1bc962f08b327b695538146a0af2d70\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aq_measurements/metadata/snap-7834328326871981359-1-90ec49ef-e056-4ddc-a13b-b6e5ad920d58.avro"
+      },
+      {
+        "bytes": 2429,
+        "etag": "\"c237bd1ac961fd9e9fff0c6ad01c2bdb\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aqi_breakpoints/data/00002-173-5db88eb0-fe88-490b-8252-6370bf4ab331-0-00001.parquet"
+      },
+      {
+        "bytes": 2429,
+        "etag": "\"fc4c5b17b85f0a4c51aab9f52812510c\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aqi_breakpoints/data/00004-175-5db88eb0-fe88-490b-8252-6370bf4ab331-0-00001.parquet"
+      },
+      {
+        "bytes": 2428,
+        "etag": "\"b4b328e59332fd46998e561b794aff50\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aqi_breakpoints/data/00006-177-5db88eb0-fe88-490b-8252-6370bf4ab331-0-00001.parquet"
+      },
+      {
+        "bytes": 2428,
+        "etag": "\"5d31098d07efeb251cd991af46248b8a\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aqi_breakpoints/data/00009-180-5db88eb0-fe88-490b-8252-6370bf4ab331-0-00001.parquet"
+      },
+      {
+        "bytes": 2429,
+        "etag": "\"bc4331d0b5e71a5cf8b99e3d0e4fe737\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aqi_breakpoints/data/00011-182-5db88eb0-fe88-490b-8252-6370bf4ab331-0-00001.parquet"
+      },
+      {
+        "bytes": 2429,
+        "etag": "\"967522ffdf08f5bb1822fe9a6e1e3955\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aqi_breakpoints/data/00013-184-5db88eb0-fe88-490b-8252-6370bf4ab331-0-00001.parquet"
+      },
+      {
+        "bytes": 2429,
+        "etag": "\"b62f03d6de73522947e4a2f1013a3851\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aqi_breakpoints/data/00015-186-5db88eb0-fe88-490b-8252-6370bf4ab331-0-00001.parquet"
+      },
+      {
+        "bytes": 1295,
+        "etag": "\"05ce8ca7268d176201f721736f207dba\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aqi_breakpoints/metadata/00000-2ec43ab4-1700-4593-9c3c-59139de9a397.metadata.json"
+      },
+      {
+        "bytes": 2719,
+        "etag": "\"a5a885b9dc449f87fa26fbecd23ef6b4\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aqi_breakpoints/metadata/00001-650c54e7-303d-4290-a0f8-a7b976abb77e.metadata.json"
+      },
+      {
+        "bytes": 7773,
+        "etag": "\"64b2777325328fd9c93b5c6401498daf\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aqi_breakpoints/metadata/595c306b-afdc-4df5-a2f1-79c208b9a724-m0.avro"
+      },
+      {
+        "bytes": 4502,
+        "etag": "\"0434e6249b9ef8acf9e6a7730b386dcb\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aqi_breakpoints/metadata/snap-4123203274393754669-1-595c306b-afdc-4df5-a2f1-79c208b9a724.avro"
+      },
+      {
+        "bytes": 33619,
+        "etag": "\"06e8b8f3541712d61244d1ce2f5ac78e\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/bronze_measurements/data/00000-0-431d40c7-8067-4faf-8121-2e2cac2653ca-0-00001.parquet"
+      },
+      {
+        "bytes": 53930,
+        "etag": "\"3624ade1b9b261f870bc6fe5aef4bb59\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/bronze_measurements/data/00001-1-431d40c7-8067-4faf-8121-2e2cac2653ca-0-00001.parquet"
+      },
+      {
+        "bytes": 2549,
+        "etag": "\"655522290f9525015fd8025af3e1d90e\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/bronze_measurements/metadata/00000-f8449ed8-0d92-497e-99a2-6b2990e1b231.metadata.json"
+      },
+      {
+        "bytes": 7886,
+        "etag": "\"d06eb2211ad22b087d4f499ccb5287cc\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/bronze_measurements/metadata/0ffcf233-847d-476b-b49b-f33c02d9bfa6-m0.avro"
+      },
+      {
+        "bytes": 4508,
+        "etag": "\"4a6d4eca18ca22a395f4af948e0f7d4d\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/bronze_measurements/metadata/snap-461961184944945269-1-0ffcf233-847d-476b-b49b-f33c02d9bfa6.avro"
+      },
+      {
+        "bytes": 1933,
+        "etag": "\"5de96dc2a16193cd819e9385a05928db\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/dim_location/data/00000-247-c556ebec-92cb-4dbd-b321-10c257e8c41a-0-00001.parquet"
+      },
+      {
+        "bytes": 1046,
+        "etag": "\"8015add03a14a4a2d61e6a939f0747d4\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/dim_location/metadata/00000-e4f7be93-eac3-4b30-b95e-9c2eb7daec6d.metadata.json"
+      },
+      {
+        "bytes": 2462,
+        "etag": "\"32bec4e7ebadea9bd6bdf0ef492f9578\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/dim_location/metadata/00001-dc8c0470-7a8c-44d6-ba7f-2dadd8d19e75.metadata.json"
+      },
+      {
+        "bytes": 7407,
+        "etag": "\"a11e802175125d6979de99ed565692b5\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/dim_location/metadata/8cc42872-f166-4fab-b93f-9a953e665d27-m0.avro"
+      },
+      {
+        "bytes": 4500,
+        "etag": "\"efd007053f7f2a8a2ad60a9c2ebd610c\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/dim_location/metadata/snap-6754039012695459303-1-8cc42872-f166-4fab-b93f-9a953e665d27.avro"
+      },
+      {
+        "bytes": 17689,
+        "etag": "\"ee700acad065cac14382c9721a4e62a2\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/pm25_aqi_hourly/data/00000-323-35bf3f59-f4e9-45b9-a08d-e3f93641b873-0-00001.parquet"
+      },
+      {
+        "bytes": 998,
+        "etag": "\"86356fe2d56acaceab2193578079fdce\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/pm25_aqi_hourly/metadata/00000-b5a76f62-c282-417d-8a69-c686c81f5257.metadata.json"
+      },
+      {
+        "bytes": 2428,
+        "etag": "\"ac2303f2c1f09aa8ee77e18b25d736b5\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/pm25_aqi_hourly/metadata/00001-a2e708ef-1376-483b-bbe7-cd77b9222af9.metadata.json"
+      },
+      {
+        "bytes": 7288,
+        "etag": "\"d3962f67eb657fa5bd5d1b23ff339fe1\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/pm25_aqi_hourly/metadata/b0e7c509-a9e8-4caf-bed9-072b964ffc83-m0.avro"
+      },
+      {
+        "bytes": 4504,
+        "etag": "\"65f834374b59d65cab575b12bf4f187a\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/pm25_aqi_hourly/metadata/snap-2268777218832059049-1-b0e7c509-a9e8-4caf-bed9-072b964ffc83.avro"
+      },
+      {
+        "bytes": 3165,
+        "etag": "\"9ab248bb2a98d180f9cf6a84dd9fccab\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/pm25_daily/data/00000-370-28f99ce1-67b7-46a6-bc61-8da18db010b0-0-00001.parquet"
+      },
+      {
+        "bytes": 2369,
+        "etag": "\"94d35c2cabdafd3d67215a2fb46e73fc\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/pm25_daily/metadata/00000-ffed7a92-8a8f-47c0-aba3-2393d9ee3a36.metadata.json"
+      },
+      {
+        "bytes": 7520,
+        "etag": "\"f5d4d9b154236f94608adb1b6b2d2b3c\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/pm25_daily/metadata/89a3ac59-cfb2-4103-ba0a-d8ae81b25f57-m0.avro"
+      },
+      {
+        "bytes": 4497,
+        "etag": "\"59ca8d00f7e1a67805b78309d0fb215e\"",
+        "key": "historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/pm25_daily/metadata/snap-119429952175159713-1-89a3ac59-cfb2-4103-ba0a-d8ae81b25f57.avro"
+      }
+    ]
+  },
+  "scheduler": "DISABLED",
+  "status": "STOPPED_PARTIAL_AWS_ACCEPTANCE_AQI_REPRODUCIBILITY",
+  "table_verification": {
+    "execution_seconds": 160,
+    "export_sha256": "93448903b10d98acd9476150f935bee5bc62e3f251b14a41d16137d77a2143f1",
+    "job_run_id": "jr_e638645259ce84a12bf14b5b6e17f5273878e3864c9d51c008f9a882af66d182",
+    "status": "PASS_ALL_SIX_TABLE_SCHEMAS_SNAPSHOT_COUNTS",
+    "tables": [
+      {
+        "current_snapshot": 461961184944945269,
+        "location": "s3://airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/bronze_measurements",
+        "metadata_location": "s3://airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/bronze_measurements/metadata/00000-f8449ed8-0d92-497e-99a2-6b2990e1b231.metadata.json",
+        "metadata_sha256": "98771f863f7cd0cebe7af85d10fc4cea7f3f6119e3cb6dd31d60f4ac307840de",
+        "schema": [
+          [
+            "location_id",
+            "string"
+          ],
+          [
+            "sensors_id",
+            "string"
+          ],
+          [
+            "location",
+            "string"
+          ],
+          [
+            "datetime",
+            "string"
+          ],
+          [
+            "lat",
+            "string"
+          ],
+          [
+            "lon",
+            "string"
+          ],
+          [
+            "parameter",
+            "string"
+          ],
+          [
+            "units",
+            "string"
+          ],
+          [
+            "value",
+            "string"
+          ],
+          [
+            "kafka_ts",
+            "timestamp"
+          ]
+        ],
+        "snapshots": [
+          461961184944945269
+        ],
+        "table": "airlake_history_20261114_7a6e91c2.bronze_measurements",
+        "total_records": 17181
+      },
+      {
+        "current_snapshot": 7834328326871981359,
+        "location": "s3://airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aq_measurements",
+        "metadata_location": "s3://airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aq_measurements/metadata/00001-e5b70864-5739-4dbf-9220-4f971cced848.metadata.json",
+        "metadata_sha256": "12cd6f0133268a9c9a49e0aaf2bda6ecfac79de0988d04c7d1a95dd7e60f836a",
+        "schema": [
+          [
+            "location_id",
+            "int"
+          ],
+          [
+            "sensors_id",
+            "int"
+          ],
+          [
+            "parameter",
+            "string"
+          ],
+          [
+            "value",
+            "double"
+          ],
+          [
+            "units",
+            "string"
+          ],
+          [
+            "measured_at",
+            "timestamp"
+          ],
+          [
+            "ingested_at",
+            "timestamp"
+          ]
+        ],
+        "snapshots": [
+          7834328326871981359
+        ],
+        "table": "airlake_history_20261114_7a6e91c2.aq_measurements",
+        "total_records": 17181
+      },
+      {
+        "current_snapshot": 4123203274393754669,
+        "location": "s3://airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aqi_breakpoints",
+        "metadata_location": "s3://airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/aqi_breakpoints/metadata/00001-650c54e7-303d-4290-a0f8-a7b976abb77e.metadata.json",
+        "metadata_sha256": "c482581ee802da6321e2ec762993956a7d645e0102ee5671c10d18e93f1cc755",
+        "schema": [
+          [
+            "parameter",
+            "string"
+          ],
+          [
+            "aqi_lo",
+            "int"
+          ],
+          [
+            "aqi_hi",
+            "int"
+          ],
+          [
+            "conc_lo",
+            "double"
+          ],
+          [
+            "conc_hi",
+            "double"
+          ],
+          [
+            "source",
+            "string"
+          ],
+          [
+            "effective_from",
+            "date"
+          ],
+          [
+            "effective_to",
+            "date"
+          ],
+          [
+            "is_current",
+            "boolean"
+          ]
+        ],
+        "snapshots": [
+          4123203274393754669
+        ],
+        "table": "airlake_history_20261114_7a6e91c2.aqi_breakpoints",
+        "total_records": 7
+      },
+      {
+        "current_snapshot": 6754039012695459303,
+        "location": "s3://airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/dim_location",
+        "metadata_location": "s3://airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/dim_location/metadata/00001-dc8c0470-7a8c-44d6-ba7f-2dadd8d19e75.metadata.json",
+        "metadata_sha256": "fb86a3ef6daf837c712a82e3f4447014c917eb879f1f5349f7c5aef607f16e46",
+        "schema": [
+          [
+            "location_id",
+            "int"
+          ],
+          [
+            "name",
+            "string"
+          ],
+          [
+            "lat",
+            "double"
+          ],
+          [
+            "lon",
+            "double"
+          ],
+          [
+            "station_type",
+            "string"
+          ]
+        ],
+        "snapshots": [
+          6754039012695459303
+        ],
+        "table": "airlake_history_20261114_7a6e91c2.dim_location",
+        "total_records": 3
+      },
+      {
+        "current_snapshot": 2268777218832059049,
+        "location": "s3://airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/pm25_aqi_hourly",
+        "metadata_location": "s3://airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/pm25_aqi_hourly/metadata/00001-a2e708ef-1376-483b-bbe7-cd77b9222af9.metadata.json",
+        "metadata_sha256": "cd6a92525faa5d3acd7e678097bd478dd4ef9daaacaade5c462fdcbbcc63d1ce",
+        "schema": [
+          [
+            "location_id",
+            "int"
+          ],
+          [
+            "hour_start",
+            "timestamp"
+          ],
+          [
+            "pm25_avg",
+            "double"
+          ],
+          [
+            "aqi",
+            "int"
+          ]
+        ],
+        "snapshots": [
+          2268777218832059049
+        ],
+        "table": "airlake_history_20261114_7a6e91c2.pm25_aqi_hourly",
+        "total_records": 2133
+      },
+      {
+        "current_snapshot": 119429952175159713,
+        "location": "s3://airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/pm25_daily",
+        "metadata_location": "s3://airlake-701364614078-lake/historical-demo/20261114_7a6e91c2/warehouse/airlake_history_20261114_7a6e91c2.db/pm25_daily/metadata/00000-ffed7a92-8a8f-47c0-aba3-2393d9ee3a36.metadata.json",
+        "metadata_sha256": "79ffa9d8ebbd633ca38971d0d1e31fee2909610ebcdde2f4e760c8b7480b9e69",
+        "schema": [
+          [
+            "location_id",
+            "int"
+          ],
+          [
+            "date_local",
+            "date"
+          ],
+          [
+            "pm25_avg",
+            "double"
+          ],
+          [
+            "hours_present",
+            "int"
+          ],
+          [
+            "hours_expected",
+            "int"
+          ],
+          [
+            "coverage_percent",
+            "double"
+          ],
+          [
+            "complete_24_hours",
+            "boolean"
+          ]
+        ],
+        "snapshots": [
+          119429952175159713
+        ],
+        "table": "airlake_history_20261114_7a6e91c2.pm25_daily",
+        "total_records": 90
+      }
+    ],
+    "unchanged_rerun": true
+  }
+}

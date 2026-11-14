@@ -277,10 +277,20 @@ class AthenaQueryExecutor:
                     "Catalog": self.config.catalog,
                     "Database": self.config.database,
                 }
+                actual_context = execution.get("QueryExecutionContext")
+                context_matches = (
+                    isinstance(actual_context, dict)
+                    and set(actual_context) == set(expected_context)
+                    and isinstance(actual_context.get("Catalog"), str)
+                    # Athena reports the built-in AwsDataCatalog in lowercase.
+                    and actual_context["Catalog"].casefold()
+                    == expected_context["Catalog"].casefold()
+                    and actual_context.get("Database") == expected_context["Database"]
+                )
                 if (
                     execution.get("Query") != self.config.sql()
                     or execution.get("WorkGroup") != self.config.workgroup
-                    or execution.get("QueryExecutionContext") != expected_context
+                    or not context_matches
                 ):
                     raise InvalidAlert(
                         "Athena execution does not match approved SQL/snapshots/context"
