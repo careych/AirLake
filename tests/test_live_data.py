@@ -514,7 +514,7 @@ class DeployTests(unittest.TestCase):
             )
             self.assertEqual(
                 json.loads(schedule["Target"]["Input"])["InvocationType"],
-                "RequestResponse",
+                "Event",
             )
             self.assertLessEqual(
                 (schedule["EndDate"] - schedule["StartDate"]).total_seconds(), 1800

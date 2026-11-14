@@ -510,7 +510,7 @@ def deploy(c, packet, digest, env_file):
             "Input": json.dumps(
                 {
                     "FunctionName": NAME + "-poller",
-                    "InvocationType": "RequestResponse",
+                    "InvocationType": "Event",
                     "Payload": "{}",
                 }
             ),

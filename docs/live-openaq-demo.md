@@ -1,7 +1,12 @@
 # Bounded current-data pilot
 
 This branch prepares a five-minute AWS Lambda poller, a private current-data
-API and one frozen Glue batch. **It has not deployed these resources.** Source
+API and one frozen Glue batch. **Deployment partially completed; ingestion has
+not run.** AWS rejected the original synchronous Scheduler target. The target
+is corrected to asynchronous `Event`, with zero Lambda async retries and a
+60-second event age. Poller concurrency is zero; schedule remains absent. The
+original frozen packet and failed receipt are preserved. A corrective operation
+and fresh explicit approval are required before resuming. Source
 discovery is real; unit fixtures and the new isolated Spark test are explicitly
 synthetic. Previous PR #13/#14 historical acceptance remains unchanged.
 
@@ -165,9 +170,12 @@ the deploy command copies the existing explicitly selected local OpenAQ key
 into plaintext SecretString internally. No token CLI value, log or private
 packet is created. It does not read or change existing Telegram secrets.
 
-## Approved operations only — NOT EXECUTED
+## Execution commands — do not repeat the partial deployment
 
-The following require explicit exact-scope approval first:
+The initial deploy command partially completed and stopped at Scheduler creation.
+Do not repeat it against existing resources. Preserve the frozen packet and
+receipt; use separately approved schedule recovery before the unused test steps.
+All commands below remain gated by explicit scope approval.
 
 ```sh
 live_sdk -m live_data.deploy deploy --packet "$PACKET" \
@@ -203,8 +211,10 @@ open "$PACKET/latest-measurements.html"  # macOS; no further AWS request
 
 The thirty-minute deadline starts during deployment; it is not silently
 extended if preparation consumes time. Six attempts include the manual call.
-Schedule is enabled only after manual acceptance, with RequestResponse delivery,
-zero Scheduler retries and zero Lambda asynchronous retries. If the window
+Schedule is enabled only after manual acceptance, with asynchronous Event delivery,
+zero Scheduler retries and zero Lambda asynchronous retries. AWS asynchronous delivery can still duplicate an
+invocation; the durable attempt gate and observation identities bound source
+polling and prevent duplicate raw/latest updates. If the window
 expires, stop and seek a newly reviewed execution window. A timeout can leave
 an in-flight invocation for at most the configured Lambda timeout; freezing
 requires its lease to be explicitly released, not merely elapsed.
