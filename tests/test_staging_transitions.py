@@ -231,6 +231,19 @@ class StagingTransitionTests(unittest.TestCase):
                 )
                 self.assertLessEqual(self.clock.now, 310)
 
+    def test_enable_failure_reports_first_aws_operation_without_service_text(self):
+        self.aws.failures["publish-version"] = "AccessDeniedException: private detail"
+        with self.assertRaisesRegex(RuntimeError, "AWS operation failed") as raised:
+            self.run_control("enable")
+        self.assertEqual("publish_enabled_version", raised.exception.phase)
+        self.assertEqual("publish-version", raised.exception.operation)
+        self.assertEqual("unknown", raised.exception.exit_code)
+        self.assertEqual(0, raised.exception.elapsed_ms)
+        self.assertNotIn("private detail", str(raised.exception))
+        operations = [operation for operation, _ in self.aws.calls]
+        self.assertEqual(1, operations.count("publish-version"))
+        self.assertNotIn("update-event-source-mapping", operations)
+
     def setUp_fake(self):
         expected = json.loads((self.output / "function.json").read_text())[
             "Environment"
@@ -393,17 +406,24 @@ class StagingTransitionTests(unittest.TestCase):
 
     def test_transport_keeps_environment_out_of_argv_and_never_retries_errors(self):
         self.enabled()
+        input_paths = []
 
         def run(args, **kwargs):
             self.assertEqual("1", kwargs["env"]["AWS_MAX_ATTEMPTS"])
-            self.assertEqual("file:///dev/stdin", args[-1])
+            self.assertNotIn("input", kwargs)
             self.assertIn("khue", args)
             self.assertNotIn("101", args)
+            input_arg = args[args.index("--cli-input-json") + 1]
+            self.assertTrue(input_arg.startswith("file://"))
+            input_path = Path(input_arg.removeprefix("file://"))
+            input_paths.append(input_path)
+            self.assertEqual(0o600, input_path.stat().st_mode & 0o777)
+            payload = json.loads(input_path.read_text())
             operation = args[args.index("lambda") + 1]
             return subprocess.CompletedProcess(
                 args,
                 0,
-                json.dumps(self.aws(operation, **json.loads(kwargs["input"]))),
+                json.dumps(self.aws(operation, **payload)),
                 "",
             )
 
@@ -417,6 +437,8 @@ class StagingTransitionTests(unittest.TestCase):
                 sleep=self.clock.sleep,
             )
         self.assert_recovered()
+        self.assertTrue(input_paths)
+        self.assertTrue(all(not path.exists() for path in input_paths))
 
     def test_patch_only_creates_new_private_scripts_and_leaves_all_evidence_unchanged(
         self,
