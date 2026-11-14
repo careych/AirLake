@@ -1,0 +1,124 @@
+{
+  "status": "REAL_INGESTION_COMPLETED; INVOCATION_FAILED_IN_POST_INGESTION_METRICS",
+  "data_validation": {
+    "status": "PASS_REAL_ACCEPTED_RAW_AND_LATEST_RECONCILIATION",
+    "raw_count": 45,
+    "duplicate_identities": 0,
+    "station_counts": {
+      "4946812": 22,
+      "4946813": 22,
+      "6123215": 1
+    },
+    "stations": [
+      {
+        "location_id": 4946812,
+        "latest_observed_at": "2026-11-14T07:50:00Z",
+        "cursor_window_complete": true,
+        "cadence_decoded_type": "Decimal",
+        "post_ingestion_metric_reproduction": "ValueError"
+      },
+      {
+        "location_id": 4946813,
+        "latest_observed_at": "2026-11-14T07:50:00Z",
+        "cursor_window_complete": true,
+        "cadence_decoded_type": "Decimal",
+        "post_ingestion_metric_reproduction": "ValueError"
+      },
+      {
+        "location_id": 6123215,
+        "latest_observed_at": "2026-11-14T07:00:00Z",
+        "cursor_window_complete": true,
+        "cadence_decoded_type": "NoneType",
+        "post_ingestion_metric_reproduction": "PASS"
+      }
+    ],
+    "runtime_logs": [
+      {
+        "metric": "AirLakePoll",
+        "status": "FAILED_OR_UNCERTAIN",
+        "exception_type": "ValueError"
+      },
+      {
+        "error": "[ERROR] RuntimeError: Poll stopped; preserve state and inspect sanitized logs"
+      }
+    ]
+  },
+  "stopped_state": {
+    "mode": "APPROVED_STOP_AND_READ_ONLY_MANUAL_DIAGNOSIS",
+    "schedule_state": "DISABLED",
+    "poller_concurrency": 0,
+    "run": {
+      "attempts": 1,
+      "active": false,
+      "lease_until": 0
+    },
+    "stations": [
+      {
+        "location_id": 4946812,
+        "latest": {
+          "observed_at": "2026-11-14T07:50:00Z",
+          "ingested_at": "2026-11-14T08:02:10Z",
+          "units": "\u00b5g/m\u00b3",
+          "cadence_seconds": 300
+        },
+        "cadence_python_type": "Decimal",
+        "cursor": {
+          "watermark": "2026-11-14T08:01:10Z"
+        },
+        "poll": {
+          "last_poll_at": "2026-11-14T08:02:10Z",
+          "status": "window_complete"
+        }
+      },
+      {
+        "location_id": 4946813,
+        "latest": {
+          "observed_at": "2026-11-14T07:50:00Z",
+          "ingested_at": "2026-11-14T08:02:10Z",
+          "units": "\u00b5g/m\u00b3",
+          "cadence_seconds": 300
+        },
+        "cadence_python_type": "Decimal",
+        "cursor": {
+          "watermark": "2026-11-14T08:01:10Z"
+        },
+        "poll": {
+          "last_poll_at": "2026-11-14T08:02:10Z",
+          "status": "window_complete"
+        }
+      },
+      {
+        "location_id": 6123215,
+        "latest": {
+          "observed_at": "2026-11-14T07:00:00Z",
+          "ingested_at": "2026-11-14T08:02:10Z",
+          "units": "\u00b5g/m\u00b3",
+          "cadence_seconds": null
+        },
+        "cadence_python_type": "NoneType",
+        "cursor": {
+          "watermark": "2026-11-14T08:01:10Z"
+        },
+        "poll": {
+          "last_poll_at": "2026-11-14T08:02:10Z",
+          "status": "window_complete"
+        }
+      }
+    ],
+    "raw_object_count": 45,
+    "total_scope_objects": 45,
+    "sanitized_runtime_messages": []
+  },
+  "root_cause": "DynamoDB TypeDeserializer returns Decimal for stored numeric cadence; original freshness validator rejected that transport type after all data/cursor writes completed. Reproduced locally from actual stored values.",
+  "correction": "Normalize only the stored integral cadence to a validated Python int at the SDK deserialization boundary; no raw data, time, unit, Gold calculation or cursor policy changes.",
+  "focused_tests_after_correction": 36,
+  "not_executed": [
+    "corrected Lambda deployment",
+    "second poll",
+    "schedule enable",
+    "new Glue job",
+    "Athena validation",
+    "API HTTP smoke"
+  ],
+  "evidence_preservation": "Original failed manual receipt and source data retained unchanged; source attempt count remains one."
+}

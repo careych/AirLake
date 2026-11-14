@@ -1,14 +1,20 @@
 # Bounded current-data pilot
 
-This branch prepares a five-minute AWS Lambda poller, a private current-data
-API and one frozen Glue batch. **Deployment partially completed; ingestion has
-not run.** AWS rejected the original synchronous Scheduler target. The target
-is corrected to asynchronous `Event`, with zero Lambda async retries and a
-60-second event age. Poller concurrency is zero; schedule remains absent. The
-original frozen packet and failed receipt are preserved. A corrective operation
-and fresh explicit approval are required before resuming. Source
-discovery is real; unit fixtures and the new isolated Spark test are explicitly
-synthetic. Previous PR #13/#14 historical acceptance remains unchanged.
+The initial Scheduler target failure was corrected through separately approved
+recovery. The scheduler exists and remains DISABLED. One real manual poll stored
+**45 observations (22 / 22 / 1)**, updated all three latest records and completed
+all cursors. The invocation then failed while rendering freshness metrics:
+DynamoDB returned numeric cadence as Decimal, which the strict validator rejected.
+The poller is stopped at concurrency zero; one attempt is recorded. No schedule
+enablement, new Glue run, Athena SELECT or API HTTP smoke has occurred.
+
+The stored-cadence conversion is corrected locally and passes 36 focused tests.
+The small replacement ZIP changes only `live_data/store.py`; existing records,
+watermarks, counters, secret, roles, API code and frozen evidence are preserved.
+See [accepted-ingestion evidence](../tests/evidence/live_openaq_ingestion_stop_2026-11-14.json)
+and [the exact repair plan](plans/live_openaq_number_fix_2026-11-14.json).
+Applying the poller code update and continuing requires new explicit approval;
+no automatic retry has occurred. Historical PR #13/#14 acceptance remains unchanged.
 
 ## Implemented data path
 
@@ -16,7 +22,8 @@ synthetic. Previous PR #13/#14 historical acceptance remains unchanged.
 metadata validation and nine-field Bronze record adapter. Lambda writes each
 accepted observation to immutable S3 before updating DynamoDB latest state and
 then the cursor. `observed_at` is the source period end, not ingestion time.
-`ingested_at` is the first successful raw acceptance time retained on replay.
+`ingested_at` is the poll invocation UTC time assigned to the first accepted
+raw object and retained on replay; it is not an S3 commit timestamp.
 The source's measurement period is retained separately: a one-hour averaging
 period does not imply hourly reporting.
 
@@ -172,9 +179,11 @@ packet is created. It does not read or change existing Telegram secrets.
 
 ## Execution commands — do not repeat the partial deployment
 
-The initial deploy command partially completed and stopped at Scheduler creation.
-Do not repeat it against existing resources. Preserve the frozen packet and
-receipt; use separately approved schedule recovery before the unused test steps.
+The initial deploy command partially completed; approved recovery then created
+the disabled schedule. A manual poll accepted 45 records but failed in metrics.
+Do not repeat deployment or overwrite the failed manual receipt. Preserve the
+original packet; use the separately approved number-repair packet before any
+remaining test steps. One of six source attempts has already been consumed.
 All commands below remain gated by explicit scope approval.
 
 ```sh
