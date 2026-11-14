@@ -337,6 +337,10 @@ class HistoricalReleaseTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 publish.api_preflight(clients, {"previous_api_sha256": "a" * 64})
 
+    def test_plan_names_the_policy_that_publication_writes(self):
+        source = (cloud.ROOT / "historical/cloud.py").read_text()
+        self.assertIn(f'"new_api_inline_policy": "{publish.POLICY}"', source)
+
     def test_api_accepts_only_exact_superseded_run_one_revision(self):
         clients = {k: Mock() for k in ("lambda", "iam")}
         old_key = "historical-demo/" + cloud.SUPERSEDED_RUN + "/outputs/export.json"

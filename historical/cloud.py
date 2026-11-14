@@ -210,7 +210,7 @@ def prepare(packet, source, publication_inputs=None, previous_api_zip=None):
         "demo_stations": [6123215],
         "website_failure_containment": "stop_only",
         "api_function": "airlake-live-20261114_9e2c740b-api",
-        "new_api_inline_policy": "HistoricalResearch20261114",
+        "new_api_inline_policy": "HistoricalResearch20261115",
         "new_api_read_keys": [
             PREFIX + "outputs/" + name for name in ("export.json", "acceptance.json")
         ],
