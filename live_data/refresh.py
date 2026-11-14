@@ -4,7 +4,7 @@ import json
 import math
 import os
 import re
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from ingestion.openaq import PILOTS, utc
 from live_data.contract import (
@@ -53,7 +53,13 @@ def validate_export(raw, digest):
         raise ValueError("Export provenance mismatch")
     if p.get("aqi_method") != "simplified_hourly_mean_mvp; NOT official VN_AQI":
         raise ValueError("Unexpected AQI contract")
-    utc(p["computed_at"])
+    # Processing provenance may carry fractional seconds; observation/grain rules stay strict.
+    computed = p["computed_at"]
+    if not isinstance(computed, str):
+        raise TypeError("Processing timestamp must be an explicit UTC string")
+    computed = datetime.fromisoformat(computed)
+    if computed.tzinfo is None or computed.utcoffset() != timedelta(0):
+        raise ValueError("Processing timestamp must be explicit UTC")
     snapshots = p["snapshots"]
     if set(snapshots) != {
         "bronze",
@@ -618,6 +624,8 @@ def handler(event, context):
         "airlake-live-"
     ):
         raise ValueError("Wrong invocation scope")
+    from live_data.json_types import normalize
+
     now = now_utc()
     session = boto3.Session(region_name=REGION)
     cfg = Config(retries={"total_max_attempts": 1}, connect_timeout=3, read_timeout=200)
@@ -631,6 +639,7 @@ def handler(event, context):
         os.environ["AIRLAKE_OPS_DEADLINE"],
         json.loads(os.environ["AIRLAKE_PRODUCTION_SHA256"]),
     ).tick(now)
+    value = normalize(value)
     print(
         json.dumps(
             {

@@ -1,7 +1,13 @@
 # Bounded automatic polling and Gold/API refresh
 
-Status: **CODE READY, NOT AWS DEPLOYED OR LIVE VERIFIED**. PR #16's 70-record AWS
-acceptance remains historical evidence. This change has not repeated it.
+Status: **bounded AWS operations acceptance completed on 14 November 2026**.
+Two admitted scheduled polls added 50 genuine records to the previously accepted
+70, for 120 cumulative records. Glue computed fourteen hourly facts and three
+dimensions. The retained Athena query independently matched all fourteen facts;
+a conditional API promotion and three signed JSON/CSV checks subsequently passed.
+Scheduling and both ingestion/refresh workers were disabled after the test. This
+is a completed bounded test, not an enabled continuous service. Historical
+preparation evidence below remains historical; its original hashes are unchanged.
 
 The existing five-minute schedule targets one new controller Lambda. Each tick can
 invoke the existing poller once, then advance one persisted refresh state machine.
@@ -222,3 +228,29 @@ python -B -m tests.live_glue_integration --runtime-jar "$AIRLAKE_ICEBERG_RUNTIME
 Spark must use Java 17, a fresh process and an external temporary warehouse. Clear
 inherited AWS/Spark overrides for that local test. No AWS integration PASS is
 inferred from fixtures. Original Gold source and historical evidence stay unchanged.
+
+
+## Completed recovery and current source
+
+The first processing-provenance validation rejected fractional UTC seconds.
+`computed_at` now accepts explicit UTC processing timestamps with fractional
+seconds, while source observation and hourly-key timestamp rules stay strict.
+The resumed controller then exposed DynamoDB Decimal values at the handler's JSON
+logging/return boundary. `live_data/json_types.py` recursively normalizes progress
+reports: integral values remain exact integers, fractional values become exact
+decimal strings, and non-finite values are rejected. Gold numerical calculations
+and schemas are unchanged. The payload builder includes this module through its
+existing `live_data/*.py` file selection.
+
+Successful promotion reused query `e476332e-79e9-4b8a-8e59-c36b68437a77` (781 bytes
+scanned) and export SHA
+`d3226cf36a89bf6d543d4eb2f075da3c912a2f0ea8e12db48cd4fcb0dbc8b803`.
+The preceding verified export remains recorded for rollback. No extra poll,
+Glue run or Athena SELECT was used for that final reporting recovery. The curated
+completion record is `tests/evidence/live_operations_completion_2026-11-14.json`.
+
+The durable cumulative poll budget is exhausted at six attempts. These original
+window commands are historical reproducibility instructions, not authorization
+to reset counters or enable a new unattended run. A new polling window needs a
+separately reviewed bounded budget. Do not redeploy the old frozen packet over the
+new report fix. Khuê's Telegram resources and publication ledger were not changed.

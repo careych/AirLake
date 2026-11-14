@@ -1,0 +1,39 @@
+{
+  "status": "PASS_BOUNDED_AWS_OPERATIONS_AND_RECOVERED_API_PROMOTION",
+  "checked_at": "2026-11-14T14:49:32.421787+00:00",
+  "source_records": 120,
+  "new_records_from_two_scheduled_polls": 50,
+  "unique_source_identities": 120,
+  "gold_dimensions": 3,
+  "gold_hourly_facts": 14,
+  "glue_job_run_id": "jr_00f5bdc9bd4b10b171140604984e8390c8fdce1fb1b7c672f9266463189f947a",
+  "athena_query_id": "e476332e-79e9-4b8a-8e59-c36b68437a77",
+  "athena_matched_rows": 14,
+  "athena_scanned_bytes": 781,
+  "export_sha256": "d3226cf36a89bf6d543d4eb2f075da3c912a2f0ea8e12db48cd4fcb0dbc8b803",
+  "previous_export_sha256": "fd3ae933ebb13c3ef989eee809c2aebc586b4a18007a8d6c54977a05233b99d9",
+  "signed_http_statuses": [
+    200,
+    200,
+    200
+  ],
+  "final_state": {
+    "scheduler": "DISABLED",
+    "concurrency": {
+      "poller": 0,
+      "refresh": 0
+    },
+    "attempts": 6,
+    "ingestion_lease_active": false,
+    "controller_lease_active": false,
+    "private_api_auth": "AWS_IAM"
+  },
+  "billing": "not measured",
+  "limitations": [
+    "bounded test ended; scheduler and workers disabled",
+    "six cumulative poll attempts exhausted; no counter reset authorized",
+    "no continuous/public Telegram delivery claim",
+    "source timestamps determine freshness; API processing does not make observations new"
+  ],
+  "provenance": "retained cloud execution/query results and independent signed API checks; fresh read-only final state check; no cloud rerun in source publication task"
+}
