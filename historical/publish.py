@@ -350,8 +350,7 @@ def prepare_amendment(packet, digest):
             json.loads((packet / "cloud-export.json").read_text())
         )[2:],
         "website_source_sha256_overrides": {
-            name: sha((root / name).read_bytes())
-            for name in ("historical/cloud.py", "historical/publish.py")
+            name: sha((root / name).read_bytes()) for name in ("historical/publish.py",)
         },
         "unchanged": "Amplify phase: one deployment per branch, 40 GETs, Dragon-only, stop_only",
     }

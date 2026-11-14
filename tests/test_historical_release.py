@@ -507,6 +507,26 @@ class HistoricalReleaseTests(unittest.TestCase):
                 publish.smoke_api_resume(c, {}, root, "D" * 64, amendment, get)
             get.assert_not_called()
 
+    def test_amendment_overrides_only_publish_and_cloud_helper_is_unchanged(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.resume_fixture(root)
+            publish.prepare_amendment(root, "D" * 64)
+            a = json.loads((root / publish.AMENDMENT).read_text())
+            self.assertEqual(
+                list(a["website_source_sha256_overrides"]), ["historical/publish.py"]
+            )
+            self.assertEqual(a["remaining_signed_gets"], 3)
+        recorded = subprocess.run(
+            ["git", "show", "abcccb0:historical/cloud.py"],
+            capture_output=True,
+            check=True,
+            cwd=Path(__file__).resolve().parents[1],
+        ).stdout
+        self.assertEqual(
+            recorded, (Path(cloud.__file__)).read_bytes(), "frozen plan pins cloud.py"
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
