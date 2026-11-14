@@ -334,5 +334,8 @@ The expanded [historical Hanoi product](docs/historical-product.md) now passes
 local real-data acceptance: 17,181 September 2026 PM2.5 records, 2,133 hourly
 facts and 90 daily summaries. The licensed public projection has 720 hourly and
 30 daily rows, with tested 7/30-day analytics and JSON/CSV research filters.
-AWS backfill and the consolidated website release remain separately gated; the
-currently hosted website still serves its first sparse bounded snapshot.
+The approved AWS backfill and two Athena comparisons completed. A strict local
+comparison found one experimental AQI rounding difference at a floating-point
+half-tie, so the consolidated release stopped. The additive private history API
+is deployed but awaits HTTP acceptance; both websites retain their first sparse
+bounded snapshots. See the actual recovery evidence and blocker in the guide.

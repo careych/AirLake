@@ -1,8 +1,10 @@
 # Historical Hanoi pilot: actual coverage and release
 
-The hosted site still serves the first sparse bounded snapshot. This release
-implements a larger September 2026 product and passed local real-data acceptance.
-**The historical AWS job, API extension and replacement website have not deployed.**
+The hosted site still serves the first sparse bounded snapshot. The September
+backfill passed local acceptance, then succeeded on AWS with two Athena checks.
+**Release is blocked by one cross-environment experimental AQI rounding difference.**
+The private history API code/config is deployed but HTTP acceptance has not run;
+Amplify remains unchanged. Later sections record the exact attempts and blocker.
 PR #17 is merged at `36f454b64508ea3637be5dceb2512feb95256996`.
 PR #12 remains excluded. The two cosmetic-only release plans were cancelled.
 
@@ -122,7 +124,11 @@ all download values versus Spark, filtering, gaps, keyboard controls, readable
 axes, no page overflow, research preview and friendly rate-limit errors.
 Synthetic failure fixtures are labelled as tests, never real observations.
 
-## Consolidated AWS release — NOT EXECUTED
+## Frozen consolidated scope and original command recipe
+
+The recipe below records the original gated plan. The later attempt/recovery
+sections are authoritative. Do not rerun commands or clear receipts: the Glue
+and two-query budgets have been consumed, and the release is stopped.
 
 Scope: account 701364614078, region ap-southeast-2, profile airlake;
 new run `20261114_7a6e91c2`, role/job `airlake-history-20261114-7a6e91c2`,
@@ -203,3 +209,36 @@ deployments ran. Original API and websites are unchanged; scheduler DISABLED,
 poller/refresh reserved concurrency 0. See
 `tests/evidence/historical_startup_2026-11-15.json`. A separate exact startup
 recovery approval is required before another job start; never erase the receipt.
+
+## Recovery result and numerical release blocker — 15 November
+
+The separately approved startup recovery reused the existing role/job and inputs.
+Run `jr_e638645259ce84a12bf14b5b6e17f5273878e3864c9d51c008f9a882af66d182`
+SUCCEEDED, reporting 160 execution seconds / 320 DPU-seconds. This is a service
+metric, not a measured bill. All six schemas and snapshot totals passed:
+17,181 Bronze, 17,181 Silver, seven breakpoints, three dimensions, 2,133 hourly
+facts and 90 daily rows. Unchanged rerun snapshots were preserved.
+
+Both approved Athena queries succeeded and matched every AWS hourly/daily row:
+`8dac46b6-a303-48ed-be59-fb55058ff4cd` (19,954 bytes scanned) and
+`5f17f274-3880-4287-a4cf-7b65453291a1` (1,452 bytes). These prove agreement
+with AWS output; they do not override the later cross-environment failure.
+
+The additive private API deployment returned success with the original
+environment values and IAM URL preserved. A subsequent strict comparison against
+the local accepted output detected ONE Nhân Chính experimental AQI integer
+difference. All PM2.5 means match within the original tolerance, all daily values
+match, and Dragon has zero differences. The affected mean differs by
+7.105427357601002e-15 at an exact half-tie. Exact rational source arithmetic agrees
+with the local rounded result; ordinary double interpolation reproduces both
+recorded outcomes. Distributed floating-point aggregation sensitivity is the
+likely mechanism; no production Gold calculations were changed.
+
+The release STOPPED: zero signed HTTP checks and zero Amplify deployments or
+website GETs. New history code/config is deployed but not HTTP-accepted; old
+routes and the previously selected current export remain intact. Both original
+websites still serve job 1. Scheduler remains DISABLED, poller/refresh concurrency
+0. No automatic retry, data correction, rollback or cleanup ran.
+See `tests/evidence/historical_recovery_2026-11-15.json`. A reviewed numerical
+resolution and new exact-scope continuation approval are required. This is NOT
+a successful consolidated website release.
