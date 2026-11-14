@@ -36,6 +36,20 @@ Updated 2026-11-15 (Asia/Ho_Chi_Minh). Labels: VERIFIED (this session), REPORTED
   `/`, data JSON, config.js, app.js all 401; public 404 for demo data (VERIFIED).
 - AWS python needs `botocore[crt]` (aws login provider): scratch venv used.
 
+## Run-2 execution (2026-11-15, approved plan aaed01a1…26bd) — VERIFIED
+- Glue `jr_cd305b85b01ff2b87270bee4176a37e320381a800d50b256f3895f3ea8249881` SUCCEEDED
+  (152 s, 305 DPU-s). 17,181 source -> 2,133 hourly (4946812:720, 4946813:693, 6123215:720), 90 daily.
+  Tie row 4946812 2026-09-07T12Z = AQI 78 / 38.75; 0 AQI/mean diffs vs local accepted run.
+- Athena `6be6a99b…` 2,133/2,133 hourly + `83fcbadf…` 90/90 daily PASS; export sha `7e2753f0…9b47`.
+- API repointed to run 2 (code `xc9epgXB…`, AWS_IAM kept, policy HistoricalResearch20261115 added).
+- Smoke STOPPED at GET 3/5: 200, 200 (720 rows + 30-row CSV validated), 403. Cause (reproduced
+  offline): botocore signs raw ':' in `start=`, Lambda URL canonicalizes `%3A`. Client bug, not API.
+- Fix `caba6c3`/`fec8b4a`: `publish.signed_url`; `historical/resume.py` (cloud.py byte-identical,
+  self-pinned). Amendment `amendment-1.json` sha `b045c2d14a44c4db8eeccf68763f5815a4259915f30bf3c5e67ff1b83f7e498c`:
+  3 remaining signed GETs, then unchanged Amplify phase. Offline site dry-run: 1 station/720 rows
+  both branches, 0 restricted strings; 7-day route local 200/168. 483 tests OK.
+- Amplify NOT yet deployed (still job 1).
+
 ## Next action
-Awaiting approval: run-2 Glue + 2 Athena -> API repoint + 5 signed GETs -> Amplify public/demo.
-Then: push branch + PR, phone check of live URLs, demo script.
+Awaiting approval of amendment b045c2d1…498c: `python -m historical.resume smoke-api-resume`
+then `publish-site` (both `--confirm-plan-sha256 aaed… --confirm-amendment-sha256 b045…`).
