@@ -292,6 +292,11 @@ separate diagnostic cleanup. Do not commit credentials or downloaded datasets.
 
 ## Team architecture and handoff
 
+The [Clean Data API](docs/clean-data-api.md) exposes the retained, hash-verified
+real Gold batch as localhost JSON/CSV with station/UTC filters and pagination.
+It serves historical data without per-request Athena calls; live snapshot
+comparison is a separate, explicitly approved two-SELECT verification.
+
 The [technical specification](AirLake_DacTa_KyThuat.md) contains target AWS/serving
 requirements as well as local data contracts. The [project context](AirLake_PROJECT_CONTEXT.md)
 records ownership, verified status, historical surveys and pending decisions.

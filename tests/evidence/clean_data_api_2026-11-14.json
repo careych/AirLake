@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "completed_at_utc": "2026-11-14T03:05:13.484599+00:00",
+  "status": "PASS_LOCAL_REAL_RETAINED_DATA_API_AND_TWO_SELECT_CLOUD_COMPARISON",
+  "base_commit": "f2154db3661f468cc1b731f6b778dbdf673cdc26",
+  "source_artifact_sha256": "21d76b6bd19d906bce9601d6ae4b3e6724a9cab62c23cb5d2f94b10b5815a50a",
+  "source_artifact_published": false,
+  "source_mode": "hash-verified retained real Gold acceptance copy; zero AWS calls per HTTP request",
+  "local_endpoints": {
+    "health": "PASS; Athena health explicitly not_checked",
+    "gold_hourly_json": "PASS",
+    "gold_hourly_csv": "PASS",
+    "stations": "PASS",
+    "utc_time_filter": "PASS",
+    "pagination": "PASS; three pages at limit 30; no missing or duplicate rows",
+    "per_station_counts": {
+      "4946812": 25,
+      "4946813": 23,
+      "6123215": 24
+    }
+  },
+  "offline_tests": {
+    "focused": 26,
+    "full_python_suite": 324,
+    "failed": 0,
+    "errors": 0,
+    "environment": "project Python 3.12.15 packages plus isolated boto3/botocore 1.43.115 and awscrt 0.36.0",
+    "initial_attempt_note": "Shared project venv lacked botocore; complete suite rerun passed using the isolated cached SDK"
+  },
+  "live_athena": {
+    "status": "PASS",
+    "phase": "complete",
+    "athena_selects_attempted": 2,
+    "queries": [
+      {
+        "number": 1,
+        "sql_sha256": "96c9cf44a8f373dd137933e5600413388f99ea3e5e03152e848b4958febd9883",
+        "query_id": "fa1af4f2-6bd1-4674-b762-f54f8f9b4fed",
+        "status": "SUCCEEDED",
+        "scan_bytes": 1635,
+        "output_object": "s3://airlake-701364614078-athena-results/fa1af4f2-6bd1-4674-b762-f54f8f9b4fed.csv",
+        "rows": 72
+      },
+      {
+        "number": 2,
+        "sql_sha256": "336ce77dd73e62bb3eba2a8b61e09afee6c60450da92341ea5ef0cfb407311cf",
+        "query_id": "7394e014-f4a5-48d6-a366-ec6c3a22340e",
+        "status": "SUCCEEDED",
+        "scan_bytes": 450,
+        "output_object": "s3://airlake-701364614078-athena-results/7394e014-f4a5-48d6-a366-ec6c3a22340e.csv",
+        "rows": 3
+      }
+    ],
+    "hourly_snapshot": "2020624562194805942",
+    "dimension_snapshot": "5513456602871200404",
+    "hourly_rows": 72,
+    "stations": 3,
+    "api_matches_pinned_aws_gold": true,
+    "json_csv_stations_match": true
+  },
+  "scan_bytes_total": 2085,
+  "checks": {
+    "ruff_lint": "PASS",
+    "ruff_format": "PASS",
+    "historical_acceptance_sha256_preserved": true,
+    "gold_business_logic_modified": false
+  },
+  "source_sha256": {
+    "README.md": "1a0c80840aee2cf58a7712a38d44fa85503cd67e0bc070ef6a9a60883707c796",
+    "clean_api/__init__.py": "e931421d396b9f5b942013fd7faf93b2e4d18a5c4b9bbf5777ed3c8e8ed03dba",
+    "clean_api/__main__.py": "6fc6a3f225d6b43a8693d21fe9b30b2d3fcc4803b079c382cf28a16d177fbdc2",
+    "clean_api/data.py": "c9b7e531ab2951385ce1b8ca9db688a2c10307e81780833c1d03f13179b13470",
+    "clean_api/server.py": "84df118978ee41a008e86fe55b0e2e8e9799c878bfd1936b15d3c7b67b45f981",
+    "clean_api/verify.py": "ab3f7d897ac5ac47f31ff81318efe7907406f4816ee67960beaac5c66fb34bc7",
+    "tests/test_clean_api.py": "3ab2c5b67ee1fa28a12e5b41e632cce76043b5dc45b49147a142e04ad60b9b7a",
+    "docs/clean-data-api.md": "daaad7240aa79e09419efc07b7ccd43027b2d492bfaee94f653bf6c994510310"
+  },
+  "limitations": [
+    "Historical November 7\u20138 2026 snapshot only; not a continuously refreshed data service",
+    "Only localhost binding; no public hosting or unrestricted CORS",
+    "Provider-specific redistribution license metadata was not retained; public redistribution not cleared",
+    "Standard-library demo HTTP server; public production hardening and Silver data endpoint not implemented",
+    "Gold Spark suite not rerun because Gold code and runtime resources were not changed"
+  ],
+  "billing_measured": false
+}
