@@ -91,6 +91,9 @@ errors).
   +32.3 µg/m³); it is shown as a trend, never as a ward measurement.
 - No official VN_AQI is computed. An internal `aqi` column survives only in the
   September lakehouse export and is labelled as such.
+- Telegram alert delivery: a defect introduced with the freshness states
+  (2026-11-15) stops alerts from firing on the deployed bot; the fix is
+  committed and awaits deployment ([details](docs/telegram-bot.md#status)).
 
 Details: [rolling history and freshness](docs/rolling-history-and-freshness.md),
 [station licensing](docs/hanoi-station-licensing.md),

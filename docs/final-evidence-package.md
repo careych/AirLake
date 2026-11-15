@@ -84,6 +84,13 @@ one alert received (43.8 µg/m³, 12:00 15/11), no duplicate on re-evaluation,
 no alert after /unsubscribe; DLQ 0. Evaluations since then: EVALUATED with 0
 queued and 0 errors. No test messages were sent after acceptance.
 
+**Defect found after release (documentation audit, 2026-11-15):** since the
+rolling-history release changed the projection's freshness states to
+`fresh`/`delayed`/`stale`, the deployed alert policy (which required `recent`)
+cannot fire. Fixed in commit `30b8535`; the bot-only release that deploys it
+awaits approval. Until then, evaluations run without errors but cannot queue
+alerts.
+
 ## Final release acceptance (2026-11-15, plan ceb5c35a)
 
 - Operations: refresh and public-api code `OfJOlM2s…`, one refresh
