@@ -122,8 +122,17 @@ class ProjectionTests(unittest.TestCase):
         model = openmeteo.normalize(META, model_body(), NOW)
         value = project.build(
             NOW,
-            {"observed_at": "2026-11-15T00:00:00Z", "pm25": 40.5},
-            None,
+            {
+                "status": "ok",
+                "reading": {"observed_at": "2026-11-15T00:00:00Z", "pm25": 40.5},
+                "collected_at": "2026-11-15T01:20:00Z",
+            },
+            {
+                "status": "fetch_failed",
+                "error": "HTTP 429",
+                "reading": None,
+                "collected_at": None,
+            },
             model,
             {"status": "SYNTHETIC"},
         )
@@ -133,6 +142,13 @@ class ProjectionTests(unittest.TestCase):
         )
         self.assertEqual(sc["freshness"]["status"], "no_data")
         self.assertIsNone(sc["pm25"])
+        self.assertEqual(
+            (sc["fetch_status"], sc["fetch_error"]), ("fetch_failed", "HTTP 429")
+        )
+        self.assertEqual(dragon["collected_at"], "2026-11-15T01:20:00Z")
+        self.assertNotEqual(dragon["licence"], sc["licence"])
+        self.assertTrue(sc["share_alike"])
+        self.assertFalse(sc["exact_location"])
         self.assertEqual(value["model"]["kind"], "model")
         self.assertNotIn("pm25", value["model"])
 
@@ -258,7 +274,108 @@ class RefreshTests(unittest.TestCase):
         import json
 
         current = json.loads(s3.objects["nowcast/v1/current.json"])
-        self.assertEqual(current["generated_at"], "2026-11-15T01:35:00Z")
+        self.assertEqual(current["published_at"], "2026-11-15T01:35:00Z")
+
+    def failing(self, calls, fail):
+        from nowcast.http import UpstreamError
+
+        ok = self.http(calls)
+
+        def get(url, params=None, headers=None):
+            if fail(url):
+                calls.append("FAIL " + url)
+                raise UpstreamError("HTTP 429")
+            return ok(url, params, headers)
+
+        return get
+
+    def test_upstream_429_keeps_last_reading_which_then_ages(self):
+        import json
+
+        from nowcast import refresh
+
+        s3 = FakeS3()
+        refresh.run(s3, self.http([]), "K", {}, NOW)
+        later = NOW + timedelta(hours=5)
+        r = refresh.run(
+            s3, self.failing([], lambda u: "sensor.community" in u), "K", {}, later
+        )
+        self.assertEqual(r["sources"][99385], "fetch_failed")
+        sc = json.loads(s3.objects["nowcast/v1/current.json"])["observations"][1]
+        self.assertEqual(
+            (sc["observed_at"], sc["pm25"], sc["fetch_error"]),
+            ("2026-11-15T01:15:00Z", 33.0, "HTTP 429"),
+        )
+        self.assertEqual(sc["freshness"]["status"], "stale")
+
+    def test_malformed_source_does_not_block_others(self):
+
+        from nowcast import refresh
+
+        calls = []
+        ok = self.http(calls)
+        bad = lambda u, params=None, headers=None: (
+            {
+                "results": [
+                    {"sensorsId": 14581375, "value": "x", "datetime": {"utc": "?"}}
+                ]
+            }
+            if "openaq" in u
+            else ok(u, params, headers)
+        )
+        r = refresh.run(FakeS3(), bad, "K", {}, NOW)
+        self.assertEqual(r["sources"], {6123215: "fetch_failed", 99385: "ok"})
+
+    def test_model_failure_reuses_stored_run_or_publishes_nothing(self):
+        from nowcast import refresh
+
+        s3 = FakeS3()
+        refresh.run(s3, self.http([]), "K", {}, NOW)
+        r = refresh.run(
+            s3,
+            self.failing([], lambda u: "open-meteo" in u),
+            "K",
+            {},
+            NOW + timedelta(hours=1),
+        )
+        self.assertEqual(r["model_fetch"], "reused_previous_run")
+        empty = FakeS3()
+        with self.assertRaises(RuntimeError):
+            refresh.run(
+                empty, self.failing([], lambda u: "open-meteo" in u), "K", {}, NOW
+            )
+        self.assertNotIn("nowcast/v1/current.json", empty.objects)
+
+    def test_malformed_model_is_not_stored(self):
+        from nowcast import refresh
+
+        calls = []
+        ok = self.http(calls)
+        bad = lambda u, params=None, headers=None: (
+            {**model_body(), "latitude": 10.0}
+            if u == openmeteo.API
+            else ok(u, params, headers)
+        )
+        with self.assertRaises(RuntimeError):
+            refresh.run(FakeS3(), bad, "K", {}, NOW)
+
+    def test_failed_write_leaves_current_unchanged(self):
+        from nowcast import refresh
+
+        s3 = FakeS3()
+        refresh.run(s3, self.http([]), "K", {}, NOW)
+        before = s3.objects["nowcast/v1/current.json"]
+        original = s3.put_object
+
+        def broken(Bucket, Key, Body, **kw):
+            if "/projections/" in Key:
+                raise OSError("synthetic S3 failure")
+            return original(Bucket, Key, Body, **kw)
+
+        s3.put_object = broken
+        with self.assertRaises(OSError):
+            refresh.run(s3, self.http([]), "K", {}, NOW + timedelta(minutes=15))
+        self.assertEqual(s3.objects["nowcast/v1/current.json"], before)
 
 
 class PublicApiTests(unittest.TestCase):
@@ -289,10 +406,15 @@ class PublicApiTests(unittest.TestCase):
             "station_id=4946812",
             "location_id=4946813",
             "sensor_id=13502151",
-            "station_id=6123215&station_id=4946812",
         ):
             r = public_api.handler(self.event("/v1/history", q), None, store=object())
             self.assertEqual(r["statusCode"], 404, q)
+        dup = public_api.handler(
+            self.event("/v1/history", "station_id=6123215&station_id=4946812"),
+            None,
+            store=object(),
+        )
+        self.assertEqual(dup["statusCode"], 400)
 
     def test_read_only_cors_and_safe_errors(self):
         from nowcast import public_api
@@ -324,11 +446,63 @@ class PublicApiTests(unittest.TestCase):
         self.assertEqual(broken["statusCode"], 503)
         self.assertNotIn("nowcast", broken["body"])
 
+    def test_strict_paths_queries_and_methods(self):
+        from nowcast import public_api
+
+        for path, q, method, code in (
+            ("/v1/now", "x=1", "GET", 400),
+            ("/v1", "a=b", "GET", 400),
+            ("/v1/history/../now", "", "GET", 404),
+            ("/v2/history", "", "GET", 404),
+            ("/v1/history", "sql=select", "GET", 400),
+            ("/v1/history", "limit=1&limit=2", "GET", 400),
+            ("/v1/history", "q=" + "x" * 600, "GET", 400),
+            ("/v1/history", "", "DELETE", 405),
+        ):
+            r = public_api.handler(self.event(path, q, method), None, store=object())
+            self.assertEqual(r["statusCode"], code, (path, q, method))
+            self.assertEqual(
+                r["headers"]["content-security-policy"],
+                "default-src 'none'; frame-ancestors 'none'",
+            )
+
+    def test_cached_s3_reuses_immutable_objects(self):
+        from nowcast import public_api
+
+        public_api._cache.clear()
+        s3 = FakeS3(
+            {"historical-demo/x/export.json": b"E", public_api.CURRENT_KEY: b"C"}
+        )
+        calls = []
+        original = s3.get_object
+        s3.get_object = lambda **kw: calls.append(kw["Key"]) or original(**kw)
+        cached = public_api.CachedS3(s3)
+        for _ in range(3):
+            cached.get_object(
+                Bucket="b", Key="historical-demo/x/export.json", ExpectedBucketOwner="a"
+            )
+            cached.get_object(
+                Bucket="b", Key=public_api.CURRENT_KEY, ExpectedBucketOwner="a"
+            )
+        self.assertEqual(calls.count("historical-demo/x/export.json"), 1)
+        self.assertEqual(calls.count(public_api.CURRENT_KEY), 1)  # within the 60 s TTL
+        public_api._cache.clear()
+
+    def test_oversized_projection_is_refused(self):
+        from nowcast import public_api
+
+        big = b'{"schema_version": 2, "x": "' + b"a" * public_api.MAX_BODY + b'"}'
+        store = type("S", (), {"s3": FakeS3({public_api.CURRENT_KEY: big})})()
+        self.assertEqual(
+            public_api.handler(self.event("/v1/now"), None, store=store)["statusCode"],
+            503,
+        )
+
     def test_now_serves_current_projection_with_short_cache(self):
         from nowcast import public_api
 
         store = type(
-            "S", (), {"s3": FakeS3({public_api.CURRENT_KEY: b'{"schema_version": 1}'})}
+            "S", (), {"s3": FakeS3({public_api.CURRENT_KEY: b'{"schema_version": 2}'})}
         )()
         r = public_api.handler(self.event("/v1/now"), None, store=store)
         self.assertEqual(

@@ -32,6 +32,7 @@
     <p id="now-geography" class="coverage-note"></p>
     <div id="now-observations" class="now-grid"></div>
     <p id="now-compare" class="now-compare"></p>
+    <details class="plain-explanation"><summary>Nguồn dữ liệu và giấy phép</summary><ul id="now-attribution" class="small"></ul><p class="small">Mỗi nguồn giữ giấy phép riêng. Số liệu Sensor.Community được chia sẻ lại theo ODbL 1.0; số liệu Dragon theo CC BY 4.0.</p></details>
     <details class="plain-explanation"><summary>Đọc "mức tham khảo" thế nào?</summary><p>Mức tham khảo dùng các ngưỡng PM2.5 của thang chỉ số trong Quyết định 1459/QĐ-TCMT (Tốt dưới 25, Trung bình 25–50, Kém 50–80, Xấu 80–150, Rất xấu 150–250, Nguy hại từ 250 µg/m³) áp cho một số đo. Đây không phải VN_AQI chính thức, vốn được tính theo quy trình riêng từ trạm quan trắc tự động.</p><p>Cảm biến chi phí thấp có sai số và có thể đọc lệch so với trạm tham chiếu. Mô hình là ước tính cho cả vùng khoảng 45 km, không phải số đo.</p></details>
   </div>
   <p class="journey-guide">Chọn khu vực → Chọn khoảng thời gian → Xem số liệu và xu hướng → Kiểm tra độ mới → Tải dữ liệu được phép chia sẻ.</p>
@@ -100,6 +101,7 @@
   <h2>Xem trước số liệu đã chọn</h2><p id="preview-count" class="muted"></p><div class="table-scroll"><table><thead id="research-preview-header"></thead><tbody id="research-preview"></tbody></table></div><h2>Các cột trong tệp</h2><div class="table-scroll" tabindex="0" aria-label="Định dạng dữ liệu tải xuống"><table><thead><tr><th>Cột</th><th>Ý nghĩa</th></tr></thead><tbody><tr><td><code>station_id</code></td><td>Mã điểm quan trắc của nguồn.</td></tr><tr><td><code>observed_hour_utc</code></td><td>Mốc giờ ghi nhận được chuẩn hóa về UTC. Nguồn sử dụng thời điểm kết thúc quan trắc.</td></tr><tr><td><code>pm25</code></td><td>Nồng độ PM2.5 trung bình giờ, µg/m³.</td></tr><tr><td><code>aqi_mvp</code></td><td>Chỉ số thử nghiệm; không phải VN_AQI chính thức.</td></tr></tbody></table></div>
   <details class="example-data"><summary>Xem một dòng JSON và tiêu đề CSV</summary><pre id="research-example">Chọn một nguồn được phép chia sẻ để xem ví dụ từ dữ liệu thật.</pre></details>
   <div id="attribution" class="attribution"></div>
+  <article id="public-api" class="feature-card" hidden><h2>API công khai cho nghiên cứu</h2><p class="small">Không cần tài khoản. Chỉ gồm dữ liệu được phép chia sẻ lại: Dragon (CC BY 4.0) và bản "hiện tại" có giấy phép theo từng nguồn. Thời gian theo UTC, PM2.5 theo µg/m³; tối đa 1.000 dòng mỗi lần, dùng offset để phân trang.</p><ul id="public-api-links" class="api-links"></ul></article>
 </section>
 <section id="tinh-trang" class="view" aria-labelledby="status-title" hidden>
   <div class="page-title"><p class="eyebrow">TÌNH TRẠNG DỮ LIỆU</p><h1 id="status-title">Biết số liệu đến đâu.<br><span>Không đoán phần còn thiếu.</span></h1><p class="lede">Độ mới được tính từ lúc đo. Nhịp lấy dữ liệu của AirLake không phải nhịp quan trắc của cảm biến.</p></div>

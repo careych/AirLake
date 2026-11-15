@@ -8,7 +8,14 @@ from datetime import UTC, datetime
 
 from ingestion.openaq import stamp
 
-LICENCE = "Open Data Commons DbCL 1.0"
+# Sensor.Community publishes readings under DbCL 1.0, which requires ODbL
+# compliance; derived databases we publish are offered under ODbL 1.0.
+LICENCE = {
+    "licence": "ODbL 1.0 (database) / DbCL 1.0 (contents)",
+    "licence_url": "https://opendatacommons.org/licenses/odbl/1-0/",
+    "attribution": "Contains Sensor.Community data (sensor.community), available under the Open Database License (ODbL 1.0)",
+    "share_alike": True,
+}
 # Verified 2026-11-15: the only outdoor PM sensor reporting within 40 km of
 # central Hanoi. Coordinates are rounded by the network.
 SENSORS = {
@@ -18,6 +25,7 @@ SENSORS = {
         "longitude": 105.824,
         "sensor_type": "SDS011",
         "station_type": "low_cost",
+        "exact_location": False,  # network reports an approximate location
     }
 }
 LATEST = "https://data.sensor.community/airrohr/v1/sensor/{}/"

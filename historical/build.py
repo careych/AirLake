@@ -27,7 +27,7 @@ def build(
     allow_local_preview=False,
     athena_proof_path=None,
     now_path=None,
-    now_url=None,
+    api_base=None,
 ):
     output = Path(output)
     if (
@@ -173,12 +173,14 @@ def build(
     config = {"mode": mode, "dataUrl": "data/" + h + ".json", "sha256": h}
     if now_path is not None:  # the separately verified live projection
         now = json.loads(Path(now_path).read_bytes())
-        if now.get("schema_version") != 1 or now["model"]["kind"] != "model":
+        if now.get("schema_version") != 2 or now["model"]["kind"] != "model":
             raise ValueError("Unexpected live projection")
         (output / "now.json").write_bytes(Path(now_path).read_bytes())
         config["nowUrl"] = "now.json"
-    elif now_url is not None:
-        config["nowUrl"] = now_url
+    elif api_base is not None:  # the public read-only API serves /v1/now
+        config.update(
+            nowUrl=api_base.rstrip("/") + "/v1/now", apiBase=api_base.rstrip("/")
+        )
     (output / "config.js").write_text(
         "window.AIRLAKE_CONFIG=" + json.dumps(config) + ";\n"
     )
