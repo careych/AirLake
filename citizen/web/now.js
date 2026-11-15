@@ -20,7 +20,7 @@
     const value=node('p',undefined,'reading');value.append(node('strong',recent?num(o.pm25):'—'),node('span','µg/m³'));card.append(value);
     if(recent)card.append(node('p',`Mức tham khảo: ${band(o.pm25)}`,'band'));
     else card.append(node('p','Không dùng số đo cũ để mô tả hiện tại.','muted'));
-    const dl=node('dl',undefined,'reading-meta');for(const [k,v] of [['Đo lúc',time(o.observed_at)],['Cách đây',o.observed_at?age(o.observed_at):'—'],['AirLake lấy lúc',time(o.collected_at)],['Loại cảm biến',o.station_type==='low_cost'?'Chi phí thấp':'Tham chiếu'],['Vị trí',o.exact_location?'Toạ độ chính xác':'Toạ độ gần đúng (mạng làm tròn)'],['Nguồn',`${o.provider} · ${o.licence}`]]){const d=node('div');d.append(node('dt',k),node('dd',v));dl.append(d);}
+    const dl=node('dl',undefined,'reading-meta');for(const [k,v] of [['Đo lúc',time(o.observed_at)],['Cách đây',o.observed_at?age(o.observed_at):'—'],['AirLake lấy lúc',time(o.fetched_at)],['Loại cảm biến',o.station_type==='low_cost'?'Chi phí thấp':'Tham chiếu'],['Vị trí',o.exact_location?'Toạ độ chính xác':'Toạ độ gần đúng (mạng làm tròn)'],['Nguồn',`${o.provider} · ${o.licence}`]]){const d=node('div');d.append(node('dt',k),node('dd',v));dl.append(d);}
     card.append(dl);if(o.fetch_status==='fetch_failed')card.append(node('p',`Lần lấy dữ liệu gần nhất từ nguồn này không thành công; đang hiển thị số đo trước đó.`,'freshness-note'));return card;
   }
 
@@ -77,7 +77,7 @@
   }
 
   function renderStatus(n){
-    const rows=[...n.observations.map(o=>[o.name,'Quan trắc',`Đo ${time(o.observed_at)}`,`Lấy ${time(o.collected_at)}${o.fetch_status==='fetch_failed'?' · lần gần nhất lỗi':''}`]),['CAMS Global (Open-Meteo)','Mô hình',`Chạy ${time(n.model.model_run_at)}`,`Có từ ${time(n.model.model_available_at)}`]];
+    const rows=[...n.observations.map(o=>[o.name,'Quan trắc',`Đo ${time(o.observed_at)}`,`Lấy ${time(o.fetched_at)}${o.fetch_status==='fetch_failed'?' · lần gần nhất lỗi':''}`]),['CAMS Global (Open-Meteo)','Mô hình',`Chạy ${time(n.model.model_run_at)}`,`Có từ ${time(n.model.model_available_at)}`]];
     $('now-status').replaceChildren(...rows.map(r=>{const tr=node('tr');r.forEach((c,i)=>tr.append(node(i?'td':'th',c)));return tr;}));
     $('now-generated').textContent=`Bản "hiện tại" được công bố lúc ${time(n.published_at)}. Trang tự kiểm tra bản mới mỗi 5 phút khi đang mở; nguồn đo có nhịp riêng (Dragon theo giờ, cảm biến cộng đồng vài phút, mô hình 12 giờ).`;
   }
