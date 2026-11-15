@@ -30,6 +30,7 @@ FUNCTION, TABLE, QUEUE, DLQ = (
 )
 SCHEDULE, SCHEDULER_ROLE = NAME + "-evaluate", NAME + "-scheduler"
 WEBHOOK_SECRET_NAME = "airlake/telegram-20261115/webhook"
+EXPECTED_BOT = "AirLakeHanoiBot"
 PACKAGES = ("telegram_bot", "ingestion")
 ZIP_TIME = (2026, 11, 15, 0, 0, 0)
 COMMANDS = [
@@ -494,6 +495,10 @@ def configure_bot(c, packet, plan, digest):
     me = r.write("get_me", lambda: {"result": telegram_call(token, "getMe", {})})[
         "result"
     ]
+    r.value["bot_username"] = me.get("username")
+    r.save()
+    if me.get("username") != EXPECTED_BOT or me.get("is_bot") is not True:
+        raise ValueError("Token does not identify the expected bot; webhook not set")
     r.write(
         "set_webhook",
         lambda: (
@@ -521,8 +526,22 @@ def configure_bot(c, packet, plan, digest):
         ),
     )
     info = telegram_call(token, "getWebhookInfo", {})
-    if info.get("url") != backend["function_url"]:
-        raise ValueError("Webhook URL not applied")
+    r.value["webhook_info"] = {
+        "url_matches": info.get("url") == backend["function_url"],
+        "has_custom_certificate": info.get("has_custom_certificate"),
+        "max_connections": info.get("max_connections"),
+        "allowed_updates": info.get("allowed_updates"),
+        "last_error_message": info.get("last_error_message"),
+        "pending_update_count": info.get("pending_update_count"),
+    }
+    r.save()
+    if (
+        info.get("url") != backend["function_url"]
+        or sorted(info.get("allowed_updates") or []) != ["callback_query", "message"]
+        or info.get("max_connections")
+        != plan["telegram"]["setWebhook"]["max_connections"]
+    ):
+        raise ValueError("Webhook configuration not applied as planned")
     r.value.update(
         status="BOT_CONFIGURED",
         bot_username=me["username"],
@@ -548,6 +567,36 @@ def smoke(c, packet, plan, digest, get=None):
     r.save()
     if unsigned.status_code != 403:
         raise ValueError("Webhook accepted an unsigned request")
+    policy = json.loads(c["lambda"].get_policy(FunctionName=FUNCTION)["Policy"])
+    grants = sorted(
+        (st["Action"], json.dumps(st.get("Condition", {}), sort_keys=True))
+        for st in policy["Statement"]
+    )
+    r.value["url_permissions"] = [a for a, _ in grants]
+    if [a for a, _ in grants] != ["lambda:InvokeFunction", "lambda:InvokeFunctionUrl"]:
+        raise ValueError("Unexpected Function URL permissions")
+    url = c["lambda"].get_function_url_config(FunctionName=FUNCTION)
+    mappings = c["lambda"].list_event_source_mappings(FunctionName=FUNCTION)[
+        "EventSourceMappings"
+    ]
+    r.value["sqs_mapping"] = [
+        {
+            "state": m["State"],
+            "batch": m["BatchSize"],
+            "response_types": m.get("FunctionResponseTypes"),
+            "queue": m["EventSourceArn"].split(":")[-1],
+        }
+        for m in mappings
+    ]
+    r.save()
+    if (
+        url["AuthType"] != "NONE"
+        or url.get("Cors")
+        or len(mappings) != 1
+        or mappings[0].get("FunctionResponseTypes") != ["ReportBatchItemFailures"]
+        or mappings[0]["EventSourceArn"].split(":")[-1] != QUEUE
+    ):
+        raise ValueError("Function URL or SQS mapping differs from plan")
     result = r.write(
         "evaluate_once",
         lambda: c["lambda"].invoke(
