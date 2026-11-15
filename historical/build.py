@@ -26,6 +26,8 @@ def build(
     mode,
     allow_local_preview=False,
     athena_proof_path=None,
+    now_path=None,
+    now_url=None,
 ):
     output = Path(output)
     if (
@@ -168,10 +170,17 @@ def build(
         if p.is_file():
             shutil.copyfile(p, output / p.name)
     (output / "data" / (h + ".json")).write_bytes(body)
+    config = {"mode": mode, "dataUrl": "data/" + h + ".json", "sha256": h}
+    if now_path is not None:  # the separately verified live projection
+        now = json.loads(Path(now_path).read_bytes())
+        if now.get("schema_version") != 1 or now["model"]["kind"] != "model":
+            raise ValueError("Unexpected live projection")
+        (output / "now.json").write_bytes(Path(now_path).read_bytes())
+        config["nowUrl"] = "now.json"
+    elif now_url is not None:
+        config["nowUrl"] = now_url
     (output / "config.js").write_text(
-        "window.AIRLAKE_CONFIG="
-        + json.dumps({"mode": mode, "dataUrl": "data/" + h + ".json", "sha256": h})
-        + ";\n"
+        "window.AIRLAKE_CONFIG=" + json.dumps(config) + ";\n"
     )
     return {
         "status": "LOCAL_PREVIEW_NOT_AWS_VERIFIED"

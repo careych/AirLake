@@ -5,17 +5,18 @@
   <meta name="theme-color" content="#123d3b">
   <meta name="description" content="AirLake thí điểm Hà Nội: số đo bụi mịn có nguồn gốc, thời gian rõ ràng và khoảng trống dữ liệu được công khai.">
   <title>AirLake · Không khí quanh bạn</title>
-  <link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css">
-  <script src="config.js" defer></script><script src="app.js" defer></script><script src="history.js" defer></script>
+  <link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="stylesheet" href="leaflet.css"><link rel="stylesheet" href="styles.css">
+  <script src="config.js" defer></script><script src="app.js" defer></script><script src="history.js" defer></script><script src="leaflet.js" defer></script><script src="now.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Đến nội dung chính</a>
 <header>
   <a class="brand" href="#quanh-ban" aria-label="AirLake, trang đầu"><img src="icon.svg" alt="" width="38" height="38"><span>airlake<span class="brand-dot">.</span></span></a>
   <nav aria-label="Điều hướng chính">
-    <a href="#quanh-ban" data-nav="quanh-ban">Quanh bạn</a>
-    <a href="#xu-huong" data-nav="xu-huong">Biến động</a>
-    <a href="#khu-vuc" data-nav="khu-vuc">Khu vực</a>
+    <a href="#quanh-ban" data-nav="quanh-ban">Hôm nay</a>
+    <a href="#du-bao" data-nav="du-bao">Dự báo</a>
+    <a href="#xu-huong" data-nav="xu-huong">Lịch sử</a>
+    <a href="#khu-vuc" data-nav="khu-vuc">Bản đồ</a>
     <a href="#telegram" data-nav="telegram">Cảnh báo</a>
     <a href="#nghien-cuu" data-nav="nghien-cuu">Dữ liệu</a>
     <a href="#tinh-trang" data-nav="tinh-trang">Tình trạng</a>
@@ -25,6 +26,14 @@
 <div id="notice" class="notice" role="status" hidden></div>
 <main id="main" tabindex="-1">
 <section id="quanh-ban" class="view active" aria-labelledby="home-title">
+  <div id="now-panel" class="now-panel" hidden>
+    <p class="eyebrow">KHÔNG KHÍ HÔM NAY</p>
+    <h1>Số đo thực tế và ước tính mô hình,<br><span>tách bạch từng nguồn.</span></h1>
+    <p id="now-geography" class="coverage-note"></p>
+    <div id="now-observations" class="now-grid"></div>
+    <p id="now-compare" class="now-compare"></p>
+    <details class="plain-explanation"><summary>Đọc "mức tham khảo" thế nào?</summary><p>Mức tham khảo dùng các ngưỡng PM2.5 của thang chỉ số trong Quyết định 1459/QĐ-TCMT (Tốt dưới 25, Trung bình 25–50, Kém 50–80, Xấu 80–150, Rất xấu 150–250, Nguy hại từ 250 µg/m³) áp cho một số đo. Đây không phải VN_AQI chính thức, vốn được tính theo quy trình riêng từ trạm quan trắc tự động.</p><p>Cảm biến chi phí thấp có sai số và có thể đọc lệch so với trạm tham chiếu. Mô hình là ước tính cho cả vùng khoảng 45 km, không phải số đo.</p></details>
+  </div>
   <p class="journey-guide">Chọn khu vực → Chọn khoảng thời gian → Xem số liệu và xu hướng → Kiểm tra độ mới → Tải dữ liệu được phép chia sẻ.</p>
   <div class="hero">
     <div>
@@ -49,6 +58,17 @@
   <article class="chart-card"><div class="chart-heading"><div><h3 id="home-chart-title">PM2.5 trung bình giờ</h3><p class="muted chart-period" id="home-period"></p></div><span class="unit">µg/m³</span></div><div id="home-chart" class="chart" role="img" aria-label="Biểu đồ bụi mịn trung bình giờ"></div><p id="home-chart-readout" class="chart-readout" aria-live="polite">Chọn hoặc dùng phím Tab đến một điểm để đọc số liệu.</p><p class="small chart-caption">Khoảng trống là giờ chưa có số liệu. Đường chỉ nối hai giờ liên tiếp có quan trắc.</p></article>
   <div class="info-grid"><article><span class="info-icon" aria-hidden="true">◷</span><h3>Đúng thời điểm</h3><p>Ưu tiên thời gian đo. Số liệu nhận muộn vẫn được ghi nhận theo thời điểm quan trắc.</p></article><article><span class="info-icon" aria-hidden="true">⌁</span><h3>Một lát cắt của Hà Nội</h3><p>Chỉ mô tả các điểm thực sự có số liệu; không điền số đo cho khu vực chưa được quan trắc.</p></article><article><span class="info-icon" aria-hidden="true">↗</span><h3>Có nguồn, có giới hạn</h3><p>Nguồn dữ liệu, quyền chia sẻ và số giờ còn thiếu được ghi rõ để bạn tự đánh giá.</p></article></div>
 </section>
+<section id="du-bao" class="view" aria-labelledby="forecast-title" hidden>
+  <div class="page-title"><p class="eyebrow">DỰ BÁO TỪ MÔ HÌNH BÊN NGOÀI</p><h1 id="forecast-title">Dự báo chất lượng không khí.<br><span>So sánh tương đối, không phải cam kết.</span></h1></div>
+  <p id="du-bao-empty" class="muted">Chưa tải được dữ liệu dự báo.</p>
+  <div id="du-bao-body" hidden>
+    <p class="notice-inline">Dự báo lấy từ mô hình CAMS Global (Copernicus) qua Open-Meteo, độ phân giải khoảng 45 km cho khu vực trung tâm Hà Nội. AirLake không tự huấn luyện mô hình; đây là dự báo bên ngoài đã được đối chiếu với số đo thực tế.</p>
+    <p id="forecast-meta" class="muted"></p>
+    <article class="chart-card"><div class="chart-heading"><div><h3>PM2.5 dự báo 24 giờ tới</h3><p class="muted">Giờ Việt Nam · đường gạch là giá trị mô hình</p></div><span class="unit">µg/m³</span></div><div id="forecast-chart" class="chart" role="img" aria-label="Biểu đồ PM2.5 dự báo 24 giờ tới"></div><p id="forecast-windows" class="chart-readout"></p></article>
+    <article class="chart-card"><h3>Các ngày tới (trung bình theo ngày Việt Nam)</h3><div class="table-scroll"><table><thead><tr><th scope="col">Ngày</th><th scope="col">Trung bình</th><th scope="col">Thấp–cao theo giờ</th></tr></thead><tbody id="forecast-days"></tbody></table></div><p id="forecast-days-note" class="small"></p></article>
+    <article class="chart-card"><h3>Mô hình đúng đến đâu?</h3><div id="forecast-validation"></div><p class="small">Kiểm định dùng số liệu lưu trữ của mô hình (lượt chạy gần nhất cho mỗi giờ), nên phản ánh độ khớp ngắn hạn, không phải độ chính xác của dự báo 3–5 ngày. Một tháng mùa mưa không đủ để hiệu chỉnh cho mùa khô.</p></article>
+  </div>
+</section>
 <section id="xu-huong" class="view" aria-labelledby="trend-title" hidden>
   <div class="page-title"><p class="eyebrow">XU HƯỚNG CHẤT LƯỢNG KHÔNG KHÍ</p><h1 id="trend-title">Nhìn lại từng giờ.<br><span>Hiểu rõ khoảng còn thiếu.</span></h1><p class="lede">Trung bình giờ khác với số đo gần nhất. Biểu đồ chỉ nối các giờ liên tiếp có dữ liệu, không ước tính phần còn trống.</p></div>
   <div class="toolbar"><label id="history-range-label" hidden>Khoảng lịch sử<select id="history-range"><option value="24h">24 giờ cuối trong bản</option><option value="7d" selected>7 ngày cuối trong bản</option><option value="30d">30 ngày trong bản</option></select></label><label for="trend-station">Điểm đang xem<select id="trend-station"></select></label><div class="segmented" role="group" aria-label="Chọn đại lượng"><button id="metric-pm" aria-pressed="true">PM2.5</button><button id="metric-aqi" aria-pressed="false">Chỉ số thử nghiệm</button></div><label class="checkbox"><input type="checkbox" id="compare"> So sánh các trạm</label></div>
@@ -68,7 +88,7 @@
   <p class="small">Số giờ được tính trong khoảng đã chọn. Chỉ mô tả các điểm có quan trắc; không đại diện toàn thành phố.</p>
   <details class="coordinates"><summary>Vị trí và nguồn đã đối chiếu</summary><div id="coordinates"></div></details>
 </section>
-<section id="khu-vuc" class="view" aria-labelledby="areas-title" hidden><div class="page-title"><p class="eyebrow">SO SÁNH CÁC KHU VỰC CÓ ĐIỂM ĐO</p><h1 id="areas-title">Mỗi điểm một góc nhìn.<br><span>Không suy rộng cả thành phố.</span></h1><p class="lede">Vị trí đã được đối chiếu. Khi so sánh, chỉ dùng những giờ chung có số liệu tại các điểm được phép xem.</p></div><div id="area-cards" class="station-status"></div><article class="feature-card"><h2>So sánh cùng khoảng thời gian</h2><p id="area-window" class="muted"></p><div class="table-scroll"><table><thead><tr><th>Điểm đo</th><th>Trung bình các giờ chung</th><th>Số giờ chung</th><th>Giờ có dữ liệu / dự kiến</th></tr></thead><tbody id="area-comparison"></tbody></table></div></article><div class="callout">Tọa độ là vị trí của điểm quan trắc, không đại diện cho mọi nơi trong khu vực. Liên kết bản đồ mở dịch vụ bên ngoài; AirLake không lấy vị trí thiết bị của bạn.</div></section>
+<section id="khu-vuc" class="view" aria-labelledby="areas-title" hidden><div class="page-title"><p class="eyebrow">BẢN ĐỒ VÀ ĐIỂM QUAN TRẮC</p><h1 id="areas-title">Mỗi điểm một góc nhìn.<br><span>Không suy rộng cả thành phố.</span></h1><p class="lede">Chấm tròn là điểm quan trắc thật có giấy phép chia sẻ (xanh: có số đo gần đây). Vòng gạch tím là phạm vi xấp xỉ một ô lưới của mô hình, không phải một trạm.</p></div><div id="station-map" class="station-map" role="region" aria-label="Bản đồ điểm quan trắc"></div><p class="callout">Hà Nội hiện chỉ có 2 điểm quan trắc ngoài trời còn hoạt động có giấy phép chia sẻ số liệu. Mạng quan trắc của thành phố có nhiều trạm khác, nhưng chưa công bố giấy phép nên AirLake không hiển thị. Vì vậy AirLake không xếp hạng ô nhiễm theo quận.</p><div id="area-cards" class="station-status"></div><article class="feature-card"><h2>So sánh cùng khoảng thời gian</h2><p id="area-window" class="muted"></p><div class="table-scroll"><table><thead><tr><th>Điểm đo</th><th>Trung bình các giờ chung</th><th>Số giờ chung</th><th>Giờ có dữ liệu / dự kiến</th></tr></thead><tbody id="area-comparison"></tbody></table></div></article><div class="callout">Tọa độ là vị trí của điểm quan trắc, không đại diện cho mọi nơi trong khu vực. Liên kết bản đồ mở dịch vụ bên ngoài; AirLake không lấy vị trí thiết bị của bạn.</div></section>
 <section id="telegram" class="view" aria-labelledby="telegram-title" hidden>
   <div class="page-title"><p class="eyebrow">NHẬN CẢNH BÁO TELEGRAM</p><h1 id="telegram-title">Một lời nhắc.<br><span>Đúng điều bạn quan tâm.</span></h1><p class="lede">Tính năng cảnh báo cá nhân đang được kiểm thử riêng với người nhận đã được duyệt.</p></div>
   <div class="telegram-layout"><article class="feature-card"><span class="status unknown">Chưa mở đăng ký cộng đồng</span><h2>Chọn trạm và điều kiện nhận tin</h2><p>Luồng dự kiến: kết nối bot được nhóm xác nhận, chọn trạm rồi đặt ngưỡng PM2.5. Nhóm đang xác minh gửi tin thật và tránh gửi lặp. Trang này chưa mở quy trình đăng ký.</p><ol><li>Chờ nhóm AirLake công bố bot và hướng dẫn đã được kiểm chứng.</li><li>Khi được mở, chọn đúng điểm quan trắc và ngưỡng mong muốn.</li><li>Chỉ dùng số đo đủ mới; dữ liệu cũ không được coi là cảnh báo hiện tại.</li></ol><button disabled>Chưa mở đăng ký</button><p class="small">Không có cam kết cảnh báo liên tục khi phiên thu thập hoặc gửi tin chưa hoạt động.</p></article><aside class="telegram-note"><div class="paper-plane" aria-hidden="true">↗</div><h3>Trình diễn phải nói đúng</h3><p>Nếu dùng giờ đo lịch sử, thông báo phải ghi rõ là trình diễn lịch sử. Chưa có xác nhận gửi Telegram cho phiên bản website này.</p><p>Trang không tự gửi tin, không tự đăng ký và không yêu cầu thông tin Telegram của bạn.</p></aside></div>
@@ -84,6 +104,7 @@
 <section id="tinh-trang" class="view" aria-labelledby="status-title" hidden>
   <div class="page-title"><p class="eyebrow">TÌNH TRẠNG DỮ LIỆU</p><h1 id="status-title">Biết số liệu đến đâu.<br><span>Không đoán phần còn thiếu.</span></h1><p class="lede">Độ mới được tính từ lúc đo. Nhịp lấy dữ liệu của AirLake không phải nhịp quan trắc của cảm biến.</p></div>
   <div class="status-overview"><article class="feature-card"><h2>Bản website đang xem</h2><dl class="status-times"><div><dt>Đợt số liệu được tính lúc</dt><dd id="processed-time">Chưa có dữ liệu</dd></div><div><dt>Bản trang được tạo lúc</dt><dd id="prepared-time">Chưa có dữ liệu</dd></div><div><dt>Tự cập nhật trên website</dt><dd>Chưa bật — bản dữ liệu cố định</dd></div></dl><p id="collection-state" class="small">Không suy ra trạng thái hệ thống chỉ từ thời gian của số đo.</p></article><article class="feature-card"><h2>Đọc nhãn độ mới</h2><ul class="freshness-key"><li><span class="status recent">Dữ liệu mới</span> Còn trong nhịp đo ước lượng.</li><li><span class="status late">Cập nhật trễ</span> Đã qua nhịp đo ước lượng.</li><li><span class="status stale">Dữ liệu đã cũ</span> Không đủ mới để mô tả hiện tại.</li><li><span class="status unknown">Chưa có dữ liệu</span> Không có số đo hoặc thời gian hợp lệ.</li></ul><p class="small">Đây là nhãn độ mới, không phải mức an toàn sức khỏe. Nhịp đo là ước lượng; không khẳng định cảm biến bị hỏng.</p></article></div>
+  <article class="feature-card"><h2>Mốc thời gian của từng nguồn</h2><div class="table-scroll"><table><thead><tr><th scope="col">Nguồn</th><th scope="col">Loại</th><th scope="col">Đo / chạy mô hình</th><th scope="col">AirLake nhận / có dữ liệu</th></tr></thead><tbody id="now-status"></tbody></table></div><p id="now-generated" class="small"></p></article>
   <div id="station-status" class="station-status"></div>
   <p class="callout">Một phiên lấy dữ liệu chạy mỗi 5 phút không có nghĩa nguồn đo mỗi 5 phút. Các khoảng thiếu trong bản này chưa chứng minh trạm ngừng hoạt động. Không dùng dữ liệu thiếu làm dấu hiệu không khí tốt.</p>
 </section>

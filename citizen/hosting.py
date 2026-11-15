@@ -23,14 +23,18 @@ HEADERS = """customHeaders:
       - key: X-Frame-Options
         value: DENY
       - key: Referrer-Policy
-        value: no-referrer
+        value: strict-origin-when-cross-origin
       - key: Cache-Control
         value: no-store
       - key: Permissions-Policy
         value: 'camera=(), microphone=(), geolocation=()'
       - key: Content-Security-Policy
-        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
 """
+
+# Live observations allowed on public bundles: Dragon (CC BY 4.0) and
+# Sensor.Community #99385 (DbCL 1.0).
+LIVE_LICENSED = {6123215, 99385}
 
 
 def clients():
@@ -57,9 +61,25 @@ def zip_site(path, mode):
     name = cfg["dataUrl"]
     if name != "data/" + cfg["sha256"] + ".json" or cfg["mode"] != mode:
         raise ValueError("Dataset path/mode mismatch")
-    assets = ["index.html", "app.js", "styles.css", "icon.svg", "history.js"]
-    if set(files) != {*assets, "config.js", name}:
+    assets = [
+        "index.html",
+        "app.js",
+        "styles.css",
+        "icon.svg",
+        "history.js",
+        "now.js",
+        "leaflet.js",
+        "leaflet.css",
+    ]
+    live = {"now.json"} if cfg.get("nowUrl") == "now.json" else set()
+    if set(files) != {*assets, "config.js", name, *live}:
         raise ValueError("Unapproved deployment files")
+    if live:
+        now = json.loads(files["now.json"].read_bytes())
+        if {o["station_id"] for o in now["observations"]} - LIVE_LICENSED or now[
+            "model"
+        ]["kind"] != "model":
+            raise ValueError("Live projection contains unlicensed observations")
     data = json.loads(files[name].read_bytes())
     if sha(files[name].read_bytes()) != cfg["sha256"] or data["mode"] != mode:
         raise ValueError("Dataset hash mismatch")
