@@ -130,7 +130,7 @@ class DeployTests(unittest.TestCase):
     def responses(self, override=None):
         def get(method, url):
             path = url.split(".on.aws", 1)[1]
-            code = dict(((m, p), e) for m, p, e in deploy.API_SMOKE)[(method, path)]
+            code = {(m, p): e for m, p, e in deploy.API_SMOKE}[(method, path)]
             if override and path in override:
                 code = override[path]
             body = {
