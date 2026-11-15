@@ -54,6 +54,34 @@ class ConventionTests(unittest.TestCase):
             [row("2026-11-10T17:00:00Z", 6.5, "openaq_archive")],
         )
 
+    def test_local_day_boundary_follows_the_measured_interval(self):
+        # value stamped 00:00 on 12/11 (Vietnam) covers 23:00-24:00 on 11/11
+        text = (
+            '"location_id","sensors_id","location","datetime","lat","lon","parameter","units","value"\n'
+            '6123215,14581375,"D","2026-11-12T00:00:00+07:00","1","1","pm25","µg/m³","40"\n'
+            '6123215,14581375,"D","2026-11-12T01:00:00+07:00","1","1","pm25","µg/m³","50"\n'
+        )
+        rows = h.openaq_archive_hours(text)
+        self.assertEqual(
+            [r["hour_start"] for r in rows],
+            ["2026-11-11T16:00:00Z", "2026-11-11T17:00:00Z"],
+        )
+        self.assertEqual(
+            [d["date_local"] for d in h.daily(rows)], ["2026-11-11", "2026-11-12"]
+        )
+
+    def test_provisional_hours_never_make_a_valid_day(self):
+        rows = hours("2026-11-13T17:00:00Z", 24, 10.0, "sc_sampled")
+        d = h.daily(rows)[0]
+        self.assertEqual(
+            (d["hours"], d["provisional_hours"], d["valid_day"], d["complete_day"]),
+            (24, 24, False, False),
+        )
+        start = datetime(2026, 11, 13, 17, tzinfo=UTC)
+        self.assertEqual(
+            h.coverage(rows, start, start + timedelta(days=1))["provisional_hours"], 24
+        )
+
     def test_openaq_hours_use_period_start_and_skip_empty_hours(self):
         body = {
             "results": [

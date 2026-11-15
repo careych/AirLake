@@ -33,7 +33,7 @@ BASIS = {
 METHOD = {
     "hour_convention": h.CONVENTION,
     "timezone": "UTC for *_utc; Asia/Ho_Chi_Minh (UTC+7, no DST) for *_local and date_local",
-    "daily": f"mean of the hourly values on that Vietnam calendar day; valid_day needs >= {h.VALID_DAY_HOURS}/24 hours, complete_day 24/24",
+    "daily": f"mean of the hourly values on that Vietnam calendar day; valid_day needs >= {h.VALID_DAY_HOURS}/24 non-provisional hours, complete_day 24/24; provisional_hours counts sc_sampled hours",
     "flags": "very_low: < 2 µg/m³; isolated_peak: >= 3x and >= 50 µg/m³ above the median of up to 6 neighbouring hours; provisional: sc_sampled. Flagged values are kept unchanged.",
     "gaps": "missing hours are left missing; no interpolation, no model values",
     "basis": BASIS,
@@ -183,6 +183,7 @@ def to_csv(value):
             "hours",
             "valid_day",
             "complete_day",
+            "provisional_hours",
             "min_hourly",
             "max_hourly",
         ]
