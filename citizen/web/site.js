@@ -300,9 +300,10 @@
       if (!ctx()) return;
       lineChart($('spark-' + s.id), day.rows, start, end, $('spark-read-' + s.id), {height: 180, label: `PM2.5 theo giờ 24 giờ qua tại ${s.name}`, reference: null});
       const n = day.rows.length, mean = n ? day.rows.reduce((a, r) => a + r.pm25, 0) / n : NaN, o = obs(s.id), parts = [];
-      parts.push(n >= 18 ? `Trung bình 24 giờ qua: ${num(mean)} µg/m³ (${n}/24 giờ có số liệu). Hướng dẫn của WHO (2021) cho trung bình 24 giờ là 15 µg/m³.` : `24 giờ qua chỉ có ${n}/24 giờ có số liệu, chưa đủ để tính trung bình ngày hay so với hướng dẫn WHO.`);
+      const prov = day.rows.filter(r => r.flags.includes('provisional')).length, full = n - prov;
+      parts.push(full >= 18 ? `Trung bình 24 giờ qua: ${num(mean)} µg/m³ (${n}/24 giờ có số liệu${prov ? `, ${prov} giờ tạm tính` : ''}). Hướng dẫn của WHO (2021) cho trung bình 24 giờ là 15 µg/m³.` : `24 giờ qua có ${n}/24 giờ có số liệu${prov ? ` (${prov} giờ tạm tính)` : ''}, chưa đủ để tính trung bình ngày hay so với hướng dẫn WHO.`);
       const vals = month.rows.map(r => r.pm25);
-      if (o && Number.isFinite(o.pm25) && vals.length >= 240 && freshness(s.id).state !== 'stale') {
+      if (s.hourly && o && Number.isFinite(o.pm25) && vals.length >= 240 && freshness(s.id).state !== 'stale') { // like with like: an hourly mean against hourly means
         const below = vals.filter(v => v < o.pm25).length / vals.length * 100;
         parts.push(`Số đo hiện tại cao hơn ${num(below, 0)}% số giờ có số liệu trong 30 ngày qua tại điểm này (${vals.length} giờ).`);
       }
@@ -365,7 +366,7 @@
     if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to)) return null;
     const start = Math.max(FIRST, midnight(from)), end = Math.min(today + D, midnight(to) + D);
     if (end <= start || end - start > 100 * D) return null;
-    return {start, end, days: Math.round((end - start) / D), text: 'Khoảng tự chọn' + (end > now ? ' (hôm nay chưa hết ngày)' : '')};
+    return {start, end, days: Math.round((end - start) / D), text: 'Khoảng tự chọn' + (midnight(from) < FIRST ? '. AirLake chỉ có dữ liệu từ 01/09/2026 nên khoảng bắt đầu từ ngày này' : '') + (end > now ? ' (hôm nay chưa hết ngày)' : '')};
   }
   async function renderHistory() {
     const sel = $('h-station');
@@ -399,6 +400,7 @@
     $('h-coverage').replaceChildren(el('div', {class: 'cov-bar', role: 'img', 'aria-label': `${num(c.percent)}% số giờ có số liệu`}, el('span', {style: `width:${Math.min(100, c.percent)}%`})),
       el('p', {}, el('strong', {text: `${c.hours_present}/${c.hours_expected} giờ có số liệu (${num(c.percent)}%).`}), ' ',
         r.days ? `${c.valid_days}/${c.days_in_range} ngày đủ dữ liệu (ít nhất 18/24 giờ), ${c.complete_days} ngày đủ cả 24 giờ.` : '',
+        c.provisional_hours ? ` Trong đó ${c.provisional_hours} giờ là số tạm tính từ các lần AirLake lấy mẫu, sẽ được thay bằng số đầy đủ từ kho lưu trữ hôm sau.` : '',
         c.gap_count ? ` ${c.gap_count} khoảng trống; dài nhất ${longest.hours} giờ, từ ${hm(Date.parse(longest.start))} ${dm(Date.parse(longest.start))}.` : ' Không có giờ nào bị thiếu.'),
       ...(c.percent < 50 ? [el('p', {class: 'warn', text: 'Khoảng này thiếu nhiều số liệu. Các con số bên dưới chỉ mô tả phần có số liệu, không đại diện cho cả khoảng.'})] : []));
     const ref = {v: 15, label: 'WHO: 15 µg/m³ / 24 giờ'};
@@ -412,7 +414,7 @@
       const byDate = new Map(daily.rows.map(d => [d.date_local, d])), bars = [];
       for (let t = r.start; t < r.end; t += D) {
         const k = dateKey(t), d = byDate.get(k);
-        bars.push({label: dm(t), v: d?.pm25, ok: d?.valid_day, tip: d ? `${dmy(t)}: ${num(d.pm25)} µg/m³ · ${d.hours}/24 giờ có số liệu${d.valid_day ? '' : ' (chưa đủ, chỉ tham khảo)'}` : `${dmy(t)}: không có số liệu`});
+        bars.push({label: dm(t), v: d?.pm25, ok: d?.valid_day, tip: d ? `${dmy(t)}: ${num(d.pm25)} µg/m³ · ${d.hours}/24 giờ có số liệu${d.provisional_hours ? `, ${d.provisional_hours} giờ tạm tính` : ''}${d.valid_day ? '' : ' (chưa đủ, chỉ tham khảo)'}` : `${dmy(t)}: không có số liệu`});
       }
       barChart($('h-chart'), bars, $('h-chart-readout'), {reference: ref, label: `PM2.5 trung bình ngày tại ${s.name}`});
     }
@@ -421,7 +423,8 @@
     if (!r.days) {
       if (rows.length) {
         const hi = rows.reduce((a, b) => b.pm25 > a.pm25 ? b : a), lo = rows.reduce((a, b) => b.pm25 < a.pm25 ? b : a), mean = rows.reduce((a, b) => a + b.pm25, 0) / rows.length;
-        cards.push(['Trung bình các giờ có số liệu', `${num(mean)} µg/m³`, `${rows.length}/24 giờ`]);
+        const prov = rows.filter(x => x.flags.includes('provisional')).length;
+        cards.push(['Trung bình các giờ có số liệu', `${num(mean)} µg/m³`, `${rows.length}/24 giờ` + (prov ? `, ${prov} giờ tạm tính` : '')]);
         cards.push(['Giờ cao nhất', `${num(hi.pm25)} µg/m³`, `${hm(Date.parse(hi.hour_start_utc))}, ${dm(Date.parse(hi.hour_start_utc))}`]);
         cards.push(['Giờ thấp nhất', `${num(lo.pm25)} µg/m³`, `${hm(Date.parse(lo.hour_start_utc))}, ${dm(Date.parse(lo.hour_start_utc))}`]);
       }
@@ -550,7 +553,7 @@
       $('api-docs').href = API + '/v1'; $('api-docs').textContent = API + '/v1';
       $('api-examples').textContent = [`${API}/v1/stations`, `${API}/v1/history?station_id=6123215`, `${API}/v1/history?station_id=99385&start=2026-11-01&end=2026-11-15&granularity=daily&format=csv`, `${API}/v1/now`].join('\n');
     }
-    $('archive-export').replaceChildren('Bản xuất 720 giờ của trạm Gia Lâm trong tháng 9/2026, đã chạy qua AWS Glue (Iceberg) và được Athena kiểm tra lại từng dòng. Bản này ghi giờ theo mốc cuối giờ của OpenAQ (giá trị ghi 01:00 là trung bình 00:00–01:00) và có cột aqi là chỉ số thử nghiệm của dự án, không phải VN_AQI. ', API ? el('a', {href: `${API}/v1/archive/september-2026?format=csv&limit=1000`, text: 'Tải CSV'}) : '');
+    $('archive-export').replaceChildren('Bản xuất 720 giờ của trạm Gia Lâm trong tháng 9/2026, đã chạy qua AWS Glue (Iceberg) và được Athena kiểm tra lại từng dòng; dùng để đối chiếu kỹ thuật. Bản này ghi mỗi giờ theo mốc cuối giờ của OpenAQ (dòng 01:00 là trung bình 00:00–01:00), nên nó gồm giờ 23:00–24:00 ngày 31/8 và thiếu giờ 23:00–24:00 ngày 30/9. Cột aqi là phép tính nội bộ để kiểm tra pipeline, không phải VN_AQI và không dùng để đánh giá sức khỏe. Số liệu theo giờ ở trang Lịch sử đã dùng đúng đầu giờ. ', API ? el('a', {href: `${API}/v1/archive/september-2026?format=csv&limit=1000`, text: 'Tải CSV'}) : '');
     const t = $('datasets');
     try {
       const st = API ? await getJSON(API + '/v1/stations', 300000) : null;
@@ -593,7 +596,7 @@
   function render() {
     const p = page();
     document.querySelectorAll('.view').forEach(v => { v.hidden = v.id !== p; });
-    document.querySelectorAll('[data-nav]').forEach(a => a.toggleAttribute('aria-current', a.dataset.nav === p) || a.dataset.nav !== p || a.setAttribute('aria-current', 'page'));
+    document.querySelectorAll('[data-nav]').forEach(a => { if (a.dataset.nav === p) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     PAGES[p]();
   }
   async function init() {

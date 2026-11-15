@@ -185,21 +185,27 @@ def window(rows, start, end):
 
 
 def daily(rows):
+    """Vietnam-day means; provisional (sampled) hours never make a day valid."""
     days = defaultdict(list)
     for r in rows:
-        days[local_date(r["hour_start"])].append(r["pm25"])
-    return [
-        {
-            "date_local": d,
-            "pm25": math.fsum(v) / len(v),
-            "hours": len(v),
-            "valid_day": len(v) >= VALID_DAY_HOURS,
-            "complete_day": len(v) == 24,
-            "min_hourly": min(v),
-            "max_hourly": max(v),
-        }
-        for d, v in sorted(days.items())
-    ]
+        days[local_date(r["hour_start"])].append(r)
+    out = []
+    for d, items in sorted(days.items()):
+        v = [r["pm25"] for r in items]
+        final = sum(1 for r in items if r["basis"] != "sc_sampled")
+        out.append(
+            {
+                "date_local": d,
+                "pm25": math.fsum(v) / len(v),
+                "hours": len(v),
+                "provisional_hours": len(v) - final,
+                "valid_day": final >= VALID_DAY_HOURS,
+                "complete_day": final == 24,
+                "min_hourly": min(v),
+                "max_hourly": max(v),
+            }
+        )
+    return out
 
 
 def coverage(rows, start, end):
@@ -229,6 +235,9 @@ def coverage(rows, start, end):
     return {
         "hours_expected": expected,
         "hours_present": len(present),
+        "provisional_hours": sum(
+            1 for r in window(rows, start, end) if r["basis"] == "sc_sampled"
+        ),
         "percent": round(100 * len(present) / expected, 1) if expected else 0.0,
         "days_in_range": len(full_days),
         "valid_days": sum(1 for x in full_days if by_date.get(x, {}).get("valid_day")),

@@ -72,7 +72,8 @@ DOCS = {
         "n_readings": "readings behind the hourly value",
         "basis": "how the hour was produced (see methodology in each response)",
         "flags": "very_low | isolated_peak | provisional; values are never altered",
-        "date_local / valid_day / complete_day": "Vietnam calendar day; valid with >= 18/24 hours",
+        "date_local / valid_day / complete_day": "Vietnam calendar day; valid with >= 18/24 non-provisional hours",
+        "archive hour_start / aqi": "September export only: hour_start is OpenAQ's END-of-hour stamp; aqi is an internal pipeline check value, not VN_AQI and not a health category",
     },
     "licences": {
         "6123215": "CC BY 4.0, attribution 'AirGradient via OpenAQ'",
