@@ -275,6 +275,30 @@ class ReleaseTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 release.execute(c, packet, plan, "synthetic-plan")
 
+    def test_stop_only_plan_never_locks_the_public_app_on_failure(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            packet = Path(tmp)
+            c, plan, _ = self.setup_cloud(packet)
+            plan["failure_containment"] = "stop_only"
+            c["amplify"].create_deployment.return_value = {
+                "jobId": "2",
+                "zipUploadUrl": "https://synthetic.s3.ap-southeast-2.amazonaws.com/unit-only",
+            }
+            (packet / "public.zip").write_bytes(b"SYNTHETIC_NOT_REAL_ZIP")
+            http = Mock()
+            http.get.side_effect = [Mock(status_code=401), Mock(status_code=200)]
+            http.put.side_effect = TimeoutError("SYNTHETIC")
+            with (
+                patch("requests.Session", return_value=http),
+                self.assertRaises(TimeoutError),
+            ):
+                release.execute(c, packet, plan, "synthetic-plan")
+            c["amplify"].start_deployment.assert_not_called()
+            c["amplify"].update_app.assert_not_called()
+            self.assertIn(
+                "UPLOAD_UNCERTAIN", (packet / "release-receipt.json").read_text()
+            )
+
     def test_failed_password_check_causes_no_deployment(self):
         with tempfile.TemporaryDirectory() as tmp:
             packet = Path(tmp)
