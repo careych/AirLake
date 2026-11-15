@@ -52,6 +52,8 @@ class TelegramDeployTests(unittest.TestCase):
             plan = deploy.load(Path(tmp) / "p", digest)
             self.assertEqual(plan["schedule"]["expression"], "cron(5/15 * * * ? *)")
             self.assertEqual(plan["queues"]["max_receive_count"], 3)
+            self.assertEqual(plan["e2e"]["manual_evaluations_max"], 4)
+            self.assertIn("not used", plan["sns"])
             with self.assertRaises(ValueError):
                 deploy.load(Path(tmp) / "p", "0" * 64)
         with tempfile.TemporaryDirectory() as tmp, self.assertRaises(ValueError):
