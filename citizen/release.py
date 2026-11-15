@@ -76,6 +76,7 @@ def prepare(
     demo_mode="instructor",
     failure_containment="app_wide_basic_auth",
     custom_headers=None,
+    previous_headers=HEADERS_PREVIOUS,
 ):
     if packet.exists() or any(
         (p / ".git").exists() for p in (packet.resolve(), *packet.resolve().parents)
@@ -132,7 +133,7 @@ def prepare(
         "containment": "existing app-wide password protection only; then STOP",
         "demo_mode": demo_mode,
         "failure_containment": failure_containment,
-        "previous_headers": HEADERS_PREVIOUS,
+        "previous_headers": previous_headers,
         "custom_headers": custom_headers,
     }
     packet.mkdir(mode=0o700, parents=True)

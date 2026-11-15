@@ -80,11 +80,10 @@ class ControlTests(unittest.TestCase):
             )
             for name in (
                 "index.html",
-                "app.js",
+                "site.js",
                 "styles.css",
                 "icon.svg",
-                "history.js",
-                "now.js",
+                "areas.json",
                 "leaflet.js",
                 "leaflet.css",
             ):

@@ -3,158 +3,242 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#123d3b">
-  <meta name="description" content="AirLake thí điểm Hà Nội: số đo bụi mịn có nguồn gốc, thời gian rõ ràng và khoảng trống dữ liệu được công khai.">
+  <meta name="description" content="AirLake: bụi mịn PM2.5 tại các điểm đo công khai ở Hà Nội, có giờ đo, độ mới, lịch sử và nguồn dữ liệu rõ ràng.">
   <title>AirLake · Không khí quanh bạn</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="stylesheet" href="leaflet.css"><link rel="stylesheet" href="styles.css">
-  <script src="config.js" defer></script><script src="app.js" defer></script><script src="history.js" defer></script><script src="leaflet.js" defer></script><script src="now.js" defer></script>
+  <script src="config.js" defer></script><script src="leaflet.js" defer></script><script src="site.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Đến nội dung chính</a>
 <header>
-  <a class="brand" href="#quanh-ban" aria-label="AirLake, trang đầu"><img src="icon.svg" alt="" width="38" height="38"><span>airlake<span class="brand-dot">.</span></span></a>
+  <a class="brand" href="#quanh-toi" aria-label="AirLake, trang đầu"><img src="icon.svg" alt="" width="34" height="34"><span>airlake<span class="brand-dot">.</span></span></a>
   <nav aria-label="Điều hướng chính">
-    <a href="#quanh-ban" data-nav="quanh-ban">Hiện tại</a>
+    <a href="#quanh-toi" data-nav="quanh-toi">Quanh tôi</a>
+    <a href="#lich-su" data-nav="lich-su">Lịch sử</a>
+    <a href="#ban-do" data-nav="ban-do">Bản đồ</a>
     <a href="#du-bao" data-nav="du-bao">Dự báo</a>
-    <a href="#xu-huong" data-nav="xu-huong">Lịch sử</a>
-    <a href="#khu-vuc" data-nav="khu-vuc">Trạm đo</a>
-    <a href="#telegram" data-nav="telegram">Telegram</a>
-    <a href="#nghien-cuu" data-nav="nghien-cuu">Tải dữ liệu</a>
-    <a href="#tinh-trang" data-nav="tinh-trang">Độ mới</a>
+    <a href="#canh-bao" data-nav="canh-bao">Cảnh báo</a>
+    <a href="#du-lieu" data-nav="du-lieu">Dữ liệu</a>
+    <a href="#tinh-trang" data-nav="tinh-trang">Tình trạng</a>
   </nav>
-  <span class="pilot">Thí điểm Hà Nội</span>
 </header>
 <div id="notice" class="notice" role="status" hidden></div>
 <main id="main" tabindex="-1">
-<section id="quanh-ban" class="view active" aria-labelledby="home-title">
-  <div id="home-live" hidden>
-    <div class="home-head"><h1 id="home-title">Bụi mịn PM2.5 tại Hà Nội</h1><p id="coverage-line" class="muted"></p></div>
-    <div class="home-grid">
-      <div class="home-left">
-        <div id="station-tabs" class="station-tabs" role="tablist" aria-label="Chọn điểm đo"></div>
-        <article id="station-panel" class="station-panel" aria-live="polite"></article>
-      </div>
-      <div class="home-right">
-        <div id="home-map" class="home-map" role="region" aria-label="Bản đồ điểm đo"></div>
-        <details class="coverage"><summary>Nơi tôi ở không có điểm đo?</summary><p>Hiện AirLake chỉ có hai điểm đo công khai. Nếu bạn ở quận khác, chẳng hạn Cầu Giấy hay Hoàng Mai, số đo ở Gia Lâm hoặc Tây Hồ không cho biết chính xác không khí nơi bạn ở. Bạn có thể xem dự báo khu vực bên dưới để biết xu hướng chung trong ngày.</p></details>
-        <section class="regional" aria-labelledby="regional-title">
-          <h2 id="regional-title">Dự báo khu vực Hà Nội</h2>
-          <p class="muted small">Ước tính từ mô hình CAMS cho vùng khoảng 45 km quanh trung tâm. Không phải số đo.</p>
-          <p class="regional-value"><strong id="regional-value">—</strong> <span>µg/m³</span></p>
-          <p id="regional-meta" class="small muted"></p>
-          <div id="regional-chart" class="chart small-chart"></div>
-          <p id="regional-range" class="small"></p>
-          <a class="text-link" href="#du-bao">Xem dự báo các ngày tới →</a>
-        </section>
-      </div>
-    </div>
-    <div class="home-links"><a href="#xu-huong">Lịch sử tháng 9/2026 tại Gia Lâm</a><a href="#nghien-cuu">Tải dữ liệu và API</a><a href="#tinh-trang">Độ mới của dữ liệu</a></div>
-    <details class="plain-explanation"><summary>PM2.5 là gì?</summary><p>PM2.5 là bụi mịn có đường kính không quá 2,5 micromét, đo bằng microgam trên mét khối không khí (µg/m³). Con số càng cao thì không khí càng nhiều bụi mịn. Số đo chỉ cho biết tình hình nơi đặt cảm biến.</p></details>
-    <details class="plain-explanation"><summary>Nguồn dữ liệu và giấy phép</summary><ul id="now-attribution" class="small"></ul></details>
-  </div>
-  <div id="legacy-home" hidden>
-  <p class="journey-guide">Chọn khu vực → Chọn khoảng thời gian → Xem số liệu và xu hướng → Kiểm tra độ mới → Tải dữ liệu được phép chia sẻ.</p>
-  <div class="hero">
-    <div>
-      <p class="eyebrow">HIỂU RÕ SỐ ĐO QUANH MÌNH</p>
-      <h1 id="home-title">Không khí quanh bạn.<br><span>Bắt đầu từ số đo thật.</span></h1>
-      <p class="lede">Xem bụi mịn tại một điểm quan trắc, biết số đo có từ lúc nào và còn phù hợp để tham khảo hay không.</p>
-      <div class="station-pick"><label for="station">Chọn điểm quan trắc</label><select id="station" aria-label="Chọn điểm quan trắc"><option>Đang tải các điểm quan trắc…</option></select><span id="station-source" class="muted"></span></div>
-      <p class="coverage-note"><span aria-hidden="true">◎</span> Phạm vi thí điểm còn hạn chế. Một điểm đo không đại diện cho toàn Hà Nội.</p>
-      <details class="plain-explanation"><summary>PM2.5 là gì? Nên hiểu số đo thế nào?</summary><p>PM2.5 là bụi mịn có đường kính không quá 2,5 micromét. Đơn vị µg/m³ cho biết lượng bụi trong một mét khối không khí. Số đo mô tả tại điểm và thời gian ghi nhận; không thay thế đánh giá sức khỏe hay đại diện cho cả thành phố.</p><p>Khi số đo đã cũ hoặc bị thiếu, AirLake không kết luận không khí đang tốt hay xấu.</p></details>
-    </div>
-    <article class="reading-card" data-freshness="unknown" aria-labelledby="reading-title">
-      <div class="card-top"><span class="card-kicker" id="reading-title">BỤI MỊN PM2.5</span><span id="freshness" class="status unknown">Đang tải</span></div>
-      <p class="reading"><strong id="pm-value">—</strong><span>µg/m³</span></p>
-      <p class="reading-description">Số đo gần nhất đã được AirLake tiếp nhận và kiểm tra.</p>
-      <dl class="reading-meta"><div><dt>Đo lúc</dt><dd id="observed-time">Chưa có dữ liệu</dd></div><div><dt>AirLake nhận lúc</dt><dd id="ingested-time">Chưa có dữ liệu</dd></div><div><dt>Nguồn báo đo gần nhất</dt><dd id="source-observed-time">Chưa đối chiếu</dd></div><div><dt>Cách thời điểm hiện tại</dt><dd id="observation-age">—</dd></div></dl>
-      <div id="freshness-explanation" class="freshness-note">Đang kiểm tra thời gian của số đo…</div>
-      <p class="small">Giờ Việt Nam (UTC+7). Thời gian nhận không làm số đo cũ trở thành số đo mới.</p>
-      <a class="text-link" href="#tinh-trang">Xem tình trạng dữ liệu →</a>
-    </article>
-  </div>
-  <div class="section-heading"><div><p class="eyebrow">NHÌN LẠI KHOẢNG ĐÃ CÓ QUAN TRẮC</p><h2 id="home-period-title">24 giờ trong bản có dữ liệu</h2></div><a class="text-link" href="#xu-huong">Xem xu hướng →</a></div>
-  <article class="chart-card"><div class="chart-heading"><div><h3 id="home-chart-title">PM2.5 trung bình giờ</h3><p class="muted chart-period" id="home-period"></p></div><span class="unit">µg/m³</span></div><div id="home-chart" class="chart" role="img" aria-label="Biểu đồ bụi mịn trung bình giờ"></div><p id="home-chart-readout" class="chart-readout" aria-live="polite">Chọn hoặc dùng phím Tab đến một điểm để đọc số liệu.</p><p class="small chart-caption">Khoảng trống là giờ chưa có số liệu. Đường chỉ nối hai giờ liên tiếp có quan trắc.</p></article>
-  <div class="info-grid"><article><span class="info-icon" aria-hidden="true">◷</span><h3>Đúng thời điểm</h3><p>Ưu tiên thời gian đo. Số liệu nhận muộn vẫn được ghi nhận theo thời điểm quan trắc.</p></article><article><span class="info-icon" aria-hidden="true">⌁</span><h3>Một lát cắt của Hà Nội</h3><p>Chỉ mô tả các điểm thực sự có số liệu; không điền số đo cho khu vực chưa được quan trắc.</p></article><article><span class="info-icon" aria-hidden="true">↗</span><h3>Có nguồn, có giới hạn</h3><p>Nguồn dữ liệu, quyền chia sẻ và số giờ còn thiếu được ghi rõ để bạn tự đánh giá.</p></article></div>
-  </div>
-</section>
-<section id="du-bao" class="view" aria-labelledby="forecast-title" hidden>
-  <div class="page-title"><h1 id="forecast-title">Dự báo khu vực</h1><p class="lede">Mô hình CAMS ước tính bụi mịn cho cả vùng trung tâm Hà Nội trong vài ngày tới. Dùng để biết xu hướng, không phải số đo tại nơi bạn ở.</p></div>
-  <p id="du-bao-empty" class="muted">Chưa tải được dữ liệu dự báo.</p>
-  <div id="du-bao-body" hidden>
-        <p id="forecast-meta" class="muted"></p>
-    <article class="chart-card"><div class="chart-heading"><div><h3>PM2.5 dự báo 24 giờ tới</h3><p class="muted">Giờ Việt Nam · đường gạch là giá trị mô hình</p></div><span class="unit">µg/m³</span></div><div id="forecast-chart" class="chart" role="img" aria-label="Biểu đồ PM2.5 dự báo 24 giờ tới"></div><p id="forecast-windows" class="chart-readout"></p></article>
-    <article class="chart-card"><h3>Các ngày tới (trung bình theo ngày Việt Nam)</h3><div class="table-scroll"><table><thead><tr><th scope="col">Ngày</th><th scope="col">Trung bình</th><th scope="col">Thấp–cao theo giờ</th></tr></thead><tbody id="forecast-days"></tbody></table></div><p id="forecast-days-note" class="small"></p></article>
-    <article class="chart-card"><h3>Mô hình đúng đến đâu?</h3><div id="forecast-validation"></div><p class="small">Kiểm định dùng số liệu lưu trữ của mô hình (lượt chạy gần nhất cho mỗi giờ), nên phản ánh độ khớp ngắn hạn, không phải độ chính xác của dự báo 3–5 ngày. Một tháng mùa mưa không đủ để hiệu chỉnh cho mùa khô.</p></article>
-  </div>
-</section>
-<section id="xu-huong" class="view" aria-labelledby="trend-title" hidden>
-  <div class="page-title"><h1 id="trend-title">Lịch sử tháng 9/2026</h1><p class="lede">Số đo theo giờ tại Gia Lâm · Ocean Park, đã được kiểm tra trên AWS. Đây là dữ liệu quá khứ, không phải tình hình hôm nay.</p></div>
-  <div class="toolbar"><label id="history-range-label" hidden>Khoảng lịch sử<select id="history-range"><option value="24h">24 giờ cuối trong bản</option><option value="7d" selected>7 ngày cuối trong bản</option><option value="30d">30 ngày trong bản</option></select></label><label for="trend-station">Điểm đang xem<select id="trend-station"></select></label><div class="segmented" role="group" aria-label="Chọn đại lượng"><button id="metric-pm" aria-pressed="true">PM2.5</button><button id="metric-aqi" aria-pressed="false">Chỉ số thử nghiệm</button></div><label class="checkbox"><input type="checkbox" id="compare"> So sánh các trạm</label></div>
-  <p id="comparison-note" class="small"></p>
-  <p id="aqi-warning" class="callout" hidden>Chỉ số thử nghiệm được tính từ trung bình giờ, không phải VN_AQI chính thức. Không dùng để đưa ra khuyến cáo sức khỏe.</p>
-  <article class="chart-card"><div class="chart-heading"><h2 id="trend-chart-title">PM2.5 theo giờ · µg/m³</h2><span class="muted chart-period" id="trend-period"></span></div><div id="trend-chart" class="chart" role="img" aria-label="Biểu đồ so sánh các giờ có quan trắc"></div><div id="chart-legend" class="legend"></div><p id="trend-chart-readout" class="chart-readout" aria-live="polite">Chọn một điểm để xem thời gian và giá trị.</p><p id="trend-interpretation" class="callout"></p></article>
-  <div id="historical-analytics" hidden>
-    <div class="analytics-summary" id="analytics-summary"></div>
-    <article class="chart-card"><h2>PM2.5 trung bình theo ngày</h2><p id="daily-method" class="muted"></p><div id="daily-chart" class="chart" role="img" aria-label="Trung bình các giờ có dữ liệu theo ngày"></div><p id="daily-readout" class="chart-readout" aria-live="polite"></p></article>
-    <article class="chart-card"><h2>Mỗi ngày, từng giờ</h2><p class="muted">Màu đậm hơn biểu thị nồng độ cao hơn trong khoảng đang xem, không phải thang an toàn sức khỏe. Ô xám là thiếu dữ liệu. Có thể cuộn ngang trên điện thoại.</p><div id="history-heatmap" class="heatmap-scroll" tabindex="0" aria-label="Bảng màu theo ngày và giờ Việt Nam"></div><p id="heatmap-readout" class="chart-readout" aria-live="polite"></p></article>
-    <article class="chart-card"><h2>Khung giờ trong lịch sử</h2><p class="muted">Mỗi cột cần ít nhất 7 ngày có quan trắc cùng giờ. Đây là mô tả lịch sử, không dự báo hôm nay và không bảo đảm hoạt động ngoài trời an toàn.</p><div id="hour-pattern-chart" class="chart" role="img" aria-label="Trung bình theo giờ trong ngày qua nhiều ngày quan trắc"></div><p id="pattern-readout" class="chart-readout" aria-live="polite"></p></article>
-    <div class="status-overview"><article class="feature-card"><h2>Ngày thường và cuối tuần</h2><p id="weekday-comparison"></p></article><article class="feature-card"><h2>Ngày cao / thấp trong tháng</h2><p id="monthly-extremes"></p></article></div>
-    <details class="plain-explanation"><summary>Cách tính và hướng dẫn tham khảo</summary><p>Trung bình ngày được tính từ các mốc giờ đã có trong ngày Việt Nam; ngày thiếu giờ được ghi rõ. Không điền giờ trống bằng 0. Không dùng bản tính thử nghiệm này làm VN_AQI chính thức.</p><p>WHO 2021 nêu hướng dẫn PM2.5 15 µg/m³ cho trung bình 24 giờ, trong bối cảnh phân vị 99% theo năm. Đây không phải ngưỡng phân loại cho một số đo hay một giờ. Bản mô tả các mốc giờ này không chứng minh tuân thủ quy chuẩn hoặc an toàn sức khỏe cá nhân.</p><a href="https://www.who.int/teams/environment-climate-change-and-health/air-quality-and-health/health-impacts/types-of-pollutants" target="_blank" rel="noopener noreferrer">Nguồn hướng dẫn WHO ↗</a></details>
-  </div>
-  <div class="section-heading"><h2>Các điểm đang được hỗ trợ</h2><span class="muted">Giờ Việt Nam · UTC+7</span></div>
-  <div class="table-scroll" tabindex="0" aria-label="Bảng số liệu các trạm, có thể cuộn ngang"><table><thead><tr><th>Điểm quan trắc</th><th>Số đo gần nhất</th><th>Đo lúc</th><th>Độ mới</th><th>Giờ có số liệu</th></tr></thead><tbody id="station-table"></tbody></table></div>
-  <p class="small">Số giờ được tính trong khoảng đã chọn. Chỉ mô tả các điểm có quan trắc; không đại diện toàn thành phố.</p>
-  <details class="coordinates"><summary>Vị trí và nguồn đã đối chiếu</summary><div id="coordinates"></div></details>
-</section>
-<section id="khu-vuc" class="view" aria-labelledby="areas-title" hidden>
-  <div class="page-title"><h1 id="areas-title">Trạm đo</h1><p class="lede">Hai điểm đo công khai, đều là cảm biến giá rẻ. Vòng tròn tím là vùng mô hình dự báo, không phải một trạm.</p></div>
-  <div id="station-map" class="station-map" role="region" aria-label="Bản đồ điểm đo và vùng dự báo"></div>
-  <div id="station-details" class="station-details"></div>
-  <article class="feature-card"><h2>Dữ liệu chưa được công bố</h2><p>AirLake lưu số đo tháng 9/2026 của hai trạm tham chiếu thuộc mạng quan trắc Hà Nội (Nhân Chính và Giải Phóng) để đối chiếu nội bộ. Nguồn chưa cho phép chia sẻ lại, nên số liệu này không hiển thị và không tải về được.</p></article>
-  <div hidden><div id="area-cards" class="station-status"></div><article class="feature-card"><h2>So sánh cùng khoảng thời gian</h2><p id="area-window" class="muted"></p><div class="table-scroll"><table><thead><tr><th>Điểm đo</th><th>Trung bình các giờ chung</th><th>Số giờ chung</th><th>Giờ có dữ liệu / dự kiến</th></tr></thead><tbody id="area-comparison"></tbody></table></div></article><div class="callout">Tọa độ là vị trí của điểm quan trắc, không đại diện cho mọi nơi trong khu vực. Liên kết bản đồ mở dịch vụ bên ngoài; AirLake không lấy vị trí thiết bị của bạn.</div></div>
-</section>
-<section id="telegram" class="view" aria-labelledby="telegram-title" hidden>
-  <div class="page-title"><h1 id="telegram-title">Cảnh báo qua Telegram</h1><p class="lede">Nhận tin nhắn khi bụi mịn tại trạm bạn chọn vượt ngưỡng bạn đặt.</p></div>
-  <div class="telegram-layout">
-    <article class="feature-card">
-      <h2>Đăng ký trong 1 phút</h2>
-      <ol class="steps"><li>Mở bot AirLake trên Telegram và bấm <b>Start</b>.</li><li>Bấm <b>Đăng ký cảnh báo</b>, chọn trạm.</li><li>Chọn ngưỡng PM2.5 (ví dụ 50 µg/m³) và bấm <b>Xác nhận</b>.</li></ol>
-      <a id="telegram-link" class="button-link" href="#" hidden rel="noopener">Mở bot AirLake</a>
-      <p id="telegram-pending" class="muted">Bot đang được kiểm thử và sẽ mở tại đây.</p>
-      <p class="small">Đổi trạm, ngưỡng hoặc tạm dừng bằng lệnh /settings; hủy bằng /unsubscribe (thông tin đăng ký sẽ bị xóa).</p>
-    </article>
-    <article class="feature-card">
-      <h2>Khi nào bot nhắn tin?</h2>
-      <ul class="plain-list"><li>Chỉ khi <b>số đo thật</b> tại trạm đạt ngưỡng; không cảnh báo từ dự báo mô hình.</li><li>Chỉ dùng số đo mới; số đo cũ hoặc lỗi không tạo cảnh báo.</li><li>Một lần cho mỗi đợt vượt ngưỡng; bot nhắn lại sau khi mức bụi đã giảm xuống dưới 80% ngưỡng và cách lần trước ít nhất 3 giờ.</li><li>Với cảm biến cộng đồng #99385, cần hai số đo liên tiếp cách nhau ít nhất 10 phút.</li></ul>
-      <h3>Lệnh hữu ích</h3>
-      <p class="small">/latest số đo mới nhất · /status cảnh báo của tôi · /hours giờ thường ít bụi hơn · /help</p>
-      <p class="small">AirLake chỉ lưu mã cuộc trò chuyện Telegram, trạm và ngưỡng bạn chọn để gửi tin.</p>
-    </article>
-  </div>
-</section>
-<section id="nghien-cuu" class="view" aria-labelledby="research-title" hidden>
-  <div class="page-title"><h1 id="research-title">Tải dữ liệu</h1><p class="lede">Dữ liệu đã làm sạch, kèm nguồn và giấy phép. Thời gian theo UTC, PM2.5 theo µg/m³.</p></div>
-  <article class="feature-card"><h2>Các bộ dữ liệu</h2><div class="table-scroll"><table><thead><tr><th scope="col">Dữ liệu</th><th scope="col">Khoảng thời gian</th><th scope="col">Độ đầy đủ</th><th scope="col">Giấy phép</th><th scope="col">Lấy ở đâu</th></tr></thead><tbody>
-    <tr><th>Gia Lâm · Ocean Park, theo giờ và theo ngày</th><td>01–30/09/2026 (giờ Việt Nam)</td><td>720/720 giờ, 30 ngày đủ 24 giờ</td><td>CC BY 4.0</td><td>Bảng lọc bên dưới, API /v1/history</td></tr>
-    <tr><th>Số đo hiện tại của 2 điểm đo và dự báo CAMS</th><td>Bản mới nhất, cập nhật khoảng 15 phút</td><td>Theo nhịp gửi của từng nguồn</td><td>CC BY 4.0 · ODbL 1.0 · CAMS</td><td>API /v1/now</td></tr>
-    <tr><th>Nhân Chính, Giải Phóng</th><td>09/2026</td><td>—</td><td>Chưa được phép chia sẻ</td><td>Không công bố</td></tr>
-  </tbody></table></div></article>
 
-  <article class="feature-card"><div class="research-filters"><label>Trạm / cảm biến<select id="research-station"></select></label><label>Tổng hợp<select id="research-granularity"><option value="hourly">Theo giờ</option><option value="daily">Theo ngày</option></select></label><label>Từ giờ Việt Nam<input id="date-start" type="datetime-local"></label><label>Đến giờ Việt Nam, không gồm giờ này<input id="date-end" type="datetime-local"></label></div><p id="download-rights" class="callout"></p><p id="research-count" class="muted" aria-live="polite"></p><div class="download-buttons"><button id="download-json">Tải JSON ↓</button><button id="download-csv" class="secondary">Tải CSV ↓</button></div><p id="download-status" role="status"></p></article>
-  <div class="info-grid research-info"><article><h3>Thời gian và đơn vị</h3><p>PM2.5: µg/m³. Tệp dùng UTC; màn hình dùng giờ Việt Nam (UTC+7). Khoảng lọc gồm giờ bắt đầu, không gồm giờ kết thúc.</p></article><article><h3>Phạm vi và chất lượng</h3><p id="sample-description">Đang tải phạm vi dữ liệu…</p><p id="quality-summary"></p><p>Giờ thiếu được để trống, không tự điền.</p></article></div>
-  <h2>Xem trước số liệu đã chọn</h2><p id="preview-count" class="muted"></p><div class="table-scroll"><table><thead id="research-preview-header"></thead><tbody id="research-preview"></tbody></table></div><h2>Các cột trong tệp</h2><div class="table-scroll" tabindex="0" aria-label="Định dạng dữ liệu tải xuống"><table><thead><tr><th>Cột</th><th>Ý nghĩa</th></tr></thead><tbody><tr><td><code>station_id</code></td><td>Mã trạm của nguồn (6123215 = Gia Lâm · Ocean Park).</td></tr><tr><td><code>observed_hour_utc</code></td><td>Giờ của số đo, theo UTC.</td></tr><tr><td><code>pm25</code></td><td>Nồng độ PM2.5 trung bình giờ, µg/m³.</td></tr><tr><td><code>aqi_mvp</code></td><td>Chỉ số thử nghiệm; không phải VN_AQI chính thức.</td></tr></tbody></table></div>
-  <details class="example-data"><summary>Xem một dòng JSON và tiêu đề CSV</summary><pre id="research-example">Chọn một nguồn được phép chia sẻ để xem ví dụ từ dữ liệu thật.</pre></details>
-  <div id="attribution" class="attribution"></div>
-  <article id="public-api" class="feature-card" hidden><h2>API công khai cho nghiên cứu</h2><p class="small">Không cần tài khoản. Chỉ gồm dữ liệu được phép chia sẻ lại: lịch sử Gia Lâm · Ocean Park (CC BY 4.0) và số đo hiện tại kèm giấy phép của từng nguồn. Thời gian theo UTC, PM2.5 theo µg/m³; tối đa 1.000 dòng mỗi lần, dùng offset để phân trang.</p><ul id="public-api-links" class="api-links"></ul></article>
+<!-- Quanh tôi -->
+<section id="quanh-toi" class="view" aria-labelledby="home-title">
+  <h1 id="home-title">Không khí quanh bạn</h1>
+  <p class="lede">Chọn khu vực bạn quan tâm. AirLake cho biết điểm đo bụi mịn PM2.5 công khai nào ở gần, số đo lúc mấy giờ, và nơi nào chưa có điểm đo.</p>
+
+  <div class="locate card">
+    <div class="area-search">
+      <label for="area-input">Chọn phường, xã ở Hà Nội</label>
+      <input id="area-input" type="search" autocomplete="off" placeholder="Ví dụ: Cầu Giấy, Gia Lâm, Tây Hồ" role="combobox" aria-expanded="false" aria-controls="area-list" aria-autocomplete="list">
+      <ul id="area-list" class="area-list" role="listbox" hidden></ul>
+    </div>
+    <div class="locate-actions">
+      <button id="use-location" type="button" class="secondary">Dùng vị trí của tôi</button>
+      <button id="pick-on-map" type="button" class="secondary" aria-pressed="false">Chọn trên bản đồ</button>
+    </div>
+    <p id="locate-status" class="muted" role="status"></p>
+  </div>
+
+  <div id="home-body" hidden>
+    <p id="place-line" class="place-line"></p>
+    <div class="home-grid">
+      <div>
+        <div id="local-state"></div>
+        <div id="primary-card"></div>
+      </div>
+      <div class="home-side">
+        <div id="home-map" class="map" role="region" aria-label="Bản đồ khu vực đã chọn và các điểm đo"></div>
+        <p class="muted map-note">Chấm tròn: điểm đo thật. Vòng mờ quanh điểm bạn chọn: bán kính 4 km. Bấm “Chọn trên bản đồ” rồi chạm vào bản đồ để đổi vị trí.</p>
+        <div id="other-stations"></div>
+      </div>
+    </div>
+    <div id="regional" class="card model-card"></div>
+  </div>
+
+  <div id="home-empty" class="card soft">
+    <h2>Chưa chọn khu vực</h2>
+    <p>Bạn có thể gõ tên phường, xã; cho phép trình duyệt dùng vị trí; hoặc chạm vào bản đồ. AirLake chỉ lưu khu vực đã làm tròn khoảng 1 km trên trình duyệt này, không gửi vị trí của bạn đi đâu.</p>
+    <p class="muted">Hiện có 2 điểm đo công khai: xã Gia Lâm (khu Ocean Park) và phường Tây Hồ.</p>
+  </div>
 </section>
+
+<!-- Lịch sử -->
+<section id="lich-su" class="view" aria-labelledby="history-title" hidden>
+  <h1 id="history-title">Lịch sử bụi mịn</h1>
+  <div class="controls card">
+    <div class="field">
+      <label for="h-station">Điểm đo</label>
+      <select id="h-station"></select>
+    </div>
+    <div class="field">
+      <span class="label" id="h-range-label">Khoảng thời gian</span>
+      <div class="segmented" role="radiogroup" aria-labelledby="h-range-label">
+        <button type="button" role="radio" data-range="24h">24 giờ qua</button>
+        <button type="button" role="radio" data-range="7d">7 ngày</button>
+        <button type="button" role="radio" data-range="30d">30 ngày</button>
+        <button type="button" role="radio" data-range="custom">Tùy chọn</button>
+      </div>
+    </div>
+    <div id="h-custom" class="custom-range" hidden>
+      <div class="field"><label for="h-from">Từ ngày</label><input id="h-from" type="date"></div>
+      <div class="field"><label for="h-to">Đến hết ngày</label><input id="h-to" type="date"></div>
+      <button id="h-apply" type="button">Xem</button>
+    </div>
+    <p class="muted archive-link">Lưu trữ: <button type="button" class="link" data-range="sep">tháng 9/2026</button></p>
+  </div>
+
+  <div id="h-head" class="range-head" aria-live="polite"></div>
+  <div id="h-coverage" class="coverage"></div>
+  <div class="card chart-card">
+    <h2 id="h-chart-title">PM2.5</h2>
+    <p id="h-chart-note" class="muted"></p>
+    <div id="h-chart" class="chart" role="img"></div>
+    <p id="h-chart-readout" class="readout" aria-live="polite"></p>
+  </div>
+  <div id="h-findings" class="findings"></div>
+  <div id="h-patterns"></div>
+  <details class="card">
+    <summary>Thống kê kỹ thuật và dữ liệu thiếu</summary>
+    <div id="h-tech"></div>
+    <div id="h-heatmap" class="heatmap"></div>
+  </details>
+  <div class="card soft">
+    <h2>Tải dữ liệu khoảng này</h2>
+    <p id="h-export" class="export-links"></p>
+  </div>
+</section>
+
+<!-- Bản đồ -->
+<section id="ban-do" class="view" aria-labelledby="map-title" hidden>
+  <h1 id="map-title">Điểm đo ở Hà Nội</h1>
+  <p class="lede">Chỉ hiển thị các điểm đo ngoài trời đang hoạt động và được phép chia sẻ dữ liệu. Hai điểm này không đại diện cho toàn thành phố.</p>
+  <div class="map-layout">
+    <div id="stations-map" class="map tall" role="region" aria-label="Bản đồ điểm đo"></div>
+    <div id="station-detail" class="card" aria-live="polite"></div>
+  </div>
+  <label class="toggle"><input id="show-model" type="checkbox"> Hiện vùng mô hình dự báo CAMS (không phải điểm đo)</label>
+  <details class="card">
+    <summary>Vì sao chỉ có 2 điểm đo?</summary>
+    <p>AirLake đã rà soát OpenAQ, Sensor.Community và openSenseMap (15/11/2026). Ngoài 2 điểm này, các trạm khác ở Hà Nội hoặc đã ngừng gửi số liệu, hoặc là cảm biến đặt trong nhà, hoặc không có giấy phép cho phép chia sẻ lại dữ liệu. Các trạm của mạng quan trắc Hà Nội (như Nhân Chính, Giải Phóng) chỉ được dùng nội bộ.</p>
+  </details>
+</section>
+
+<!-- Dự báo -->
+<section id="du-bao" class="view" aria-labelledby="forecast-title" hidden>
+  <h1 id="forecast-title">Dự báo khu vực Hà Nội</h1>
+  <p class="lede">Đây là ước tính của mô hình khí quyển CAMS (Copernicus) cho cả một ô lưới khoảng 45 km, không phải số đo tại phường, xã của bạn.</p>
+  <div class="card chart-card">
+    <h2>PM2.5 dự báo theo giờ</h2>
+    <p id="f-note" class="muted"></p>
+    <div id="f-chart" class="chart" role="img"></div>
+    <p id="f-readout" class="readout" aria-live="polite"></p>
+  </div>
+  <div class="card soft">
+    <h2>Mô hình lệch bao nhiêu so với cảm biến?</h2>
+    <p id="f-validation"></p>
+    <p class="muted">Vì vậy nên xem dự báo như xu hướng tăng hay giảm, không phải con số chính xác.</p>
+  </div>
+</section>
+
+<!-- Cảnh báo -->
+<section id="canh-bao" class="view" aria-labelledby="alert-title" hidden>
+  <h1 id="alert-title">Nhận cảnh báo qua Telegram</h1>
+  <p class="lede">Bot @AirLakeHanoiBot nhắn cho bạn khi số đo PM2.5 tại điểm đo bạn chọn vượt mức bạn đặt.</p>
+  <div class="card">
+    <h2>Chọn điểm đo để đăng ký</h2>
+    <div id="alert-stations" class="alert-stations"></div>
+    <p class="muted">Cảnh báo chỉ dành cho 2 điểm đo này. Nếu nhà bạn xa cả hai, cảnh báo không phản ánh không khí chỗ bạn ở.</p>
+  </div>
+  <div class="card soft">
+    <h2>Cảnh báo hoạt động thế nào</h2>
+    <ol class="steps">
+      <li>Bấm một nút ở trên, Telegram mở bot. Bấm <b>Start</b>.</li>
+      <li>Chọn mức cảnh báo, ví dụ 50 µg/m³, hoặc tự nhập một số từ 5 đến 500.</li>
+      <li>Khi số đo mới vượt mức đó, bot nhắn một lần. Bot nhắn lại chỉ khi bụi đã giảm xuống dưới 80% mức của bạn rồi vượt lại, và cách lần trước ít nhất 3 giờ.</li>
+      <li>Với cảm biến cộng đồng ở Tây Hồ, bot cần 2 số đo vượt mức cách nhau ít nhất 10 phút để tránh báo nhầm do nhiễu.</li>
+      <li>Bot không gửi cảnh báo từ số đo đã cũ. Gõ <b>/status</b> để xem đăng ký, <b>/unsubscribe</b> để hủy và xóa thông tin.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- Dữ liệu -->
+<section id="du-lieu" class="view" aria-labelledby="data-title" hidden>
+  <h1 id="data-title">Dữ liệu cho nghiên cứu</h1>
+  <p class="lede">Số liệu PM2.5 theo giờ và theo ngày tại các điểm đo được phép chia sẻ, kèm độ đầy đủ, nguồn và giấy phép.</p>
+  <div class="card">
+    <h2>Các bộ dữ liệu</h2>
+    <div class="table-scroll"><table id="datasets" class="table"></table></div>
+  </div>
+  <div class="card">
+    <h2>Lấy dữ liệu</h2>
+    <div class="query">
+      <div class="field"><label for="q-station">Điểm đo</label><select id="q-station"></select></div>
+      <div class="field"><label for="q-gran">Độ chi tiết</label><select id="q-gran"><option value="hourly">Theo giờ</option><option value="daily">Theo ngày</option></select></div>
+      <div class="field"><label for="q-from">Từ ngày</label><input id="q-from" type="date"></div>
+      <div class="field"><label for="q-to">Đến hết ngày</label><input id="q-to" type="date"></div>
+      <button id="q-run" type="button">Xem trước</button>
+    </div>
+    <p id="q-summary" class="muted" aria-live="polite"></p>
+    <div class="table-scroll"><table id="q-preview" class="table small"></table></div>
+    <p id="q-links" class="export-links"></p>
+  </div>
+  <details class="card">
+    <summary>Cách làm sạch và các trường dữ liệu</summary>
+    <ul class="plain-list">
+      <li><b>hour_start_utc</b>: đầu giờ đo theo UTC; mỗi dòng là trung bình của giờ đó [đầu giờ, đầu giờ + 1 giờ). OpenAQ ghi giá trị theo mốc cuối giờ, AirLake đã chuyển về đầu giờ.</li>
+      <li><b>pm25</b>: µg/m³. <b>n_readings</b>: số lần đo trong giờ. <b>basis</b>: cách tạo giá trị giờ (giá trị giờ của OpenAQ; trung bình ≥ 12 số đo từ kho lưu trữ Sensor.Community; hoặc tạm tính từ các lần AirLake lấy mẫu mỗi 15 phút, sẽ được thay bằng số từ kho lưu trữ hôm sau).</li>
+      <li><b>flags</b>: <i>very_low</i> (dưới 2 µg/m³), <i>isolated_peak</i> (cao gấp 3 lần và hơn 50 µg/m³ so với trung vị các giờ lân cận), <i>provisional</i>. Giá trị bị đánh dấu được giữ nguyên.</li>
+      <li>Theo ngày: trung bình các giờ trong ngày Việt Nam; <b>valid_day</b> khi có ít nhất 18/24 giờ, <b>complete_day</b> khi đủ 24/24 giờ.</li>
+      <li>Giờ thiếu được để trống, không nội suy, không lấy số từ mô hình.</li>
+      <li>Cảm biến giá rẻ (AirGradient, SDS011) chỉ mang tính tham khảo, chưa hiệu chỉnh theo độ ẩm.</li>
+    </ul>
+  </details>
+  <details class="card">
+    <summary>API công khai</summary>
+    <p>Chỉ đọc, không cần khóa. Mỗi lần trả tối đa 1.000 dòng, khoảng tối đa 100 ngày. Tài liệu: <a id="api-docs" href="#">/v1</a>.</p>
+    <pre id="api-examples"></pre>
+    <p class="muted">Không có truy vấn SQL công khai. Dữ liệu của các trạm chưa có giấy phép chỉ truy cập nội bộ qua API ký AWS IAM.</p>
+  </details>
+  <details class="card">
+    <summary>Giấy phép và ghi công</summary>
+    <ul class="plain-list">
+      <li>Gia Lâm (Dragon, AirGradient qua OpenAQ): CC BY 4.0. Ghi: “AirGradient via OpenAQ”.</li>
+      <li>Tây Hồ (Sensor.Community #99385): ODbL 1.0. Ghi: “Contains Sensor.Community data”. Bản dữ liệu AirLake suy ra từ nguồn này cũng được chia sẻ theo ODbL 1.0.</li>
+      <li>Dự báo CAMS qua Open-Meteo: CC BY 4.0, ghi công Copernicus Atmosphere Monitoring Service.</li>
+      <li>Danh sách phường, xã và bản đồ nền: © OpenStreetMap contributors, ODbL 1.0.</li>
+    </ul>
+  </details>
+  <details class="card">
+    <summary>Bản xuất lakehouse tháng 9/2026 (AWS Glue / Athena)</summary>
+    <p id="archive-export"></p>
+  </details>
+</section>
+
+<!-- Tình trạng -->
 <section id="tinh-trang" class="view" aria-labelledby="status-title" hidden>
-  <div class="page-title"><h1 id="status-title">Độ mới của dữ liệu</h1><p class="lede">Mỗi nguồn có nhịp gửi riêng. Thời gian đo là lúc cảm biến ghi nhận; thời gian AirLake lấy và công bố đến sau.</p></div>
-  <div class="status-overview" hidden><article class="feature-card"><h2>Bản website đang xem</h2><dl class="status-times"><div><dt>Đợt số liệu được tính lúc</dt><dd id="processed-time">Chưa có dữ liệu</dd></div><div><dt>Bản trang được tạo lúc</dt><dd id="prepared-time">Chưa có dữ liệu</dd></div><div><dt>Tự cập nhật trên website</dt><dd>Chưa bật — bản dữ liệu cố định</dd></div></dl><p id="collection-state" class="small">Không suy ra trạng thái hệ thống chỉ từ thời gian của số đo.</p></article><article class="feature-card"><h2>Đọc nhãn độ mới</h2><ul class="freshness-key"><li><span class="status recent">Dữ liệu mới</span> Còn trong nhịp đo ước lượng.</li><li><span class="status late">Cập nhật trễ</span> Đã qua nhịp đo ước lượng.</li><li><span class="status stale">Dữ liệu đã cũ</span> Không đủ mới để mô tả hiện tại.</li><li><span class="status unknown">Chưa có dữ liệu</span> Không có số đo hoặc thời gian hợp lệ.</li></ul><p class="small">Đây là nhãn độ mới, không phải mức an toàn sức khỏe. Nhịp đo là ước lượng; không khẳng định cảm biến bị hỏng.</p></article></div>
-  <article class="feature-card"><h2>Mốc thời gian của từng nguồn</h2><div class="table-scroll"><table><thead><tr><th scope="col">Nguồn</th><th scope="col">Đo lúc / mô hình chạy lúc</th><th scope="col">AirLake lấy / có dữ liệu lúc</th></tr></thead><tbody id="now-status"></tbody></table></div><p id="now-generated" class="small"></p></article>
-  <div id="station-status" class="station-status" hidden></div><!-- legacy snapshot cards; live table above is authoritative -->
-  <article class="feature-card"><h2>Mỗi nguồn gửi số liệu theo nhịp riêng</h2><ul class="plain-list"><li><b>Gia Lâm · Ocean Park:</b> số trung bình mỗi giờ. Số đo được coi là cũ nếu quá 2 giờ chưa có số mới.</li><li><b>Tây Hồ · Cảm biến cộng đồng:</b> vài phút một số đo. Số đo được coi là cũ nếu quá 15 phút chưa có số mới.</li><li><b>Dự báo khu vực (CAMS):</b> mô hình chạy khoảng 12 giờ một lần.</li></ul><p class="small">AirLake kiểm tra các nguồn khoảng 15 phút một lần. Khi nguồn chưa gửi số mới, trang giữ số đo trước đó và ghi rõ giờ đo. Thiếu số liệu không có nghĩa là không khí tốt.</p></article>
+  <h1 id="status-title">Tình trạng dữ liệu</h1>
+  <p class="lede">Mỗi nguồn gửi số liệu theo nhịp riêng. AirLake kiểm tra nguồn mỗi 15 phút; trang này tự tải lại mỗi 5 phút. Điều đó không có nghĩa là có số đo mới mỗi 5 hay 15 phút.</p>
+  <div class="table-scroll"><table id="status-table" class="table"></table></div>
+  <div class="card soft">
+    <h2>Các trạng thái</h2>
+    <ul class="plain-list">
+      <li><span class="badge fresh">Mới</span> Số đo còn trong nhịp gửi bình thường của nguồn.</li>
+      <li><span class="badge delayed">Chậm cập nhật</span> Nguồn gửi chậm hơn thường lệ; số đo trước đó vẫn tham khảo được.</li>
+      <li><span class="badge stale">Dữ liệu cũ</span> Số đo đã quá cũ để nói về hiện tại; có thể nguồn tạm mất kết nối.</li>
+      <li><span class="badge none">Chưa có dữ liệu</span> Chưa có số đo hợp lệ.</li>
+    </ul>
+    <p class="muted">Gia Lâm gửi trung bình mỗi giờ, thường đến AirLake 15–20 phút sau khi hết giờ: mới đến 1,5 giờ, cũ sau 3 giờ. Tây Hồ gửi khoảng 2,5 phút một lần: mới đến 25 phút, cũ sau 1 giờ.</p>
+  </div>
+  <p id="status-times" class="muted"></p>
 </section>
-<div id="error-panel" class="error-panel" role="alert" hidden><h2>Chưa thể tải dữ liệu</h2><p>Đường truyền có thể tạm thời gián đoạn. Nếu đã có số liệu trên màn hình, đó vẫn là bản đã được đối chiếu, với thời gian đo giữ nguyên.</p><button id="retry">Thử lại</button></div>
 </main>
-<footer><a class="brand" href="#quanh-ban">airlake<span class="brand-dot">.</span></a><p>Hiểu số đo, hiểu giới hạn. Thí điểm tại Hà Nội.</p><p id="version-label">Dữ liệu sẽ hiện cùng thời điểm quan trắc.</p><p>Nguồn: OpenAQ và đơn vị quan trắc được ghi theo từng trạm. Không phải dịch vụ khuyến cáo sức khỏe.</p></footer>
-</body></html>
+<footer>
+  <p><b>AirLake</b> · thí điểm môn Điện toán đám mây, chạy trên AWS. Không phải dịch vụ khuyến cáo sức khỏe.</p>
+  <p class="muted">Nguồn: AirGradient qua OpenAQ (CC BY 4.0) · Contains Sensor.Community data (ODbL 1.0) · CAMS qua Open-Meteo (CC BY 4.0) · © OpenStreetMap contributors.</p>
+</footer>
+</body>
+</html>
