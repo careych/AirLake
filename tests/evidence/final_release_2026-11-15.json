@@ -1,0 +1,102 @@
+{
+ "release": "final: hotfix + per-area CAMS estimate",
+ "date": "2026-11-15",
+ "plan_sha256": "ceb5c35a2fc347bd205c335d0e0a3560303d8452008f817491962ec48d09dfa9",
+ "commit": "942eb5f",
+ "operations": [
+  [
+   "update_refresh_code",
+   "RETURNED_SUCCESS"
+  ],
+  [
+   "invoke_refresh",
+   "RETURNED_SUCCESS"
+  ],
+  [
+   "update_api_code",
+   "RETURNED_SUCCESS"
+  ],
+  [
+   "put_api_concurrency",
+   "RETURNED_SUCCESS"
+  ]
+ ],
+ "lambda_code_sha256": {
+  "refresh": "OfJOlM2sl3+v6xcFh7ZahZh2nyeoyt59Jnrqv14yYAo=",
+  "public-api": "OfJOlM2sl3+v6xcFh7ZahZh2nyeoyt59Jnrqv14yYAo="
+ },
+ "public_api_reserved_concurrency": {
+  "before": 2,
+  "after": 10
+ },
+ "refresh_invoke": {
+  "history": {
+   "6123215": "updated",
+   "99385": "unchanged"
+  },
+  "model_fetch": "ok",
+  "model_run_at": "2026-11-15T00:00:00Z",
+  "projection_key": "nowcast/v1/projections/2026-11-15/2026-11-15T095952Z-e1ae6f2fa1c7c420.json",
+  "published_at": "2026-11-15T09:59:52Z",
+  "sources": {
+   "6123215": "ok",
+   "99385": "ok"
+  },
+  "status": "PUBLISHED"
+ },
+ "model_areas": {
+  "fetch_status": "ok",
+  "group_count": 5,
+  "model_run_at": "2026-11-15T00:00:00Z"
+ },
+ "amplify": {
+  "demo": {
+   "job_id": "6",
+   "status": "SUCCEED"
+  },
+  "public": {
+   "job_id": "6",
+   "status": "SUCCEED"
+  }
+ },
+ "demo_basic_auth": {
+  "anonymous_checks": [
+   {
+    "authenticated": false,
+    "branch": "demo",
+    "status": 401
+   },
+   {
+    "after_deploy": true,
+    "authenticated": false,
+    "branch": "demo",
+    "status": 401
+   }
+  ],
+  "unchanged": true
+ },
+ "model_coverage": "126/126 areas mapped to 5 verified native CAMS 0.4° cells (38, 29, 28, 26, 5 areas)",
+ "hosted_acceptance": {
+  "gets": 60,
+  "history_views_rendered": 7,
+  "history_views_empty": 0,
+  "api_99385_full_series_page1": {
+   "rows": 1000,
+   "total": 1761,
+   "next": true,
+   "provisional_hours": 7
+  },
+  "api_6123215_30d_daily_csv": {
+   "rows": 30,
+   "valid_days": 28,
+   "complete_days": 27
+  }
+ },
+ "cloudwatch_public_api": {
+  "throttles_during_release_minute_0959Z_before_concurrency_change": 1,
+  "invocations_during_browser_test_1002Z": 31,
+  "throttles_during_browser_test": 0,
+  "errors": 0
+ },
+ "harness_note": "the browser script stopped at its 58-request guard before saving its JSON summary; results were read from saved screenshots and two further budgeted GETs"
+}
