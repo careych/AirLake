@@ -13,7 +13,7 @@ from datetime import timedelta
 
 from ingestion.openaq import stamp, utc
 from live_data.contract import ACCOUNT, BUCKET
-from nowcast import openmeteo, project, sensor_community
+from nowcast import history, openmeteo, project, sensor_community
 from nowcast.http import UpstreamError
 from nowcast.public_api import CURRENT_KEY
 
@@ -129,6 +129,8 @@ def attempt(fn):
 
 def source(previous, station_id, fn, now):
     reading, error = attempt(fn)
+    if reading and utc(reading["observed_at"]) > now + timedelta(minutes=5):
+        reading, error = None, "future_timestamp"  # never shown as current
     if error is None and reading is not None:
         return {"status": "ok", "reading": reading, "fetched_at": stamp(now)}
     old = next(
@@ -252,6 +254,10 @@ def run(s3, http, openaq_key, validation, now):
     )
     store.put_new(key, body)
     store.replace_current(body, etag)  # only after the immutable copy exists
+    try:  # history is extended after publication and can never block it
+        history_status = history.update(store, http, openaq_key, value, now)
+    except Exception as e:  # noqa: BLE001 -- reported in the result and logs
+        history_status = {"error": type(e).__name__}
     return {
         "status": "PUBLISHED",
         "published_at": value["published_at"],
@@ -259,6 +265,7 @@ def run(s3, http, openaq_key, validation, now):
         "model_run_at": model["model_run_at"],
         "model_fetch": model["fetch_status"],
         "sources": {o["station_id"]: o["fetch_status"] for o in value["observations"]},
+        "history": history_status,
     }
 
 

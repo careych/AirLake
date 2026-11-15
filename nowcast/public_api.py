@@ -1,10 +1,11 @@
-"""Public read-only API: licensed Dragon history and the current projection.
+"""Public read-only API: current projection, rolling licensed history, September archive.
 
 The Function URL is publicly callable whatever CORS says, so every request is
-bounded here: GET/HEAD only, three exact paths, a strict query allowlist,
-history pinned to the licensed station and its accepted 30-day window, at most
-1,000 rows and 1 MB per response, generic errors, and only two fixed S3
-objects plus the immutable export pinned by SHA-256. The IAM-protected
+bounded here: GET/HEAD only, five exact paths, strict query allowlists,
+licensed stations only, ranges of at most 100 days, at most 1,000 rows and
+1 MB per response, generic errors, and only fixed S3 objects: the current
+projection, one history series per licensed station, and the immutable
+September export pinned by SHA-256. The IAM-protected
 private API is separate and unchanged.
 """
 
@@ -12,10 +13,12 @@ import hashlib
 import json
 import os
 import time
+from datetime import UTC, datetime
 from urllib.parse import parse_qs, urlencode
 
 from final_demo.lambda_api import reply
 from live_data.contract import ACCOUNT, BUCKET
+from nowcast import history, rolling_api
 
 LICENSED_HISTORY = {
     "station_id": "6123215",
@@ -38,8 +41,11 @@ ORIGINS = {
     "https://demo.dhyvgpdsnj4zi.amplifyapp.com",
 }
 CURRENT_KEY = "nowcast/v1/current.json"
+ARCHIVE = "/v1/archive/september-2026"
 MAX_BODY = 1_000_000
 NOW_TTL_SECONDS = 60
+HISTORY_TTL_SECONDS = 300
+ROUTES = ("/v1", "/v1/now", "/v1/stations", "/v1/history", ARCHIVE)
 SECURITY = {
     "content-security-policy": "default-src 'none'; frame-ancestors 'none'",
     "referrer-policy": "no-referrer",
@@ -48,28 +54,32 @@ DOCS = {
     "service": "AirLake public data API (Hanoi PM2.5 pilot)",
     "routes": {
         "GET /v1/now": "Current projection: observations, CAMS model estimate and forecast, kept separate; no query parameters",
-        "GET /v1/history": "Cleaned hourly/daily PM2.5 for Dragon (AirGradient, CC BY 4.0), 2026-09-01..2026-09-30 Vietnam time",
+        "GET /v1/stations": "Public stations with licence, location precision and history availability",
+        "GET /v1/history": "Rolling cleaned hourly/daily PM2.5 per public station since 2026-09-01 (Vietnam time), with coverage and gaps",
+        "GET /v1/archive/september-2026": "Frozen AWS Glue/Athena export for Dragon, September 2026 (previous /v1/history)",
     },
     "history_parameters": {
+        "station_id": "required: 6123215 (Gia Lâm, CC BY 4.0) or 99385 (Tây Hồ, ODbL 1.0)",
+        "start, end": "YYYY-MM-DD (Vietnam date, end exclusive) or YYYY-MM-DDTHH:00:00Z; default the last 7 complete Vietnam days; max 100 days",
         "granularity": "hourly | daily (default hourly)",
-        "start, end": "UTC ISO-8601 whole hours inside the accepted window, start < end",
         "format": "json | csv",
-        "limit": "1-1000 (default 100)",
+        "limit": "1-1000 (default 1000)",
         "offset": "0-3000",
-        "station_id": "optional; only 6123215",
     },
     "fields": {
-        "hour_start": "UTC start of the hour bucket",
-        "date_local": "Vietnam calendar date (daily)",
-        "pm25_avg": "mean PM2.5 µg/m³ of readings in the bucket",
-        "aqi": "experimental index from the hourly mean; not official VN_AQI",
-        "hours_present / coverage_percent": "completeness of a daily row",
+        "hour_start_utc": "UTC start of the averaging hour [start, start+1h)",
+        "pm25": "PM2.5 mean in µg/m³",
+        "n_readings": "readings behind the hourly value",
+        "basis": "how the hour was produced (see methodology in each response)",
+        "flags": "very_low | isolated_peak | provisional; values are never altered",
+        "date_local / valid_day / complete_day": "Vietnam calendar day; valid with >= 18/24 hours",
     },
     "licences": {
-        "history": "Dragon: CC BY 4.0, attribution 'AirGradient via OpenAQ'",
-        "now.observations": "per-record licence and attribution fields; Sensor.Community data under ODbL 1.0",
+        "6123215": "CC BY 4.0, attribution 'AirGradient via OpenAQ'",
+        "99385": "Sensor.Community data under ODbL 1.0 (derived database offered under ODbL 1.0)",
         "now.model": "CAMS via Open-Meteo, CC BY 4.0; credit Copernicus Atmosphere Monitoring Service",
     },
+    "not_served": "Other Hanoi stations have no redistribution licence; no SQL access",
     "errors": {
         "400": "invalid parameters",
         "404": "unknown route or unlicensed station",
@@ -95,7 +105,13 @@ class CachedS3:
     def get_object(self, Bucket, Key, ExpectedBucketOwner):
         import io
 
-        ttl = NOW_TTL_SECONDS if Key == CURRENT_KEY else None
+        ttl = (
+            NOW_TTL_SECONDS
+            if Key == CURRENT_KEY
+            else HISTORY_TTL_SECONDS
+            if Key.startswith("nowcast/v1/history/")
+            else None
+        )
         hit = _cache.get(Key)
         if hit and (ttl is None or time.monotonic() - hit[0] < ttl):
             return {"Body": io.BytesIO(hit[1])}
@@ -130,6 +146,48 @@ def history_event(event):
     return {**event, "rawQueryString": urlencode(params, doseq=True)}
 
 
+def series(store, station):
+    body = store.s3.get_object(
+        Bucket=BUCKET, Key=history.key(station), ExpectedBucketOwner=ACCOUNT
+    )["Body"].read(4_000_001)
+    value = json.loads(body)
+    if value.get("schema_version") != 1 or value.get("station_id") != station:
+        raise RuntimeError("Unexpected history series")
+    return value
+
+
+def rolling(event, store, headers, path):
+    now = datetime.now(UTC).replace(microsecond=0)
+    if path == "/v1/stations":
+        value = rolling_api.stations(
+            {s: series(store, s) for s in rolling_api.PLACES}, now
+        )
+        body, kind = rolling_api.serialize(value), "application/json; charset=utf-8"
+    else:
+        p = rolling_api.params(event.get("rawQueryString", ""), now)
+        value = rolling_api.build(series(store, p["station_id"]), p, now)
+        if p["format"] == "csv":
+            body, kind = rolling_api.to_csv(value), "text/csv; charset=utf-8"
+        else:
+            body, kind = rolling_api.serialize(value), "application/json; charset=utf-8"
+    if len(body.encode()) > MAX_BODY:
+        raise RuntimeError("Response too large")
+    etag = '"' + hashlib.sha256(body.encode()).hexdigest()[:32] + '"'
+    out = {
+        **headers,
+        "content-type": kind,
+        "cache-control": "public, max-age=300",
+        "etag": etag,
+    }
+    if kind.startswith("text/csv"):
+        out["content-disposition"] = (
+            f'attachment; filename="airlake-{p["station_id"]}-{p["granularity"]}.csv"'
+        )
+    if (event.get("headers") or {}).get("if-none-match") == etag:
+        return reply(304, "", headers=out)
+    return {"statusCode": 200, "headers": out, "body": body}
+
+
 def handler(event, context, store=None, environment=None):
     headers = {**cors(event), **SECURITY}
     method = event.get("requestContext", {}).get("http", {}).get("method")
@@ -146,9 +204,9 @@ def handler(event, context, store=None, environment=None):
         )
     if method not in ("GET", "HEAD"):
         return reply(405, {"error": "read_only"}, headers=headers)
-    if path not in ("/v1", "/v1/now", "/v1/history"):
+    if path not in ROUTES:
         return reply(404, {"error": "unknown_route", "docs": "/v1"}, headers=headers)
-    if path != "/v1/history" and event.get("rawQueryString"):
+    if path not in ("/v1/history", ARCHIVE) and event.get("rawQueryString"):
         return reply(
             400, {"error": "no_parameters_accepted", "docs": "/v1"}, headers=headers
         )
@@ -170,6 +228,10 @@ def handler(event, context, store=None, environment=None):
                 if (event.get("headers") or {}).get("if-none-match") == etag:
                     return reply(304, "", headers=cache)  # repeat polls: no body
                 result = reply(200, body.decode(), headers=cache)
+            elif path in ("/v1/stations", "/v1/history"):
+                result = rolling(event, store, headers, path)
+                if result["statusCode"] == 304:
+                    return result
             else:
                 from historical.api import handle
 
@@ -184,14 +246,14 @@ def handler(event, context, store=None, environment=None):
                     value = json.loads(result["body"])
                     if value.get("next"):
                         value["next"] = value["next"].replace(
-                            "/api/v1/history?", "/v1/history?", 1
+                            "/api/v1/history?", ARCHIVE + "?", 1
                         )
                     result["body"] = json.dumps(
                         value, ensure_ascii=False, allow_nan=False
                     )
                 elif result["statusCode"] == 200:
                     result["headers"]["content-disposition"] = (
-                        'attachment; filename="airlake-dragon-history.csv"'
+                        'attachment; filename="airlake-dragon-september-2026.csv"'
                     )
                 result["headers"].update(
                     headers, **{"cache-control": "public, max-age=3600"}
