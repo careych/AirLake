@@ -39,14 +39,23 @@ class LiveUpdateTests(unittest.TestCase):
             root = Path(tmp)
             old = root / "old.zip"
             old.write_bytes(b"x")
-            original = rel.DEPLOYED_REFRESH_CODE
-            rel.DEPLOYED_REFRESH_CODE = rel.code_sha(b"x")
+            originals = (
+                rel.DEPLOYED_REFRESH_CODE,
+                rel.DEPLOYED_BOT_CODE,
+                rel.PREVIOUS_BOT_ZIP,
+            )
+            rel.DEPLOYED_REFRESH_CODE = rel.DEPLOYED_BOT_CODE = rel.code_sha(b"x")
+            rel.PREVIOUS_BOT_ZIP = str(old)
             try:
                 digest = rel.prepare(
                     root / "p", self.inputs(root), "https://t.me/AirLakeHanoiBot", old
                 )
             finally:
-                rel.DEPLOYED_REFRESH_CODE = original
+                (
+                    rel.DEPLOYED_REFRESH_CODE,
+                    rel.DEPLOYED_BOT_CODE,
+                    rel.PREVIOUS_BOT_ZIP,
+                ) = originals
             plan = rel.load(root / "p", digest)
             self.assertEqual(plan["bot_url"], "https://t.me/AirLakeHanoiBot")
             (root / "latest").write_text('{"changed": 1}')
