@@ -205,6 +205,22 @@ def prepare(packet, token_arn):
             "input": {"action": "evaluate"},
             "retry": {"MaximumRetryAttempts": 0, "MaximumEventAgeInSeconds": 600},
         },
+        "sns": "not used: one consumer, no fan-out; evaluation enqueues directly to SQS with a DLQ",
+        "existing_untouched": [
+            "AirLake_Bot_API (legacy bot, own token/webhook)",
+            "airlake-alert-staging-v1* (Khuê's staging bot and resources)",
+        ],
+        "e2e": {
+            "recipient": "owner's consenting Telegram account only",
+            "manual_evaluations_max": 4,
+            "trigger": "a real live observation at or above the owner's chosen threshold; no historical replay",
+            "checks": [
+                "message received",
+                "value/time match /v1/now",
+                "no duplicate on re-evaluation",
+                "no message after /unsubscribe",
+            ],
+        },
         "order": [
             "execute",
             "configure-bot",
@@ -546,6 +562,46 @@ def smoke(c, packet, plan, digest, get=None):
     return r.value
 
 
+def evaluate(c, packet, plan, digest):
+    """One manual evaluation for the consenting E2E test (max 4)."""
+    packet = Path(packet)
+    if json.loads((packet / "smoke-receipt.json").read_text())["status"] != "PASS":
+        raise ValueError("Smoke must pass first")
+    n = len(list(packet.glob("e2e-evaluate-*.json"))) + 1
+    if n > plan["e2e"]["manual_evaluations_max"]:
+        raise ValueError("E2E evaluation budget used")
+    r = Receipt(packet / f"e2e-evaluate-{n}.json", digest)
+    out = r.write(
+        "evaluate",
+        lambda: c["lambda"].invoke(
+            FunctionName=FUNCTION, Payload=json.dumps({"action": "evaluate"}).encode()
+        ),
+    )
+    payload = json.loads(out["Payload"].read())
+    r.value.update(
+        status="FAIL" if out.get("FunctionError") else "PASS", result=payload
+    )
+    r.save()
+    return r.value
+
+
+def e2e_check():
+    """Counts only; never prints chat identifiers."""
+    import boto3
+
+    table = (
+        boto3.Session(profile_name="airlake", region_name=REGION)
+        .resource("dynamodb")
+        .Table(TABLE)
+    )
+    kinds = {}
+    for item in table.scan(ProjectionExpression="pk")["Items"]:
+        parts = item["pk"].split("#")
+        kind = parts[0] + ("#" + parts[1] if parts[0] == "once" else "")
+        kinds[kind] = kinds.get(kind, 0) + 1
+    return {"items_by_kind": kinds}
+
+
 def enable_schedule(c, packet, plan, digest):
     packet = Path(packet)
     if json.loads((packet / "smoke-receipt.json").read_text())["status"] != "PASS":
@@ -611,6 +667,8 @@ def main():
             "execute",
             "configure-bot",
             "smoke",
+            "evaluate",
+            "e2e-check",
             "enable-schedule",
             "contain",
         ),
@@ -631,6 +689,8 @@ def main():
             c, x.packet, plan, x.confirm_plan_sha256
         ),
         "smoke": lambda: smoke(c, x.packet, plan, x.confirm_plan_sha256),
+        "evaluate": lambda: evaluate(c, x.packet, plan, x.confirm_plan_sha256),
+        "e2e-check": e2e_check,
         "enable-schedule": lambda: enable_schedule(
             c, x.packet, plan, x.confirm_plan_sha256
         ),
