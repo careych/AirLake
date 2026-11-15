@@ -63,3 +63,11 @@ coverage.xml
 
 # Private website viewer credentials are never publication assets
 preview-login.json
+
+# Local AI-agent instructions, handoffs and progress notes (kept outside Git)
+CLAUDE.md
+CLAUDE.local.md
+CLAUDE_START_PROMPT.md
+.claude/
+docs/CLAUDE_PROGRESS.md
+docs/AIRLAKE_CLAUDE_HANDOFF.md

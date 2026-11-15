@@ -1,0 +1,147 @@
+{
+ "amendment_sha256": "b045c2d14a44c4db8eeccf68763f5815a4259915f30bf3c5e67ff1b83f7e498c",
+ "amplify": {
+  "app_id": "dhyvgpdsnj4zi",
+  "deployments": {
+   "demo": {
+    "job_id": "2",
+    "status": "SUCCEED",
+    "url": "https://demo.dhyvgpdsnj4zi.amplifyapp.com"
+   },
+   "public": {
+    "job_id": "2",
+    "status": "SUCCEED",
+    "url": "https://public.dhyvgpdsnj4zi.amplifyapp.com"
+   }
+  },
+  "derived_plan_sha256": "abd98cd147740e8a614115e1b5c1c54b8a4a410891ac3d7a38e34f0738440565",
+  "post_deploy_checks": {
+   "browser": "Chrome 390px: public and demo 200 with all assets, 0 console errors, no horizontal overflow, 0 restricted-station strings",
+   "demo_anonymous_status": {
+    "/": 401,
+    "/app.js": 401,
+    "/config.js": 401,
+    "/history.js": 401,
+    "data json": 401
+   },
+   "http_budget": 40,
+   "http_gets_total": 33
+  },
+  "pre_deploy_auth_checks": [
+   {
+    "authenticated": false,
+    "branch": "demo",
+    "status": 401
+   },
+   {
+    "authenticated": true,
+    "branch": "demo",
+    "status": 200
+   }
+  ],
+  "scope": "public and demo: Dragon (AirGradient, CC BY 4.0) only, 720 hourly / 30 daily rows"
+ },
+ "api": {
+  "api_auth": "AWS_IAM",
+  "deployed_code_sha256_b64": "xc9epgXBWzFTBqJxf2HnnpxmnLSCzPEfSO9lUYAdALc=",
+  "history_export_sha256": "7e2753f0a69a0719a2ef8a0c439a78bf52b4e4a3521a802bf91d352617269b47",
+  "inline_policy_added": "HistoricalResearch20261115",
+  "inline_policy_retained": "HistoricalResearch20261114"
+ },
+ "api_http_checks": {
+  "first_attempt": [
+   {
+    "path": "/api/v1/history?station_id=6123215&limit=1000",
+    "status": 200
+   },
+   {
+    "path": "/api/v1/history?station_id=6123215&granularity=daily&format=csv&limit=100",
+    "status": 200
+   },
+   {
+    "path": "/api/v1/history?station_id=6123215&limit=1000&start=2026-09-23T17:00:00Z",
+    "status": 403
+   }
+  ],
+  "first_attempt_stop_cause": "SigV4 signed the raw ':' in start=; Lambda function URLs canonicalize it as %3A. Client signing defect; fixed by percent-encoding before signing.",
+  "resume_after_approved_amendment": [
+   {
+    "path": "/api/v1/history?station_id=6123215&limit=1000&start=2026-09-23T17:00:00Z",
+    "status": 200
+   },
+   {
+    "path": "/api/v1/current/hourly?limit=100",
+    "status": 200
+   },
+   {
+    "path": "/api/v1/latest",
+    "status": 200
+   }
+  ],
+  "signed_gets_total": 6,
+  "status": "PASS_REMAINING_THREE_SIGNED_READS"
+ },
+ "athena_verification": {
+  "daily_all_rows_match": "PASS",
+  "export_sha256": "7e2753f0a69a0719a2ef8a0c439a78bf52b4e4a3521a802bf91d352617269b47",
+  "hourly_all_rows_match": "PASS",
+  "queries": [
+   {
+    "kind": "hourly",
+    "query_id": "6be6a99b-7e3c-4d16-8113-6086e790dc29",
+    "rows": 2133,
+    "scan_bytes": 19239,
+    "sql_sha256": "e3a9fd0e47269f2c57572defe63ed27f4c59548101b0a0b63806277d4f0dcb72",
+    "status": "PASS_ALL_ROWS"
+   },
+   {
+    "kind": "daily",
+    "query_id": "83fcbadf-bd3d-4377-ae1f-22ae962d1dfb",
+    "rows": 90,
+    "scan_bytes": 1452,
+    "sql_sha256": "b9b25e344d17c9e8222b3b87b51e9bf065f534b86454157dea27e20248e11e18",
+    "status": "PASS_ALL_ROWS"
+   }
+  ],
+  "snapshots": {
+   "breakpoints": [
+    5391595630256299056
+   ],
+   "bronze": [
+    2674071897377664270
+   ],
+   "daily": [
+    559455473043940865
+   ],
+   "dimensions": [
+    6551156540389870216
+   ],
+   "hourly": [
+    2191044464474684544
+   ],
+   "silver": [
+    3701317912116441142
+   ]
+  },
+  "status": "PASS"
+ },
+ "glue": {
+  "daily_rows": 90,
+  "dpu_seconds": 305.0,
+  "execution_seconds": 152,
+  "hourly_rows": 2133,
+  "job_run_id": "jr_cd305b85b01ff2b87270bee4176a37e320381a800d50b256f3895f3ea8249881",
+  "source_records": 17181,
+  "state": "SUCCEEDED"
+ },
+ "half_tie_row": {
+  "aqi": 78,
+  "exact_reference_aqi": 78,
+  "hour_start": "2026-09-07T12:00:00Z",
+  "location_id": 4946812,
+  "pm25_avg": 38.75,
+  "run_1_aqi": 77
+ },
+ "plan_sha256": "aaed01a18972f82a5c7c4869edc9047bd3d192c70586d588280bd3ecb3a726bd",
+ "preserved": "Run 1 database/prefix/job/role, previous API zip, Amplify job 1, scheduler DISABLED"
+}

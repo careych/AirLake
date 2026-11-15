@@ -4,6 +4,7 @@ import argparse
 import base64
 import io
 import json
+import re
 import secrets
 import time
 import zipfile
@@ -15,7 +16,7 @@ from live_data.contract import ACCOUNT, REGION, sha
 
 NAME = "airlake-hanoi-citizen-20261114"
 ROOT = Path(__file__).resolve().parents[1]
-HEADERS = """customHeaders:
+HEADERS_PREVIOUS = """customHeaders:
   - pattern: '**/*'
     headers:
       - key: X-Content-Type-Options
@@ -31,6 +32,35 @@ HEADERS = """customHeaders:
       - key: Content-Security-Policy
         value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
 """
+
+
+def headers(api_origin=None, geolocation=False):
+    """Security headers; OpenStreetMap tiles need the origin as referrer.
+
+    geolocation=True lets this site itself (never embedded frames) ask the
+    browser for the visitor's location after an explicit button press.
+    """
+    connect = "'self'" + (" " + api_origin if api_origin else "")
+    base = (
+        HEADERS_PREVIOUS.replace("geolocation=()", "geolocation=(self)")
+        if geolocation
+        else HEADERS_PREVIOUS
+    )
+    return (
+        base.replace("value: no-referrer", "value: strict-origin-when-cross-origin")
+        .replace(
+            "img-src 'self' data:;",
+            "img-src 'self' data: https://tile.openstreetmap.org;",
+        )
+        .replace("connect-src 'self';", "connect-src " + connect + ";")
+    )
+
+
+HEADERS = headers()
+
+# Live observations allowed on public bundles: Dragon (CC BY 4.0) and
+# Sensor.Community #99385 (DbCL 1.0).
+LIVE_LICENSED = {6123215, 99385}
 
 
 def clients():
@@ -57,9 +87,33 @@ def zip_site(path, mode):
     name = cfg["dataUrl"]
     if name != "data/" + cfg["sha256"] + ".json" or cfg["mode"] != mode:
         raise ValueError("Dataset path/mode mismatch")
-    assets = ["index.html", "app.js", "styles.css", "icon.svg", "history.js"]
-    if set(files) != {*assets, "config.js", name}:
+    assets = [
+        "index.html",
+        "site.js",
+        "styles.css",
+        "icon.svg",
+        "areas.json",
+        "leaflet.js",
+        "leaflet.css",
+    ]
+    live = {"now.json"} if cfg.get("nowUrl") == "now.json" else set()
+    if (
+        not live
+        and "nowUrl" in cfg
+        and not re.fullmatch(
+            r"https://[a-z0-9]+\.lambda-url\.ap-southeast-2\.on\.aws/v1/now",
+            cfg["nowUrl"],
+        )
+    ):
+        raise ValueError("Unexpected live data endpoint")
+    if set(files) != {*assets, "config.js", name, *live}:
         raise ValueError("Unapproved deployment files")
+    if live:
+        now = json.loads(files["now.json"].read_bytes())
+        if {o["station_id"] for o in now["observations"]} - LIVE_LICENSED or now[
+            "model"
+        ]["kind"] != "model":
+            raise ValueError("Live projection contains unlicensed observations")
     data = json.loads(files[name].read_bytes())
     if sha(files[name].read_bytes()) != cfg["sha256"] or data["mode"] != mode:
         raise ValueError("Dataset hash mismatch")
@@ -291,7 +345,7 @@ def deploy(c, packet, p, digest):
             return response
 
         # Protect every demo asset, not only its HTML route.
-        for path in ("", p["branches"]["demo"]["data_path"], "app.js"):
+        for path in ("", p["branches"]["demo"]["data_path"], "site.js"):
             if get("demo", path).status_code != 401:
                 raise PermissionError("Restricted branch protection failed")
         for branch, private in [("public", False), ("demo", True)]:

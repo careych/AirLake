@@ -1,0 +1,138 @@
+{
+ "release": "rolling history, location-first site, freshness states",
+ "date": "2026-11-15",
+ "plan_sha256": "19df0056906babc3e0a15d4e6f6d56facd20f565d8518b9ad4550c5317c1ad85",
+ "account": "701364614078",
+ "region": "ap-southeast-2",
+ "receipt_steps": [
+  [
+   "update_bot_code",
+   "RETURNED_SUCCESS"
+  ],
+  [
+   "put_api_policy",
+   "RETURNED_SUCCESS"
+  ],
+  [
+   "put_history_6123215",
+   "RETURNED_SUCCESS"
+  ],
+  [
+   "put_history_backfill_copy_6123215",
+   "RETURNED_SUCCESS"
+  ],
+  [
+   "put_history_99385",
+   "RETURNED_SUCCESS"
+  ],
+  [
+   "put_history_backfill_copy_99385",
+   "RETURNED_SUCCESS"
+  ],
+  [
+   "update_refresh_code",
+   "RETURNED_SUCCESS"
+  ],
+  [
+   "invoke_refresh",
+   "RETURNED_SUCCESS"
+  ],
+  [
+   "update_api_code",
+   "RETURNED_SUCCESS"
+  ]
+ ],
+ "lambda_code_sha256": {
+  "airlake-telegram-20261115-bot": "ym3nARy2wDmZrMuXsMOFvvSvFQJxj8TD4dLph9P0nMY=",
+  "airlake-nowcast-20261115-refresh": "DN5zwUfw2DuIEEIny3B5nRJpDDFSQLYnWi/+tvGUFKk=",
+  "airlake-nowcast-20261115-public-api": "DN5zwUfw2DuIEEIny3B5nRJpDDFSQLYnWi/+tvGUFKk="
+ },
+ "refresh_invoke": {
+  "history": {
+   "6123215": "unchanged",
+   "99385": "updated"
+  },
+  "model_fetch": "ok",
+  "model_run_at": "2026-11-14T12:00:00Z",
+  "projection_key": "nowcast/v1/projections/2026-11-15/2026-11-15T084510Z-db19cddd732ebdb4.json",
+  "published_at": "2026-11-15T08:45:10Z",
+  "sources": {
+   "6123215": "ok",
+   "99385": "ok"
+  },
+  "status": "PUBLISHED"
+ },
+ "api_checks": [
+  {
+   "path": "/v1/stations",
+   "status": 200
+  },
+  {
+   "path": "/v1/history?station_id=6123215",
+   "status": 200
+  },
+  {
+   "path": "/v1/history?station_id=99385&granularity=daily&format=csv",
+   "status": 200
+  },
+  {
+   "path": "/v1/history?station_id=4946812",
+   "status": 404
+  },
+  {
+   "path": "/v1/archive/september-2026?limit=1",
+   "status": 200
+  },
+  {
+   "path": "/v1/now",
+   "status": 200
+  }
+ ],
+ "amplify": {
+  "demo": {
+   "job_id": "5",
+   "status": "SUCCEED"
+  },
+  "public": {
+   "job_id": "5",
+   "status": "SUCCEED"
+  }
+ },
+ "demo_basic_auth": {
+  "anonymous_checks": [
+   {
+    "authenticated": false,
+    "branch": "demo",
+    "status": 401
+   },
+   {
+    "after_deploy": true,
+    "authenticated": false,
+    "branch": "demo",
+    "status": 401
+   }
+  ],
+  "unchanged": true
+ },
+ "s3_history": {
+  "nowcast/v1/history/6123215.json": "1,779 hourly rows at publication",
+  "nowcast/v1/history/99385.json": "1,754 archive rows + provisional hours added by the refresh"
+ },
+ "hosted_acceptance": {
+  "gets": 58,
+  "api_99385_full_series": {
+   "rows": 1760,
+   "pages": 2,
+   "licences": [
+    "ODbL 1.0/DbCL 1.0"
+   ],
+   "present": 1760,
+   "expected": 1816,
+   "prov": 6,
+   "last": "2026-11-15T07:00:00Z"
+  },
+  "api_6123215_30d_daily_rows": 30,
+  "defect": "public-api reserved concurrency 2 throttled parallel history requests (CloudWatch Throttles=6, Errors=0); throttle replies carry no CORS header so several history views stayed empty",
+  "defect_2": "OpenAQ /hours lagged /latest, so Dragon's latest hour was missing from history"
+ }
+}

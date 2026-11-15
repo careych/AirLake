@@ -1,0 +1,23 @@
+{
+ "period": "09/2026",
+ "stations": [
+  {
+   "name": "Dragon",
+   "hourly_n": 720,
+   "bias": 16.93,
+   "mae": 27.96,
+   "r_hourly": 0.39,
+   "r_daily": 0.54
+  },
+  {
+   "name": "Sensor.Community #99385",
+   "hourly_n": 719,
+   "bias": 32.28,
+   "mae": 33.18,
+   "r_hourly": 0.53,
+   "r_daily": 0.81
+  }
+ ],
+ "reference_note": "Hai trạm tham chiếu của mạng quan trắc Hà Nội (không công bố số đo) cho kết quả tương tự: mô hình cao hơn 17–22 µg/m³.",
+ "summary": "Trong tháng 9/2026, mô hình cao hơn số đo ở mọi điểm và bắt nhịp tăng/giảm theo ngày tốt hơn theo giờ. Độ lệch thay đổi theo mùa, nên chỉ dùng mô hình để so sánh thời điểm cao/thấp tương đối, không dùng làm giá trị tại đường phố."
+}

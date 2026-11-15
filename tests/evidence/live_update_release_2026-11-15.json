@@ -1,0 +1,87 @@
+{
+ "amplify": {
+  "auth_mode": "preserve_existing",
+  "demo_auth_unchanged": true,
+  "deployments": {
+   "demo": {
+    "job_id": "4",
+    "status": "SUCCEED",
+    "url": "https://demo.dhyvgpdsnj4zi.amplifyapp.com"
+   },
+   "public": {
+    "job_id": "4",
+    "status": "SUCCEED",
+    "url": "https://public.dhyvgpdsnj4zi.amplifyapp.com"
+   }
+  },
+  "derived_plan_sha256": "8fa99af2eaaaf81670b3228356981a8d7b0d5c0da1221754a9a0ba8eecf872eb",
+  "http_checks": [
+   {
+    "authenticated": false,
+    "branch": "demo",
+    "status": 401
+   },
+   {
+    "after_deploy": true,
+    "authenticated": false,
+    "branch": "demo",
+    "status": 401
+   }
+  ]
+ },
+ "browser_acceptance": {
+  "A_bot_link": "https://t.me/AirLakeHanoiBot",
+  "A_bot_link_visible": true,
+  "A_chart_points": 4,
+  "A_cta": "https://t.me/AirLakeHanoiBot?start=st_6123215",
+  "A_panel": "Gia Lâm · Ocean Park |  | Cảm biến Dragon (AirGradient), qua OpenAQ |  | 43,8 | µg/m³ PM2.5 |  | Đo lúc 12:00 15/11 · 50 phút trước |  | Trạm gửi số trung bình mỗi giờ; số tiếp theo thường có sau khoảng một giờ. |  | Mức tham khảo: Trung bình theo thang PM2.5 của QĐ 1459 (không phải chỉ số VN_AQI) |  | Chưa đủ số đo trong 24 giờ qua để so sánh. |  | 24 giờ qua | 0 | 40 | 80 | 120 | 12:47 | 18:47 | 00:47 | 06:47 | 12:47 | Nhận tin khi bụi ở Gia Lâm vượt ngưỡng |  | Nguồn: Cảm biến Dragon (AirGrad",
+  "A_regional_meta": "Ước tính cho 12:00 · mô hình chạy lúc 19:00 14/11",
+  "A_regional_title": "Dự báo khu vực Hà Nội",
+  "A_tabs": "Gia Lâm · Ocean Park | 43,8 µg/m³ · 12:00 | Tây Hồ · Cảm biến cộng đồng | 11,9 µg/m³ · 12:45",
+  "A_taybo": "Tây Hồ · Cảm biến cộng đồng |  | Cảm biến #99385 (SDS011), Sensor.Community |  | 11,9 | µg/m³ PM2.5 |  | Đo lúc 12:45 15/11 · 4 phút trước |  | Cảm biến gửi số đo vài phút một lần. |  | Mức tham khảo: Tốt theo thang PM2.5 của QĐ 1459 (không phải chỉ số VN_AQI) |  | Số đo này thấp hơn mức trung bình ",
+  "A_taybo_cta": "https://t.me/AirLakeHanoiBot?start=st_99385",
+  "A_taybo_points": 15,
+  "B_coverage": "Nơi tôi ở không có điểm đo?\n\nHiện AirLake chỉ có hai điểm đo công khai. Nếu bạn ở quận khác, chẳng hạn Cầu Giấy hay Hoàng Mai, số đo ở Gia Lâm hoặc Tây Hồ không cho biết chính xác không khí nơi bạn ở. Bạn có thể xem dự báo khu vực bên dưới để biết xu hướng chung trong ngày.",
+  "B_forecast_meta": "Mô hình chạy lúc 19:00 14/11, cập nhật khoảng 12 giờ một lần. Dự báo đến 19:00 19/11.",
+  "B_forecast_svg": true,
+  "B_station_cards": 2,
+  "C_api_daily_csv": [
+   200,
+   31,
+   "location_id,sensor_id,station_name,date_local,pm25_avg,hours_present,hours_expected,coverage_percent,complete_24_hours\r"
+  ],
+  "C_api_links": "Mô tả API /v1 | Số đo hiện tại (JSON) /v1/now | Gia Lâm theo ngày, tháng 9/2026 (CSV) /v1/history?granularity=daily&format=csv&limit=100 | Gia Lâm theo giờ, 7 ngày cuối tháng 9 (JSON) /v1/history?start=2026-09-23T17:00:00Z&limit=200",
+  "C_csv_header": "﻿station_id,sensor_id,observed_hour_utc,pm25,aqi_mvp,units,source,license",
+  "C_csv_rows": 720,
+  "C_csv_stations": [
+   "\"6123215\""
+  ],
+  "C_datasets": "Dữ liệu\tKhoảng thời gian\tĐộ đầy đủ\tGiấy phép\tLấy ở đâu | Gia Lâm · Ocean Park, theo giờ và theo ngày\t01–30/09/2026 (giờ Việt Nam)\t720/720 giờ, 30 ngày đủ 24 giờ\tCC BY 4.0\tBảng lọc bên dưới, API /v1/history | Số đo hiện tại của 2 điểm đo và dự báo CAMS\tBản mới nhất, cập nhật khoảng 15 phút\tTheo nhịp gửi của từng nguồn\tCC BY 4.0 · ODbL 1.0 · CAMS\tAPI /v1/now | Nhân Chính, Giải Phóng\t09/2026\t—\tChưa đ",
+  "errors": [],
+  "overflow_desktop": false,
+  "overflow_mobile": false,
+  "public_status": 200,
+  "requests": 31,
+  "restricted_strings": []
+ },
+ "get_budget": {
+  "limit": 40,
+  "used": 33
+ },
+ "lambda": {
+  "update_bot_code": "eOANIU7Wxd0noSnNqZAeAhnNWqL/zfWP0HYioIfs7e0=",
+  "update_refresh_code": "LqhGCUfNrxxV2W0+6PAIRKzkvb/chhEbQQ+RGm3dhn0="
+ },
+ "plan_sha256": "381fc52c0b90ee817b3672d805f366f9342b14f3084397c077638153ea1a95ea",
+ "refresh": {
+  "model_fetch": "ok",
+  "model_run_at": "2026-11-14T12:00:00Z",
+  "projection_key": "nowcast/v1/projections/2026-11-15/2026-11-15T054737Z-8cfcef2d65be64d5.json",
+  "published_at": "2026-11-15T05:47:37Z",
+  "sources": {
+   "6123215": "ok",
+   "99385": "ok"
+  },
+  "status": "PUBLISHED"
+ }
+}

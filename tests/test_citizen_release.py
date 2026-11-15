@@ -311,3 +311,119 @@ class ReleaseTests(unittest.TestCase):
             ):
                 release.execute(c, packet, plan, "synthetic-plan")
             c["amplify"].create_deployment.assert_not_called()
+
+    def preserve_cloud(self, packet):
+        c, plan, _ = self.setup_cloud(packet)
+        (packet / "preview-login.json").unlink()  # no plaintext credential anywhere
+        plan.update(auth_mode="preserve_existing", failure_containment="stop_only")
+        c["amplify"].create_deployment.return_value = {
+            "jobId": "2",
+            "zipUploadUrl": "https://synthetic.s3.ap-southeast-2.amazonaws.com/unit-only",
+        }
+        c["amplify"].start_deployment.return_value = {}
+        c["amplify"].get_job.return_value = {"job": {"summary": {"status": "SUCCEED"}}}
+        for b in ("public", "demo"):
+            (packet / (b + ".zip")).write_bytes(b"SYNTHETIC_NOT_REAL_ZIP")
+        return c, plan
+
+    def test_preserve_mode_deploys_without_password_and_checks_auth_kept(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            packet = Path(tmp)
+            c, plan = self.preserve_cloud(packet)
+            http = Mock()
+            http.get.side_effect = [Mock(status_code=401), Mock(status_code=401)]
+            http.put.return_value = Mock(status_code=200)
+            with patch("requests.Session", return_value=http), patch("time.sleep"):
+                result = release.execute(c, packet, plan, "synthetic-plan")
+            self.assertEqual(
+                result["status"], "PASS_DEPLOYED_BROWSER_VERIFICATION_REQUIRED"
+            )
+            self.assertTrue(result["demo_auth_unchanged"])
+            self.assertTrue(
+                all(call.kwargs.get("auth") is None for call in http.get.call_args_list)
+            )
+            c["amplify"].update_app.assert_not_called()
+            self.assertFalse((packet / "preview-login.json").exists())
+
+    def test_preserve_mode_stops_if_demo_auth_changes_or_is_open(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            packet = Path(tmp)
+            c, plan = self.preserve_cloud(packet)
+            http = Mock()
+            http.get.side_effect = [
+                Mock(status_code=200)
+            ]  # demo reachable without login
+            with (
+                patch("requests.Session", return_value=http),
+                self.assertRaises(ValueError),
+            ):
+                release.execute(c, packet, plan, "synthetic-plan")
+            c["amplify"].create_deployment.assert_not_called()
+        with tempfile.TemporaryDirectory() as tmp:
+            packet = Path(tmp)
+            c, plan = self.preserve_cloud(packet)
+            calls = {"n": 0}
+            original = c["amplify"].get_branch.side_effect
+
+            def changing(**kw):
+                calls["n"] += 1
+                b = original(**kw)
+                if kw["branchName"] == "demo" and calls["n"] > 3:
+                    b["branch"]["basicAuthCredentials"] = "Y2hhbmdlZA=="
+                return b
+
+            c["amplify"].get_branch.side_effect = changing
+            http = Mock()
+            http.get.side_effect = [Mock(status_code=401), Mock(status_code=401)]
+            http.put.return_value = Mock(status_code=200)
+            with (
+                patch("requests.Session", return_value=http),
+                patch("time.sleep"),
+                self.assertRaises(ValueError),
+            ):
+                release.execute(c, packet, plan, "synthetic-plan")
+
+    def test_preserve_mode_requires_stop_only_containment(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            packet = Path(tmp)
+            (packet / "prev").mkdir()
+            plan_bytes = b"{}"
+            (packet / "prev" / "plan.json").write_bytes(plan_bytes)
+            (packet / "prev" / "release-receipt.json").write_text(
+                json.dumps(
+                    {
+                        "app_id": release.APP,
+                        "domain": release.DOMAIN,
+                        "plan_sha256": release.sha(plan_bytes),
+                        "deployments": {
+                            "public": {"status": "SUCCEED", "job_id": "3"},
+                            "demo": {"status": "SUCCEED", "job_id": "3"},
+                        },
+                    }
+                )
+            )
+            with self.assertRaises(ValueError):
+                release.prepare(
+                    packet / "new",
+                    packet,
+                    packet,
+                    None,
+                    packet / "prev" / "release-receipt.json",
+                    failure_containment="app_wide_basic_auth",
+                )
+
+
+class SecurityHeaderTests(unittest.TestCase):
+    def test_new_headers_only_add_osm_tiles_api_origin_and_origin_referrer(self):
+        from citizen import hosting, release
+
+        new = hosting.headers("https://abc123.lambda-url.ap-southeast-2.on.aws")
+        self.assertIn(
+            "connect-src 'self' https://abc123.lambda-url.ap-southeast-2.on.aws;", new
+        )
+        self.assertIn("img-src 'self' data: https://tile.openstreetmap.org;", new)
+        self.assertIn("script-src 'self';", new)
+        self.assertIn("value: strict-origin-when-cross-origin", new)
+        self.assertIn("value: no-referrer", hosting.HEADERS_PREVIOUS)
+        self.assertTrue(release.security_headers_match(new, new))
+        self.assertFalse(release.security_headers_match(hosting.HEADERS_PREVIOUS, new))

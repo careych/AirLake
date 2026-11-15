@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import re
 import math
 import shutil
 from datetime import timedelta
@@ -13,6 +14,10 @@ from historical.analytics import WHO_REFERENCE, summarize
 from ingestion.openaq import stamp, utc
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+# Residents see places; provider names stay as source metadata.
+PLACE_NAMES = {6123215: "Gia Lâm · Ocean Park"}
 
 
 def build(
@@ -26,6 +31,9 @@ def build(
     mode,
     allow_local_preview=False,
     athena_proof_path=None,
+    now_path=None,
+    api_base=None,
+    bot_url=None,
 ):
     output = Path(output)
     if (
@@ -116,7 +124,8 @@ def build(
     }
     for s in data["stations"]:
         s["historical_name"] = s["name"]
-        s["name"] = lookup[s["id"]]["name"].strip()
+        s["source_name"] = lookup[s["id"]]["name"].strip()
+        s["name"] = PLACE_NAMES.get(s["id"], s["source_name"])
         s["sensor_id"] = audit["stations"][str(s["id"])]["sensor_id"]
         s["history_quality"] = {
             k: v
@@ -168,10 +177,23 @@ def build(
         if p.is_file():
             shutil.copyfile(p, output / p.name)
     (output / "data" / (h + ".json")).write_bytes(body)
+    config = {"mode": mode, "dataUrl": "data/" + h + ".json", "sha256": h}
+    if now_path is not None:  # the separately verified live projection
+        now = json.loads(Path(now_path).read_bytes())
+        if now.get("schema_version") != 2 or now["model"]["kind"] != "model":
+            raise ValueError("Unexpected live projection")
+        (output / "now.json").write_bytes(Path(now_path).read_bytes())
+        config["nowUrl"] = "now.json"
+    elif api_base is not None:  # the public read-only API serves /v1/now
+        config.update(
+            nowUrl=api_base.rstrip("/") + "/v1/now", apiBase=api_base.rstrip("/")
+        )
+    if bot_url is not None:
+        if not re.fullmatch(r"https://t\.me/[A-Za-z0-9_]{5,32}", bot_url):
+            raise ValueError("Unexpected Telegram bot link")
+        config["botUrl"] = bot_url
     (output / "config.js").write_text(
-        "window.AIRLAKE_CONFIG="
-        + json.dumps({"mode": mode, "dataUrl": "data/" + h + ".json", "sha256": h})
-        + ";\n"
+        "window.AIRLAKE_CONFIG=" + json.dumps(config) + ";\n"
     )
     return {
         "status": "LOCAL_PREVIEW_NOT_AWS_VERIFIED"

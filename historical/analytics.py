@@ -95,6 +95,28 @@ def summarize(rows, start, end, station_ids):
                 }
             )
         complete = [r for r in daily if r["complete_24_hours"]]
+        guideline = WHO_REFERENCE["pm25_24h_micrograms_m3"]
+        who_days = {
+            "status": "DESCRIPTIVE_ONLY" if complete else "NO_COMPLETE_DAYS",
+            "guideline_micrograms_m3": guideline,
+            "complete_days": len(complete),
+            "days_above": sum(r["pm25_avg"] > guideline for r in complete),
+            "method": "complete local days vs WHO 2021 24-hour guideline; descriptive, not compliance",
+        }
+        values = sorted(r["pm25_avg"] for r in data)
+        middle = len(values) // 2
+        distribution = (
+            {
+                "hour_count": len(values),
+                "mean": math.fsum(values) / len(values),
+                "median": values[middle]
+                if len(values) % 2
+                else (values[middle - 1] + values[middle]) / 2,
+                "method": "observed hour buckets only; missing hours are not filled",
+            }
+            if values
+            else None
+        )
         weekdays = [
             r for r in complete if utc(r["date_local"] + "T00:00:00Z").weekday() < 5
         ]
@@ -192,6 +214,8 @@ def summarize(rows, start, end, station_ids):
             "extremes": extremes,
             "monthly_extremes": month,
             "mean_24h_descriptive": rolling,
+            "who_24h_days": who_days,
+            "hourly_distribution": distribution,
         }
     return {
         "start_utc": stamp(start),
