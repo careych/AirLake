@@ -1,3 +1,5 @@
+> **Historical record.** Bounded incremental OpenAQ ingestion tool from the lakehouse phase.
+
 # Bounded incremental OpenAQ ingestion
 
 This command retrieves genuine OpenAQ v3 PM2.5 measurements and publishes the

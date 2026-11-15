@@ -1,3 +1,5 @@
+> **Historical record.** Contract for Khuê's staging alert pipeline (SNS/SQS/Lambda/DynamoDB ledger). The product bot was built separately and left the staging resources untouched ([telegram-bot.md](telegram-bot.md)).
+
 # Telegram staging contract for the AWS owner
 
 VERIFIED means inspected in main `d2c7ac44edd00d5dc4e717c6e1eccc0305ad58c7`,

@@ -1,17 +1,17 @@
 # AirLake final product: coverage, UX choices and architecture status
 
-Status 2026-11-15. VERIFIED = checked in this repository or read-only on AWS
-account 701364614078 (ap-southeast-2) today. PLANNED = prepared, not deployed.
+Status 2026-11-15 (final release, Amplify job 7). VERIFIED = checked in this repository or read-only on AWS
+account 701364614078 (ap-southeast-2). For the full component list see [architecture.md](architecture.md).
 
 ## 1. Why the public site shows Dragon and #99385
 
 | Location | Kind | Data in AirLake | Public | Reason |
 |---|---|---|---|---|
-| Dragon 6123215 (Ocean Park, Gia Lâm) | Low-cost sensor (AirGradient) | September history (720 h, Glue run 2) + live | Yes | CC BY 4.0 on OpenAQ |
-| Sensor.Community #99385 (Tây Hồ, approx.) | Low-cost SDS011, outdoor | Live since 2026-11-15; September archive used for validation | Live only | DbCL 1.0 / ODbL 1.0 |
+| Dragon 6123215 (Ocean Park, Gia Lâm) | Low-cost sensor (AirGradient) | Live + rolling hourly history since 2026-09-01; September Glue run 2 export | Yes | CC BY 4.0 on OpenAQ |
+| Sensor.Community #99385 (Tây Hồ, approx.) | Low-cost SDS011, outdoor | Live + rolling hourly history since 2026-09-01 | Yes | DbCL 1.0 / ODbL 1.0; derived database under ODbL 1.0 |
 | Nhân Chính 4946812, Giải Phóng 4946813 | Hanoi network reference monitors | September history (720 h / 693 h) in Iceberg and the private IAM API | No | No licence on OpenAQ; Basic Auth is not permission |
 | AirNow 7441 (US Embassy) | Reference monitor | Not loaded | — | Public domain, but stopped in April 2025 |
-| CAMS Global grid cell | Model, ~45 km | Live forecast | Yes, as a model | Not a station; never counted as one |
+| CAMS Global (5 native cells over the 126 areas) | Model, ~45 km | Live estimate and forecast per area | Yes, as a model | Not a station; never counted as one |
 
 The restricted stations were removed from the public and demo bundles on
 2026-11-15 by owner decision; their data is not deleted and stays available to
@@ -67,7 +67,7 @@ chart series, and no colour badge implies "safe".
   pipeline (SNS/SQS/Lambda/DynamoDB ledger, runner, CloudWatch evidence),
   which shaped the delivery contract. On the owner's instruction the product
   bot @AirLakeHanoiBot was then built and released end to end from
-  `telegram_bot/` by Carey's session; Khuê's staging resources were left
+  `telegram_bot/` by Carey; Khuê's staging resources were left
   untouched.
 - **Public data.** Two licensed sources are public, each as its own dataset:
   Dragon under CC BY 4.0 and Sensor.Community #99385 under ODbL 1.0 / DbCL 1.0

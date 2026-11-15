@@ -1,3 +1,5 @@
+> **Status.** Describes the September 2026 backfill and its release; the Glue/Athena results and private API are still live, and the public site later moved to rolling history ([rolling-history-and-freshness.md](rolling-history-and-freshness.md)).
+
 # Historical Hanoi pilot: actual coverage and release
 
 The September 2026 backfill is released. Glue run 2 (`20261115_90a13b9f`)

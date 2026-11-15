@@ -1,3 +1,7 @@
+> **Historical record (October–November 2026).** This was the repository README during the local
+> lakehouse phase (Kafka → Spark → Iceberg, then a bounded Glue/Athena run). It is kept unchanged as
+> project history. The deployed AirLake service is described in the [current README](../../README.md).
+
 # AirLake
 
 AirLake is a team air-quality lakehouse project using OpenAQ, Kafka, Spark and
@@ -15,15 +19,15 @@ features remain separate team work.
 | Gold | Location dimension and simplified hourly PM2.5 AQI | Retained 2026-10-25 acceptance: 48 integration methods and 9 orchestration methods passed |
 | Dependency smoke check | Opt-in Spark child with a disposable warehouse | Retained local fixture check; separate three-row AWS probe passed 2026-10-29 |
 
-The historical Gold [acceptance record](tests/evidence/gold_dimension_name_repair_2026-10-25.json)
+The historical Gold [acceptance record](../../tests/evidence/gold_dimension_name_repair_2026-10-25.json)
 is preserved against the original publication commit. Catalog/namespace wiring
 has since changed; Gold business functions remain unchanged and all 48 integration
-cases passed again. The [real-data guide](docs/real-openaq-batch.md) records the
+cases passed again. The [real-data guide](../../docs/real-openaq-batch.md) records the
 200-row Kafka-to-Gold acceptance and its 23 UTC hourly facts. The separately
 approved cloud run passed on 2026-11-07; its original plan is retained unchanged
 as a historical approval artifact, not a reusable resource reservation. Entry points retain local defaults and accept `--plan` for offline catalog
 configuration inspection.
-[Tests and evidence](tests/README.md) distinguish real Spark/Iceberg results from
+[Tests and evidence](../../tests/README.md) distinguish real Spark/Iceberg results from
 mocked orchestration and historical claims. The bounded Kafka-to-Gold run has
 separate acceptance with documented single-station and streaming limitations.
 
@@ -41,7 +45,7 @@ Historical CSV.GZ files (local data/raw/)
 
 ## AWS result and handoff
 
-The [2026-11-07 cloud acceptance](tests/evidence/real_openaq_cloud_2026-11-07.json)
+The [2026-11-07 cloud acceptance](../../tests/evidence/real_openaq_cloud_2026-11-07.json)
 verified 200 real OpenAQ measurements from location `4946812`, sensor `13502151`:
 Bronze **200**, Silver **200**, dimension **1**, hourly facts **23**. All hourly
 means, UTC timestamps and AQI values matched local acceptance; duplicates and
@@ -54,8 +58,8 @@ The Mac ran Spark; no AWS compute deployment was needed. Glue/S3 configuration
 is explicit and gated, while entrypoints still default to HadoopCatalog. The
 accepted disposable databases and S3 prefix remain occupied: **do not rerun the
 saved cloud commands or delete their resources without separate approval**.
-See the [batch guide](docs/real-openaq-batch.md) for setup, scope and recovery,
-and the [publication review](docs/reviews/sprint2-publication.md) for the proposed PR.
+See the [batch guide](../../docs/real-openaq-batch.md) for setup, scope and recovery,
+and the [publication review](../../docs/reviews/sprint2-publication.md) for the proposed PR.
 
 Still unfinished: production cloud checkpoint recovery, long-running ingestion,
 Silver finite-value/unit/correction policies, regulatory AQI/completeness,
@@ -65,12 +69,12 @@ this batch and was not modified.
 
 ## Gold-to-Telegram application slice
 
-The [alert integration guide](docs/gold-to-telegram.md) describes the locally
+The [alert integration guide](../../docs/gold-to-telegram.md) describes the locally
 implemented evaluator, SNS publisher and teammate-derived SQS/Telegram consumer.
 Offline tests use retained Gold values, explicit fixture-only rules and mocked
 services. This application slice has not been deployed or tested with live SNS,
 SQS, DynamoDB or Telegram. Gold tables, calculations and prior acceptance records
-are unchanged. The [historical Athena-to-Telegram MVP](docs/athena-to-telegram-mvp.md)
+are unchanged. The [historical Athena-to-Telegram MVP](../../docs/athena-to-telegram-mvp.md)
 now provides a guarded Athena-to-SNS entrypoint, isolated deployment-command
 preparation and offline E2E tests. Its default invocation makes no AWS requests.
 Live deployment/query/notification execution and production alert rules still
@@ -270,7 +274,7 @@ AIRLAKE_RUN_GOLD_P0_INTEGRATION=1 .venv/bin/python -B tests/gold_p0_integration.
 
 Before each Spark test run, review fresh-process/configuration isolation and ensure
 all catalogs, warehouses and temporary paths remain disposable. See
-[tests/README.md](tests/README.md) for evidence interpretation and prerequisites.
+[tests/README.md](../../tests/README.md) for evidence interpretation and prerequisites.
 
 ## Manual OpenAQ diagnostics
 
@@ -292,13 +296,13 @@ separate diagnostic cleanup. Do not commit credentials or downloaded datasets.
 
 ## Team architecture and handoff
 
-The [Clean Data API](docs/clean-data-api.md) exposes the retained, hash-verified
+The [Clean Data API](../../docs/clean-data-api.md) exposes the retained, hash-verified
 real Gold batch as localhost JSON/CSV with station/UTC filters and pagination.
 It serves historical data without per-request Athena calls; live snapshot
 comparison is a separate, explicitly approved two-SELECT verification.
 
-The [technical specification](AirLake_DacTa_KyThuat.md) contains target AWS/serving
-requirements as well as local data contracts. The [project context](AirLake_PROJECT_CONTEXT.md)
+The [technical specification](../../AirLake_DacTa_KyThuat.md) contains target AWS/serving
+requirements as well as local data contracts. The [project context](../../AirLake_PROJECT_CONTEXT.md)
 records ownership, verified status, historical surveys and pending decisions.
 
 Terraform/monitoring work is on `khue` and `nam`; bot work is on `thinh`.
@@ -316,13 +320,13 @@ learning notes and image exports are outside this PR's selected candidates pendi
 owner/archive decisions; preserve their attribution and source material.
 
 For the disabled-by-default polling controller and verified Gold/API refresh, see
-[bounded cloud operations](docs/live-operations.md). The bounded controller completed its recorded AWS acceptance; scheduling and
+[bounded cloud operations](../../docs/live-operations.md). The bounded controller completed its recorded AWS acceptance; scheduling and
 worker concurrency remain disabled. Its evidence distinguishes retained output
 from an unattended production service.
 
 
 The Vietnamese citizen application is documented in
-[Hanoi citizen release](docs/hanoi-citizen-release.md). The existing
+[Hanoi citizen release](../../docs/hanoi-citizen-release.md). The existing
 [public AWS site](https://public.dhyvgpdsnj4zi.amplifyapp.com/) serves one licensed
 station as a dated, stale bounded snapshot; a password-protected preview covers
 three stations. The six-page historical revision has passed local browser checks and awaits
@@ -330,7 +334,7 @@ one consolidated data-and-website release approval; the cosmetic-only release
 was cancelled. Public Telegram signup and
 continuous website refresh are not enabled. Superset remains the internal BI client.
 
-The expanded [historical Hanoi product](docs/historical-product.md) now passes
+The expanded [historical Hanoi product](../../docs/historical-product.md) now passes
 local real-data acceptance: 17,181 September 2026 PM2.5 records, 2,133 hourly
 facts and 90 daily summaries. The licensed public projection has 720 hourly and
 30 daily rows, with tested 7/30-day analytics and JSON/CSV research filters.

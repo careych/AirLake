@@ -1,4 +1,4 @@
-# Rolling history, freshness and location (release 2026-11-16)
+# Rolling history, freshness and location (released 2026-11-15)
 
 ## Why
 

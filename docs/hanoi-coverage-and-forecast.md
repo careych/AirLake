@@ -1,8 +1,9 @@
 # Hanoi coverage, model forecast and live publication
 
-Status 2026-11-15: implemented and tested locally; AWS refresh, public API and
-site release require an approved deployment. Labels: VERIFIED (checked against
-the source on 2026-11-15), PLANNED.
+Status: deployed on 2026-11-15. Since the final release the CAMS estimate is
+published for every one of the 126 phường/xã, grouped by native 0.4° cell (5
+cells), in `model_areas` of `/v1/now`. Labels: VERIFIED (checked against the
+source on 2026-11-15).
 
 ## 1. Source inventory
 
@@ -29,10 +30,12 @@ Sensor.Community: 2 PM sensors within 40 km, one outdoor. September archive:
 (timestamps are UTC), but its level is 46-59% of the other stations. It is
 labelled as low-cost; absolute values are not adjusted.
 
-CAMS grid check: eight Hanoi points returned four distinct series. Hoàn Kiếm,
-Long Biên and Sóc Sơn share one; Hà Đông shares another with Xuân Mai. District
-rankings from the model would reflect grid boundaries, so the site uses one
-central Hanoi-area forecast and shows the cell scale on the map.
+CAMS grid check (final, all 126 area centres in one request): Open-Meteo
+reports 33 grid points but only 5 distinct series, matching the native 0.4°
+CAMS cells (38, 29, 28, 26 and 5 areas). Cell edges run through central Hanoi
+(about 21.0°N and 105.8°E). The site shows each area the value of its cell,
+outlines the cell on the map and says how many areas share it; it never ranks
+districts or interpolates between cells.
 
 Not used: protected websites, scraping, paid APIs, or sources whose
 redistribution terms could not be verified.
@@ -67,12 +70,12 @@ not measure 3-5 day skill.
 - Tình trạng: observed/ingested times per sensor; model run/available times;
   projection generated time.
 
-## 4. AWS refresh and serving (PLANNED, `nowcast/refresh.py`, `nowcast/public_api.py`)
+## 4. AWS refresh and serving (deployed, `nowcast/refresh.py`, `nowcast/public_api.py`)
 
 EventBridge Scheduler (every 15 min) -> Lambda refresh -> S3
 `nowcast/v1/` (immutable observations per source, one raw object per CAMS run,
 immutable projections, replaced `current.json`) -> public Lambda URL
-(`/v1/now`, `/v1/history`) -> Amplify site reading `/v1/now`.
+(`/v1/now`, `/v1/stations`, `/v1/history`) -> Amplify site.
 
 Realistic freshness: Dragon about 1 h after the hour; Sensor.Community up to
 ~20 min (15-min schedule); CAMS 12-hourly runs, available ~10 h after
@@ -86,10 +89,11 @@ written. The site polls `/v1/now` every 5 minutes while visible, so no
 Amplify deployment is needed for new data.
 
 Public API controls: the Function URL is public regardless of CORS. GET/HEAD
-only; paths `/v1`, `/v1/now`, `/v1/history`; strict query allowlist; history
-pinned to Dragon and its 30-day window; at most 1,000 rows and 1 MB; cached
-immutable export; generic 400/404/405/503; reserved concurrency 5; alarms on
->2,000 invocations/hour, any throttle, and refresh errors.
+only; exact paths and strict query allowlists (see [public-api.md](public-api.md));
+licensed stations only; at most 100 days, 1,000 rows and 1 MB per response;
+generic 400/404/405/503; reserved concurrency 10 (raised from 2 on 2026-11-15
+after throttling was observed); alarms on >2,000 invocations/hour, any
+throttle, and refresh errors.
 
 Publication safety: every immutable object is written with `If-None-Match: *`
 and the pointer with `If-Match: <etag read at start>`, sent as raw headers in
@@ -100,14 +104,15 @@ newer than the current one before the pointer moves; one object is kept per
 source observation.
 
 Traffic and cost (estimates from list prices, not a cap; free tier not assumed):
-reserved concurrency 2 limits parallel executions, and excess requests are
-throttled with 429. It is not a per-client rate limit. `/v1/now` returns an
-ETag and 304 for repeat polls, a 60-second container cache and `max-age=60`;
-history is served from a cached, SHA-pinned export with `max-age=3600`.
-Normal demo use is well under one US dollar per month. Sustained abuse at the
-concurrency limit (~20 requests/s at ~100 ms) could reach roughly 50 million
-requests per month, about USD 40 for Lambda requests, compute and request logs,
-until containment. The alarms have no notification target, so they are checked
+reserved concurrency 10 (2 until 2026-11-15) limits parallel executions, and
+excess requests are throttled with 429. It is not a per-client rate limit and
+not a spending cap. `/v1/now` returns an ETag and 304 for repeat polls, a
+60-second container cache and `max-age=60`; history series are cached for
+5 minutes (`max-age=300`). Normal demo use is well under one US dollar per
+month. Sustained abuse at the limit (~100 requests/s at ~100 ms) could reach
+roughly 250 million requests per month, on the order of USD 200 for Lambda
+requests, compute and logs (linear estimate from list prices), until
+containment. The alarms have no notification target, so they are checked
 in the console during the demo period.
 
 Containment: `python -m nowcast.deploy contain` sets the public API's reserved
