@@ -34,7 +34,7 @@ PACKAGES = (
 )
 ZIP_TIME = (2026, 11, 15, 0, 0, 0)
 LOG_RETENTION_DAYS = 14
-API_CONCURRENCY = 5
+API_CONCURRENCY = 2  # enough for the demo; throttled requests are rejected, not billed
 API_SMOKE = [
     ("GET", "/v1", 200),
     ("GET", "/v1/now", 200),
@@ -197,7 +197,8 @@ def prepare(packet, secret_arn, history_env, site_inputs):
             "name": SCHEDULE,
             "expression": "rate(15 minutes)",
             "retry": {"MaximumRetryAttempts": 0, "MaximumEventAgeInSeconds": 600},
-            "state_after_smoke": "ENABLED",
+            "created_by": "enable-schedule, only after verify-live and browser PASS",
+            "final_state": "ENABLED",
         },
         "alarms": {
             NAME + "-api-traffic": {
@@ -244,6 +245,20 @@ def prepare(packet, secret_arn, history_env, site_inputs):
             "failure_containment": "stop_only",
             "headers": "citizen.hosting.headers(<function URL origin>) replacing HEADERS_PREVIOUS",
             "browser_get_budget": 40,
+        },
+        "order": [
+            "execute: logs, roles, functions, first refresh (pointer + projection checked), public URL, 7 API smoke checks incl. served version and source times, alarms",
+            "release-site: both bundles point at /v1/now; headers updated once; one deployment per branch",
+            "verify-live: both config.js files, demo 401, second refresh, API serves the newer version (no redeploy)",
+            "hosted browser: <= 40 GETs, observed/fetched/published/model-run/valid times visible; writes browser-evidence.json",
+            "enable-schedule: create ENABLED schedule only if all of the above passed; final state ENABLED",
+        ],
+        "cost_estimate_not_a_cap": {
+            "refresh": "2,880 invocations/month at <=60 s, 256 MB; plus ~2,880 Secrets Manager reads",
+            "public_api": "per request: Lambda request charge plus ~50-200 ms at 256 MB, and START/END/REPORT log lines; concurrency 2 bounds parallel executions, throttled calls get 429",
+            "s3": "~4 small PUTs and ~5 GETs per refresh; projections ~40 KB each accumulate (~115 MB/month) until lifecycle or deletion",
+            "cloudwatch": "3 standard alarms; log ingestion and 14-day storage for two log groups",
+            "retained": "roles, functions, URL, alarms, log groups and S3 objects remain until removed; free-tier eligibility is not assumed",
         },
         "stop_conditions": "any exception, non-success status, smoke mismatch, unlicensed station id, or plan/source drift stops without retry or cleanup",
         "rollback": [
@@ -404,6 +419,16 @@ def execute(c, packet, plan, digest, get=None):
     result = json.loads(first["Payload"].read())
     if first.get("FunctionError") or result.get("status") != "PUBLISHED":
         raise ValueError("First refresh did not publish")
+    current = json.loads(
+        c["s3"]
+        .get_object(Bucket=BUCKET, Key=CURRENT_KEY, ExpectedBucketOwner=ACCOUNT)["Body"]
+        .read()
+    )
+    c["s3"].head_object(
+        Bucket=BUCKET, Key=result["projection_key"], ExpectedBucketOwner=ACCOUNT
+    )
+    if current["published_at"] != result["published_at"]:
+        raise ValueError("Current pointer does not hold the first refresh")
     r.value["first_refresh"] = result
     r.save()
     url = r.write(
@@ -438,7 +463,7 @@ def execute(c, packet, plan, digest, get=None):
     )
     r.value["function_url"] = url
     r.save()
-    smoke(r, url.rstrip("/"), get)
+    smoke(r, url.rstrip("/"), result["published_at"], get)
     for name, a in plan["alarms"].items():
         r.write(
             "alarm_" + name,
@@ -456,27 +481,12 @@ def execute(c, packet, plan, digest, get=None):
                 ActionsEnabled=False,
             ),
         )
-    s = plan["schedule"]
-    r.write(
-        "create_schedule",
-        lambda: c["scheduler"].create_schedule(
-            Name=SCHEDULE,
-            ScheduleExpression=s["expression"],
-            State=s["state_after_smoke"],
-            FlexibleTimeWindow={"Mode": "OFF"},
-            Target={
-                "Arn": functions[REFRESH],
-                "RoleArn": arns[SCHEDULER_ROLE],
-                "RetryPolicy": s["retry"],
-            },
-        ),
-    )
     r.value.update(status="BACKEND_LIVE_SITE_RELEASE_NEXT")
     r.save()
     return r.value
 
 
-def smoke(r, base, get=None):
+def smoke(r, base, published_at, get=None):
     if get is None:
         import requests
 
@@ -497,11 +507,7 @@ def smoke(r, base, get=None):
         if resp.status_code != expected:
             raise ValueError("Public API smoke mismatch; stop")
         if path == "/v1/now":
-            body = resp.json()
-            if body["schema_version"] != 2 or {
-                o["station_id"] for o in body["observations"]
-            } - {6123215, 99385}:
-                raise ValueError("Projection contains unexpected stations")
+            check_projection(resp.json(), published_at)
         if path == "/v1/history?limit=100" and {
             d.get("location_id") for d in resp.json()["data"]
         } != {6123215}:
@@ -573,12 +579,148 @@ def release_site(c, packet, plan, digest):
     return r.value
 
 
+def check_projection(body, published_at):
+    """The served version and every source-specific time are present."""
+    if body["schema_version"] != 2 or body["published_at"] != published_at:
+        raise ValueError("Public API is not serving the expected version")
+    if {o["station_id"] for o in body["observations"]} - {6123215, 99385}:
+        raise ValueError("Projection contains unexpected stations")
+    m = body["model"]
+    times = all(
+        "observed_at" in o and "fetched_at" in o and "fetch_status" in o
+        for o in body["observations"]
+    )
+    if not times or not (
+        m["model_run_at"]
+        and m["model_available_at"]
+        and m["current"]["valid_at"]
+        and all("valid_at" in f for f in m["forecast"])
+    ):
+        raise ValueError("Projection lacks source-specific times")
+
+
+def verify_live(c, packet, plan, digest, get=None, wait=61):
+    """Second refresh: the API and both sites pick it up without redeployment."""
+    from citizen import release
+
+    packet = Path(packet)
+    backend = json.loads((packet / "receipt.json").read_text())
+    site = json.loads((packet / "site-receipt.json").read_text())
+    if (
+        site["status"] != "DEPLOYED_BROWSER_VERIFICATION_REQUIRED"
+        or site["plan_sha256"] != digest
+    ):
+        raise ValueError("Site release must succeed first")
+    if get is None:
+        import requests
+
+        http = requests.Session()
+        http.trust_env = False
+
+        def get(method, url, auth=None):
+            return http.request(
+                method, url, timeout=15, allow_redirects=False, auth=auth
+            )
+
+    _, credentials, _ = release.private_credentials(
+        Path(plan["site"]["inputs"]["credentials"])
+    )
+    url = backend["function_url"].rstrip("/")
+    r = Receipt(packet / "verify-receipt.json", digest)
+    r.value["checks"] = []
+
+    def check(name, ok):
+        r.value["checks"].append({"check": name, "status": "PASS" if ok else "FAIL"})
+        r.save()
+        if not ok:
+            raise ValueError("Live verification failed: " + name)
+
+    login = (credentials["username"], credentials["password"])
+    for branch, auth in (("public", None), ("demo", login)):
+        config = get("GET", f"https://{branch}.{release.DOMAIN}/config.js", auth=auth)
+        check(
+            branch + "_config_points_to_api",
+            config.status_code == 200 and url + "/v1/now" in config.text,
+        )
+    anonymous = get("GET", f"https://demo.{release.DOMAIN}/config.js")
+    check("demo_requires_auth", anonymous.status_code == 401)
+    second = r.write(
+        "invoke_refresh_second",
+        lambda: c["lambda"].invoke(
+            FunctionName=REFRESH, InvocationType="RequestResponse"
+        ),
+    )
+    result = json.loads(second["Payload"].read())
+    check(
+        "second_refresh_published",
+        not second.get("FunctionError") and result.get("status") == "PUBLISHED",
+    )
+    check(
+        "second_is_newer",
+        result["published_at"] > backend["first_refresh"]["published_at"],
+    )
+    r.value["second_refresh"] = result
+    r.save()
+    time.sleep(wait)  # the public API caches the pointer for at most 60 s
+    check_projection(get("GET", url + "/v1/now").json(), result["published_at"])
+    check("api_serves_second_version", True)
+    r.value["status"] = "PASS_LIVE_UPDATE_WITHOUT_REDEPLOYMENT"
+    r.save()
+    return r.value
+
+
+def enable_schedule(c, packet, plan, digest):
+    """Last step, only after live verification and the hosted-browser check."""
+    packet = Path(packet)
+    verify = json.loads((packet / "verify-receipt.json").read_text())
+    browser = json.loads((packet / "browser-evidence.json").read_text())
+    if (
+        verify["status"] != "PASS_LIVE_UPDATE_WITHOUT_REDEPLOYMENT"
+        or verify["plan_sha256"] != digest
+        or browser.get("status") != "PASS"
+    ):
+        raise ValueError("Prerequisites for the schedule have not passed")
+    s = plan["schedule"]
+    r = Receipt(packet / "schedule-receipt.json", digest)
+    r.write(
+        "create_schedule",
+        lambda: c["scheduler"].create_schedule(
+            Name=SCHEDULE,
+            ScheduleExpression=s["expression"],
+            State="ENABLED",
+            FlexibleTimeWindow={"Mode": "OFF"},
+            Target={
+                "Arn": f"arn:aws:lambda:{REGION}:{ACCOUNT}:function:{REFRESH}",
+                "RoleArn": f"arn:aws:iam::{ACCOUNT}:role/{SCHEDULER_ROLE}",
+                "RetryPolicy": s["retry"],
+            },
+        ),
+    )
+    state = c["scheduler"].get_schedule(Name=SCHEDULE)["State"]
+    r.value["status"] = "SCHEDULE_" + state
+    r.save()
+    if state != s["final_state"]:
+        raise ValueError("Schedule state differs from plan")
+    return r.value
+
+
 def contain(c):
     """Owner-invoked containment: block public traffic, pause refresh; no deletion."""
+    from botocore.exceptions import ClientError
+
     c["lambda"].put_function_concurrency(
         FunctionName=API, ReservedConcurrentExecutions=0
     )
-    current = c["scheduler"].get_schedule(Name=SCHEDULE)
+    try:
+        current = c["scheduler"].get_schedule(Name=SCHEDULE)
+    except ClientError as e:
+        if e.response["Error"]["Code"] != "ResourceNotFoundException":
+            raise
+        return {
+            "status": "CONTAINED",
+            "public_api_concurrency": 0,
+            "schedule": "ABSENT",
+        }
     c["scheduler"].update_schedule(
         Name=SCHEDULE,
         ScheduleExpression=current["ScheduleExpression"],
@@ -593,7 +735,15 @@ def main():
     a = argparse.ArgumentParser(description=__doc__)
     a.add_argument(
         "command",
-        choices=("prepare", "preflight", "execute", "release-site", "contain"),
+        choices=(
+            "prepare",
+            "preflight",
+            "execute",
+            "release-site",
+            "verify-live",
+            "enable-schedule",
+            "contain",
+        ),
     )
     a.add_argument("--packet", type=Path, required=True)
     a.add_argument("--confirm-plan-sha256")
@@ -621,6 +771,10 @@ def main():
         "preflight": lambda: preflight(c, plan),
         "execute": lambda: execute(c, x.packet, plan, x.confirm_plan_sha256),
         "release-site": lambda: release_site(c, x.packet, plan, x.confirm_plan_sha256),
+        "verify-live": lambda: verify_live(c, x.packet, plan, x.confirm_plan_sha256),
+        "enable-schedule": lambda: enable_schedule(
+            c, x.packet, plan, x.confirm_plan_sha256
+        ),
         "contain": lambda: contain(c),
     }
     print(json.dumps(action[x.command]()))

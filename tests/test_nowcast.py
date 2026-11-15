@@ -2,6 +2,7 @@
 
 import unittest
 from datetime import UTC, datetime, timedelta
+from unittest.mock import patch
 
 from nowcast import openmeteo, project, sensor_community, validate
 
@@ -125,13 +126,13 @@ class ProjectionTests(unittest.TestCase):
             {
                 "status": "ok",
                 "reading": {"observed_at": "2026-11-15T00:00:00Z", "pm25": 40.5},
-                "collected_at": "2026-11-15T01:20:00Z",
+                "fetched_at": "2026-11-15T01:20:00Z",
             },
             {
                 "status": "fetch_failed",
                 "error": "HTTP 429",
                 "reading": None,
-                "collected_at": None,
+                "fetched_at": None,
             },
             model,
             {"status": "SYNTHETIC"},
@@ -145,7 +146,7 @@ class ProjectionTests(unittest.TestCase):
         self.assertEqual(
             (sc["fetch_status"], sc["fetch_error"]), ("fetch_failed", "HTTP 429")
         )
-        self.assertEqual(dragon["collected_at"], "2026-11-15T01:20:00Z")
+        self.assertEqual(dragon["fetched_at"], "2026-11-15T01:20:00Z")
         self.assertNotEqual(dragon["licence"], sc["licence"])
         self.assertTrue(sc["share_alike"])
         self.assertFalse(sc["exact_location"])
@@ -206,20 +207,35 @@ class FakeS3:
         class NoSuchKey(Exception):
             pass
 
+    class Precondition(Exception):
+        @property
+        def response(self):
+            return {"Error": {"Code": "PreconditionFailed"}}
+
     def __init__(self, objects=None):
         self.objects = dict(objects or {})
         self.puts = []
+
+    def etag(self, key):
+        import hashlib
+
+        return '"' + hashlib.md5(self.objects[key]).hexdigest() + '"'
 
     def get_object(self, Bucket, Key, ExpectedBucketOwner):
         if Key not in self.objects:
             raise self.exceptions.NoSuchKey()
         import io
 
-        return {"Body": io.BytesIO(self.objects[Key])}
+        return {"Body": io.BytesIO(self.objects[Key]), "ETag": self.etag(Key)}
 
-    def put_object(self, Bucket, Key, Body, **kw):
-        if kw.get("IfNoneMatch") == "*" and Key in self.objects:
-            raise AssertionError("immutable overwrite " + Key)
+    def put_object(self, Bucket, Key, Body, Condition=None, **kw):
+        c = Condition or {}
+        if c.get("If-None-Match") == "*" and Key in self.objects:
+            raise self.Precondition()
+        if "If-Match" in c and (
+            Key not in self.objects or self.etag(Key) != c["If-Match"]
+        ):
+            raise self.Precondition()
         self.objects[Key] = Body
         self.puts.append(Key)
 
@@ -507,8 +523,113 @@ class PublicApiTests(unittest.TestCase):
         r = public_api.handler(self.event("/v1/now"), None, store=store)
         self.assertEqual(
             (r["statusCode"], r["headers"]["cache-control"]),
-            (200, "public, max-age=300"),
+            (200, "public, max-age=60"),
         )
+        etag = r["headers"]["etag"]
+        again = self.event("/v1/now")
+        again["headers"]["if-none-match"] = etag
+        r304 = public_api.handler(again, None, store=store)
+        self.assertEqual((r304["statusCode"], r304["body"]), (304, ""))
+
+
+class PublicationSafetyTests(unittest.TestCase):
+    http = RefreshTests.http
+
+    def test_versions_have_unique_content_keys_and_pointer_only_moves_forward(self):
+        from nowcast import refresh
+
+        s3 = FakeS3()
+        a = refresh.run(s3, self.http([]), "K", {}, NOW)
+        b = refresh.run(s3, self.http([]), "K", {}, NOW + timedelta(seconds=1))
+        self.assertNotEqual(a["projection_key"], b["projection_key"])
+        self.assertRegex(
+            b["projection_key"],
+            r"projections/2026-11-15/2026-11-15T012001Z-[0-9a-f]{16}\.json$",
+        )
+        before = s3.objects["nowcast/v1/current.json"]
+        with self.assertRaises(ValueError):  # same second: not newer
+            refresh.run(s3, self.http([]), "K", {}, NOW + timedelta(seconds=1))
+        with self.assertRaises(ValueError):  # older run cannot replace newer
+            refresh.run(s3, self.http([]), "K", {}, NOW)
+        self.assertEqual(s3.objects["nowcast/v1/current.json"], before)
+
+    def test_concurrent_pointer_change_is_not_overwritten(self):
+        from nowcast import refresh
+
+        s3 = FakeS3()
+        refresh.run(s3, self.http([]), "K", {}, NOW)
+        store = refresh.Store(s3)
+        original = store.replace_current
+
+        def racing(body, etag):
+            s3.objects["nowcast/v1/current.json"] = (
+                b'{"published_at": "2026-11-15T09:00:00Z"}'
+            )
+            return original(body, etag)
+
+        store.replace_current = racing
+        with self.assertRaises(FakeS3.Precondition):
+            refresh.run(store, self.http([]), "K", {}, NOW + timedelta(minutes=15))
+        self.assertIn(b"09:00:00Z", s3.objects["nowcast/v1/current.json"])
+
+    def test_invalid_projection_never_becomes_current(self):
+        from nowcast import project, refresh
+
+        s3 = FakeS3()
+        refresh.run(s3, self.http([]), "K", {}, NOW)
+        before = s3.objects["nowcast/v1/current.json"]
+        built = project.build
+
+        def leaky(*a, **k):
+            v = built(*a, **k)
+            v["observations"].append({**v["observations"][0], "station_id": 4946812})
+            return v
+
+        with patch.object(project, "build", leaky), self.assertRaises(ValueError):
+            refresh.run(s3, self.http([]), "K", {}, NOW + timedelta(minutes=15))
+        self.assertEqual(s3.objects["nowcast/v1/current.json"], before)
+
+    def test_repeated_observation_is_idempotent_but_conflicting_bytes_stop(self):
+        from nowcast import refresh
+
+        s3 = FakeS3()
+        store = refresh.Store(s3)
+        store.put_new("nowcast/v1/x.json", b"A")
+        store.put_new("nowcast/v1/x.json", b"A")
+        with self.assertRaises(FakeS3.Precondition):
+            store.put_new("nowcast/v1/x.json", b"B")
+
+    def test_real_botocore_client_sends_conditional_headers(self):
+        import boto3
+        from botocore.awsrequest import AWSResponse
+
+        from nowcast import refresh
+
+        client = boto3.client(
+            "s3",
+            region_name="ap-southeast-2",
+            aws_access_key_id="SYNTHETIC",
+            aws_secret_access_key="SYNTHETIC",
+        )
+        seen = []
+
+        class Raw:
+            def stream(self, **kw):
+                yield b""
+
+        def send(request, **kw):
+            seen.append(dict(request.headers))
+            return AWSResponse(request.url, 200, {"ETag": '"e"'}, Raw())
+
+        client.meta.events.register("before-send.s3.PutObject", send)
+        store = refresh.Store(client)
+        store.put_new("nowcast/v1/a.json", b"{}")
+        store.replace_current(b"{}", '"abc"')
+        store.replace_current(b"{}", None)
+        self.assertEqual(seen[0].get("If-None-Match"), b"*")
+        self.assertEqual(seen[1].get("If-Match"), b'"abc"')
+        self.assertEqual(seen[2].get("If-None-Match"), b"*")
+        self.assertNotIn("If-Match", seen[0])
 
 
 if __name__ == "__main__":
