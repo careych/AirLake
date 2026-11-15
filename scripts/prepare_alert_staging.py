@@ -53,9 +53,7 @@ def _run_control(
     control_started = clock()
 
     class ControlFailure(RuntimeError):
-        def __init__(
-            self, message, *, phase, operation, exit_code, elapsed_ms
-        ):
+        def __init__(self, message, *, phase, operation, exit_code, elapsed_ms):
             super().__init__(message)
             self.phase = phase
             self.operation = operation
@@ -261,7 +259,9 @@ def _run_control(
                 .get("AIRLAKE_ALERT_DELIVERY_ENABLED")
                 != "0"
             ):
-                raise state_failure("Recorded disabled version is not verified disabled")
+                raise state_failure(
+                    "Recorded disabled version is not verified disabled"
+                )
             current = alias()
             if current.get("FunctionVersion") != disabled_version:
                 call(
@@ -369,6 +369,7 @@ def _run_control(
     if mapping()["State"] != "Enabled":
         raise state_failure("Mapping did not enable")
     return "PASS: staging mapping is stably Enabled"
+
 
 def _control_script(
     mode, output, digest, artifact_hash, identity_check=(), profile="airlake"

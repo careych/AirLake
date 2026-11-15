@@ -87,6 +87,7 @@ input,select{border:1px solid #b7c8bd;border-radius:10px;padding:10px 12px;backg
 .row-value{grid-column:2;grid-row:1/3;align-self:center;text-align:right;font-weight:700}
 .model-card{border-style:dashed;border-color:#b9b5dc;background:var(--model-bg)}
 .more{font-weight:650}
+.days{margin:8px 0}
 .map{height:340px;border-radius:var(--radius);border:1px solid var(--line);background:#e7ece8;z-index:0}
 .map.tall{height:480px}
 .map-note{margin:6px 0 14px}

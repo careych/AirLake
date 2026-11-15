@@ -277,19 +277,20 @@
     const p = S.place, list = nearestStations(), near = list.filter(s => s.d <= NEAR_KM);
     $('place-line').replaceChildren(el('span', {class: 'muted', text: p.type === 'area' ? 'Khu vực đã chọn' : p.how === 'gps' ? 'Vị trí của bạn (đã làm tròn khoảng 1 km)' : 'Điểm đã chọn trên bản đồ (làm tròn khoảng 1 km)'}), el('strong', {text: p.type === 'area' ? areaName(p) : 'Gần ' + p.near.kind + ' ' + p.near.name}));
     const focus = S.focus ? list.find(s => s.id === S.focus) : near[0];
-    const state = $('local-state');
+    const state = $('local-state'), closest = list[0];
     if (!near.length) {
       state.replaceChildren(el('div', {class: 'card gap-card'},
-        el('h2', {text: 'Chưa có điểm đo gần khu vực này'}),
-        el('p', {text: 'Chưa có trạm quan trắc công khai đủ gần khu vực này. Bạn có thể xem dữ liệu tại các điểm đo khác hoặc tham khảo dự báo khu vực Hà Nội.'}),
-        el('p', {class: 'muted', text: `Điểm đo gần nhất là ${list[0].name}, ${distText(list[0].d, list[0].exact)}. AirLake coi một điểm đo là “gần” khi cách dưới ${NEAR_KM} km.`}),
-        el('div', {class: 'actions'}, el('a', {class: 'button-link secondary', href: '#du-bao', text: 'Xem dự báo khu vực'}), el('a', {class: 'button-link secondary', href: '#ban-do', text: 'Xem các điểm đo'}))));
+        el('h2', {text: 'Chưa có cảm biến gần khu vực này'}),
+        el('p', {text: 'Chưa có cảm biến quan trắc trực tiếp gần khu vực bạn chọn. AirLake có thông tin ước tính từ mô hình khí quyển cho vùng rộng hơn. Đây không phải số đo tại nhà bạn.'}),
+        el('p', {class: 'muted', text: `Điểm đo thật gần nhất là ${closest.name}, ${distText(closest.d, closest.exact)}. AirLake coi một điểm đo là “gần” khi cách dưới ${NEAR_KM} km. Cảnh báo Telegram chỉ dựa trên số đo thật tại các điểm đo.`}),
+        el('div', {class: 'actions'}, el('a', {class: 'button-link secondary', href: BOT ? `${BOT}?start=st_${closest.id}` : '#canh-bao', rel: BOT ? 'noopener' : null, text: `Cảnh báo theo điểm đo ${closest.short}`}), el('a', {class: 'button-link secondary', href: '#ban-do', text: 'Xem các điểm đo'}))));
     } else {
-      state.replaceChildren(el('p', {class: 'near-line', text: near.length === 1 ? `Có 1 điểm đo trong bán kính ${NEAR_KM} km.` : `Có ${near.length} điểm đo trong bán kính ${NEAR_KM} km.`}));
+      state.replaceChildren(el('p', {class: 'near-line', text: near.length === 1 ? `Có 1 điểm đo thật trong bán kính ${NEAR_KM} km. Số đo tại điểm đo không phải là số đo tại nhà bạn.` : `Có ${near.length} điểm đo thật trong bán kính ${NEAR_KM} km.`}));
     }
     const card = $('primary-card');
     card.replaceChildren();
     if (focus) card.append(stationCard(focus, near.includes(focus)));
+    else card.append(modelCard(p, false)); // no sensor nearby: the model leads
     $('other-stations').replaceChildren(el('h3', {text: focus ? 'Điểm đo khác' : 'Các điểm đo công khai'}),
       ...list.filter(s => s !== focus).map(s => {
         const o = obs(s.id), f = freshness(s.id);
@@ -297,7 +298,8 @@
           el('span', {class: 'row-name', text: s.name}), el('span', {class: 'muted', text: distText(s.d, s.exact)}),
           el('span', {class: 'row-value'}, o?.pm25 !== undefined && o?.pm25 !== null ? `${num(o.pm25)} µg/m³` : '—', ' ', badge(f)));
       }));
-    renderRegional();
+    $('regional').hidden = !focus;
+    if (focus) $('regional').replaceChildren(...modelCard(p, true).childNodes);
     drawHomeMap();
   }
   function stationCard(s, isNear) {
@@ -336,17 +338,45 @@
       ctx().replaceChildren(...parts.map(t => el('p', {text: t})));
     } catch { if (ctx()) { ctx().replaceChildren(loadError('Chưa tải được lịch sử 24 giờ.', () => fillContext(s))); $('spark-' + s.id)?.replaceChildren(); } }
   }
-  function renderRegional() {
-    const box = $('regional'), m = S.now?.model;
-    if (!m) { box.replaceChildren(el('p', {class: 'muted', text: 'Chưa có dự báo khu vực.'})); return; }
-    const next = m.forecast.filter(r => r.hours_ahead <= 24), vals = next.map(r => r.pm25);
-    const first = vals.slice(0, 3).reduce((a, v) => a + v, 0) / 3, last = vals.slice(-3).reduce((a, v) => a + v, 0) / 3;
-    const trend = last > first * 1.15 ? 'có xu hướng tăng' : last < first * .85 ? 'có xu hướng giảm' : 'không thay đổi nhiều';
-    box.replaceChildren(
-      el('div', {class: 'card-top'}, el('div', {}, el('h2', {text: 'Dự báo khu vực Hà Nội'}), el('p', {class: 'muted', text: 'Mô hình CAMS cho cả ô lưới khoảng 45 km · không phải số đo'})), el('span', {class: 'badge model', text: 'Mô hình'})),
-      el('p', {text: `Trong 24 giờ tới, mô hình cho rằng bụi mịn khu vực ${trend} (khoảng ${num(Math.min(...vals), 0)}–${num(Math.max(...vals), 0)} µg/m³).`}),
-      el('p', {class: 'muted', text: `Lần chạy mô hình: ${when(Date.parse(m.model_run_at))}. Mô hình thường lệch nhiều so với cảm biến (tháng 9 cao hơn khoảng 17–32 µg/m³), nên chỉ dùng để xem xu hướng.`}),
+  // ---- regional model for the selected area --------------------------------
+  const cellOf = v => Math.round(Math.round(v / 0.4) * 4) / 10; // CAMS 0.4° cell centre
+  function modelGroup(p) {
+    const ma = S.now?.model_areas;
+    if (!ma?.groups?.length || !p) return null;
+    if (p.type === 'area') { const g = ma.groups.find(x => x.areas.includes(p.osm)); if (g) return g; }
+    return ma.groups.find(x => x.cell.verified && x.cell.centre[0] === cellOf(p.lat) && x.cell.centre[1] === cellOf(p.lon)) || null;
+  }
+  function modelNow(g) {
+    const hour = floorHour(Date.now());
+    return [g.current, ...g.forecast].find(r => Date.parse(r.valid_at) === hour) || null;
+  }
+  function modelCard(p, secondary) {
+    const ma = S.now?.model_areas, g = modelGroup(p), cur = g && modelNow(g);
+    const box = el('article', {class: 'card model-card'},
+      el('div', {class: 'card-top'}, el('div', {}, el('h2', {text: secondary ? 'Ước tính từ mô hình cho vùng rộng hơn' : 'Ước tính từ mô hình cho khu vực này'}),
+        el('p', {class: 'muted', text: 'Mô hình khí quyển CAMS (Copernicus) · không phải số đo'})), el('span', {class: 'badge model', text: 'Mô hình'})));
+    if (!g || !cur) {
+      const last = ma?.model_run_at || ma?.last_good_model_run_at;
+      box.append(el('p', {class: 'warn', text: 'Hiện chưa có ước tính mô hình hợp lệ cho khu vực này.' + (last ? ` Lần chạy mô hình gần nhất có số liệu: ${when(Date.parse(last))}.` : '')}));
+      return box;
+    }
+    const next = g.forecast.filter(r => Date.parse(r.valid_at) > Date.parse(cur.valid_at) && Date.parse(r.valid_at) <= Date.parse(cur.valid_at) + 24 * H), vals = next.map(r => r.pm25);
+    const first = vals.slice(0, 3).reduce((a, v) => a + v, 0) / 3, last3 = vals.slice(-3).reduce((a, v) => a + v, 0) / 3;
+    const trend = last3 > first * 1.15 ? 'có xu hướng tăng' : last3 < first * .85 ? 'có xu hướng giảm' : 'không thay đổi nhiều';
+    const runAge = (Date.now() - Date.parse(ma.model_run_at)) / H;
+    const chart = el('div', {class: 'chart small-chart'}), read = el('p', {class: 'readout'});
+    box.append(
+      el('p', {class: 'big'}, el('strong', {text: num(cur.pm25)}), el('span', {text: ' µg/m³ PM2.5, ước tính'})),
+      el('p', {class: 'when', text: `Ước tính cho ${when(Date.parse(cur.valid_at))}`}),
+      el('p', {text: `Trong 24 giờ tới, mô hình cho rằng bụi mịn ${trend} (khoảng ${num(Math.min(...vals), 0)}–${num(Math.max(...vals), 0)} µg/m³).`}),
+      el('h3', {text: '24 giờ tới, theo mô hình'}), chart, read,
+      el('ul', {class: 'plain-list days'}, ...g.daily.slice(0, 4).map(d => el('li', {text: `${dm(Date.parse(d.date_local + 'T00:00:00Z'))}: trung bình ${num(d.mean, 0)} µg/m³ (${num(d.min, 0)}–${num(d.max, 0)})`}))),
+      el('p', {class: 'muted', text: `Ô lưới mô hình rộng khoảng 45 km (0,4°): ${g.areas.length}/${ma.area_count} phường, xã ở Hà Nội nằm trong cùng ô này nên có cùng giá trị. Ranh giới ô chạy qua trung tâm Hà Nội (khoảng 21,0°B và 105,8°Đ), nên hai phường sát nhau có thể khác nhau chỉ vì ô lưới.`}),
+      el('p', {class: 'muted', text: `Lần chạy mô hình: ${when(Date.parse(ma.model_run_at))}${runAge > 36 ? ' (đã cũ, chưa có lần chạy mới hơn)' : ''}. So với cảm biến, mô hình từng lệch nhiều (tháng 9 cao hơn khoảng 17–32 µg/m³), nên chỉ nên xem xu hướng.`}),
       el('a', {href: '#du-bao', class: 'more', text: 'Xem dự báo các ngày tới →'}));
+    requestAnimationFrame(() => lineChart(chart, next.map(r => ({hour_start_utc: new Date(Date.parse(r.valid_at) - H).toISOString().replace('.000', ''), pm25: r.pm25, flags: []})),
+      Date.parse(next[0].valid_at) - H, Date.parse(next[next.length - 1].valid_at), read, {height: 170, label: 'PM2.5 ước tính theo giờ của mô hình CAMS'}));
+    return box;
   }
   function baseMap(id, center, zoom) {
     if (!window.L) return null;
@@ -373,6 +403,8 @@
     m._layer.clearLayers();
     stationMarkers(m._layer, id => { S.focus = id; renderHome(); });
     if (S.place) {
+      const g = modelGroup(S.place);
+      if (g) L.rectangle([[g.cell.bounds[0], g.cell.bounds[1]], [g.cell.bounds[2], g.cell.bounds[3]]], {className: 'model-cell', interactive: false}).addTo(m._layer);
       L.circle([S.place.lat, S.place.lon], {radius: NEAR_KM * 1000, className: 'near-ring'}).addTo(m._layer);
       L.circleMarker([S.place.lat, S.place.lon], {radius: 7, className: 'you'}).addTo(m._layer).bindTooltip(S.place.type === 'area' ? areaName(S.place) : 'Vị trí đã chọn');
       const pts = [[S.place.lat - .037, S.place.lon - .039], [S.place.lat + .037, S.place.lon + .039], ...ORDER.map(id => [station(id).lat, station(id).lon])]; // whole 4 km ring and every station
@@ -549,11 +581,11 @@
 
   // ---- forecast -----------------------------------------------------------
   function renderForecast() {
-    const m = S.now?.model;
-    if (!m) { $('f-note').textContent = 'Chưa có dự báo.'; return; }
+    const g = modelGroup(S.place), m = g ? {...S.now.model_areas, forecast: g.forecast} : S.now?.model;
+    if (!m?.forecast?.length) { $('f-note').textContent = 'Chưa có dự báo.'; return; }
     const rows = m.forecast.map(r => ({hour_start_utc: new Date(Date.parse(r.valid_at) - H).toISOString().replace('.000', ''), pm25: r.pm25, flags: []}));
     const start = Date.parse(rows[0].hour_start_utc), end = Date.parse(rows[rows.length - 1].hour_start_utc) + H;
-    $('f-note').textContent = `Lần chạy mô hình: ${when(Date.parse(m.model_run_at))} · cập nhật khoảng 12 giờ một lần · giá trị cho ô lưới quanh ${num(m.grid_cell.latitude, 2)}°B, ${num(m.grid_cell.longitude, 2)}°Đ.`;
+    $('f-note').textContent = `Lần chạy mô hình: ${when(Date.parse(m.model_run_at))} · cập nhật khoảng 12 giờ một lần · ` + (g ? `ô mô hình chứa ${S.place.type === 'area' ? areaName(S.place).toLowerCase() : 'vị trí bạn chọn'} (cùng giá trị với ${g.areas.length} phường, xã).` : 'ô mô hình trung tâm Hà Nội. Chọn khu vực ở trang Quanh tôi để xem ô của bạn.');
     lineChart($('f-chart'), rows, start, end, $('f-readout'), {label: 'PM2.5 dự báo theo giờ của mô hình CAMS'});
     const v = S.now.validation;
     $('f-validation').textContent = v ? `${v.summary} Tháng ${v.period}: ${v.stations.map(x => `${x.name.includes('99385') ? 'Tây Hồ' : 'Gia Lâm'} lệch trung bình ${x.bias > 0 ? '+' : ''}${num(x.bias)} µg/m³`).join(', ')}. Tháng 11, mô hình lại thường thấp hơn số đo.` : '';

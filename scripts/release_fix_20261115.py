@@ -1,6 +1,7 @@
 """Frozen follow-up release after hosted acceptance of plan 19df0056.
 
-Fixes found on the deployed site:
+Fixes found on the deployed site, plus the per-area CAMS estimate for all
+126 Hanoi areas (model_areas in the projection):
 - the public API's reserved concurrency of 2 throttled the new pages'
   parallel history requests (throttle replies carry no CORS header);
 - Dragon's latest hour was missing from history because OpenAQ /hours lags
@@ -144,6 +145,16 @@ def execute(c, packet, plan, digest):
     )
     if current["published_at"] != result["published_at"]:
         raise ValueError("Projection pointer did not move")
+    areas = current.get("model_areas") or {}
+    r.value["model_areas"] = {
+        k: areas.get(k) for k in ("fetch_status", "model_run_at", "group_count")
+    }
+    r.save()
+    if (
+        areas.get("fetch_status") != "ok"
+        or sum(len(g["areas"]) for g in areas.get("groups", [])) != 126
+    ):
+        raise ValueError("Per-area model estimate missing or incomplete")
     update_code(c, r, plan, packet, "api", "nowcast.zip", rev["api"])
     r.write(
         "put_api_concurrency",

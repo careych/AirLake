@@ -210,7 +210,13 @@ class FixReleaseTests(unittest.TestCase):
         lam.put_function_concurrency = put
         s3 = S3()
         s3.objects[rel.CURRENT_KEY] = json.dumps(
-            {"published_at": "2026-11-16T01:00:00Z"}
+            {
+                "published_at": "2026-11-16T01:00:00Z",
+                "model_areas": {
+                    "fetch_status": "ok",
+                    "groups": [{"areas": list(range(126))}],
+                },
+            }
         ).encode()
         c = {
             "sts": type(

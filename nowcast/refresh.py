@@ -13,7 +13,7 @@ from datetime import timedelta
 
 from ingestion.openaq import stamp, utc
 from live_data.contract import ACCOUNT, BUCKET
-from nowcast import history, openmeteo, project, sensor_community
+from nowcast import history, model_areas, openmeteo, project, sensor_community
 from nowcast.http import UpstreamError
 from nowcast.public_api import CURRENT_KEY
 
@@ -186,6 +186,36 @@ def run_model(store, http, previous, now):
     return model
 
 
+def run_areas(store, http, previous, model, now):
+    """Per-area CAMS estimate for the run in use; failure never blocks publishing."""
+    run = int(utc(model["model_run_at"]).timestamp())
+    meta = {
+        "last_run_initialisation_time": run,
+        "last_run_availability_time": int(utc(model["model_available_at"]).timestamp()),
+        "update_interval_seconds": 43200,
+    }
+    key = f"{PREFIX}model/cams_global_hanoi/{run}.json"
+    try:
+        raw, _ = store.get(key)
+        if raw is None:
+            body = http(openmeteo.API, model_areas.params(), timeout=30)
+            value = model_areas.build(meta, body, now)  # validate before storing
+            store.put_new(key, json.dumps(body, sort_keys=True).encode())
+        else:
+            value = model_areas.build(meta, json.loads(raw), now)
+        return {**value, "fetch_status": "ok"}
+    except (UpstreamError, ValueError, KeyError, TypeError, IndexError) as e:
+        old = (previous or {}).get("model_areas") or {}
+        return {  # keep last-known-good metadata; the page shows "unavailable"
+            "kind": "model",
+            "fetch_status": "unavailable",
+            "fetch_error": getattr(e, "reason", type(e).__name__),
+            "last_good_model_run_at": old.get("model_run_at")
+            or old.get("last_good_model_run_at"),
+            "groups": [],
+        }
+
+
 SOURCES = {"openaq-6123215": "6123215", "sensor-community-99385": "99385"}
 
 
@@ -216,6 +246,7 @@ def run(s3, http, openaq_key, validation, now):
     if previous is not None and "recent" not in previous:
         previous = {**previous, "recent": stored_recent(store, now)}
     model = run_model(store, http, previous, now)
+    areas = run_areas(store, http, previous, model, now)
     dragon = source(
         previous,
         6123215,
@@ -243,6 +274,7 @@ def run(s3, http, openaq_key, validation, now):
                 content_key(f"{PREFIX}observations/{name}/{at[:10]}/", at, body), body
             )
     value = project.build(now, dragon, community, model, validation, previous)
+    value["model_areas"] = areas
     validate(value, previous)
     body = json.dumps(
         value, ensure_ascii=False, sort_keys=True, allow_nan=False
