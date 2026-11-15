@@ -7,8 +7,8 @@ from ingestion.openaq import utc
 SITE = "https://public.dhyvgpdsnj4zi.amplifyapp.com/"
 VIETNAM = timedelta(hours=7)
 STATIONS = {
-    6123215: "Vinhomes Ocean Park, Gia Lâm (cảm biến Dragon)",
-    99385: "Khu vực Tây Hồ (cảm biến cộng đồng #99385)",
+    6123215: "Gia Lâm · Ocean Park",
+    99385: "Tây Hồ · cảm biến cộng đồng (vị trí gần đúng)",
 }
 THRESHOLDS = (25, 35, 50, 75, 100)
 
@@ -51,9 +51,9 @@ def welcome():
     return (
         "Chào bạn! Đây là bot AirLake, theo dõi bụi mịn PM2.5 ở Hà Nội.\n\n"
         "Bạn có thể:\n"
-        "• xem số đo mới nhất tại các trạm AirLake được phép chia sẻ,\n"
+        "• xem số đo mới nhất ở Gia Lâm và Tây Hồ,\n"
         "• nhận tin nhắn khi bụi mịn tại trạm bạn chọn vượt ngưỡng bạn đặt.\n\n"
-        "Hiện AirLake có 2 điểm đo, chưa phủ toàn thành phố. Chọn một mục bên dưới để bắt đầu."
+        "AirLake mới có 2 điểm đo, chưa phủ cả thành phố. Chọn một mục bên dưới để bắt đầu."
     )
 
 

@@ -16,6 +16,10 @@ from ingestion.openaq import stamp, utc
 ROOT = Path(__file__).resolve().parents[1]
 
 
+# Residents see places; provider names stay as source metadata.
+PLACE_NAMES = {6123215: "Gia Lâm · Ocean Park"}
+
+
 def build(
     output,
     export_path,
@@ -120,7 +124,8 @@ def build(
     }
     for s in data["stations"]:
         s["historical_name"] = s["name"]
-        s["name"] = lookup[s["id"]]["name"].strip()
+        s["source_name"] = lookup[s["id"]]["name"].strip()
+        s["name"] = PLACE_NAMES.get(s["id"], s["source_name"])
         s["sensor_id"] = audit["stations"][str(s["id"])]["sensor_id"]
         s["history_quality"] = {
             k: v

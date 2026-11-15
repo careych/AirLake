@@ -100,7 +100,7 @@
     if(data?.mode==='instructor') parts.push('BẢN TRÌNH DIỄN CÓ XÁC THỰC · Một số nguồn chưa rõ quyền công bố. Không chia sẻ dữ liệu hạn chế ra ngoài.');
     else if(data) parts.push(`Bản công bố thí điểm · ${data.stations.length} điểm đủ điều kiện chia sẻ. Các nguồn khác đang được xác minh quyền công bố.`);
     if(!navigator.onLine)parts.push('Bạn đang ngoại tuyến. Nếu số đo còn hiển thị, đó là bản đã tải trước; thời gian đo không thay đổi.');
-    $('notice').textContent=window.AirLakeNow?.notice()||parts.join(' ');$('notice').hidden=!$('notice').textContent;
+    $('notice').textContent=window.AirLakeNow?window.AirLakeNow.notice():parts.join(' ');$('notice').hidden=!$('notice').textContent;
   }
   function render() {
     if(!data)return;

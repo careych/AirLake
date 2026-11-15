@@ -45,7 +45,7 @@
     const active=supports(d);$('history-range-label').hidden=!active;$('historical-analytics').hidden=!active;
     $('research-granularity').querySelector('[value=daily]').disabled=!active;
     if(!active)return;
-    $('prepared-time').previousElementSibling.textContent='Bản số liệu đã đối chiếu lúc';$('prepared-time').textContent=time(d.dataset_verified_at);$('version-label').textContent=`Số liệu lịch sử tính lúc ${time(d.computed_at)} · Bản dữ liệu ${window.AIRLAKE_CONFIG.sha256.slice(0,12)} · Không tự làm mới.`;
+    $('prepared-time').previousElementSibling.textContent='Bản số liệu đã đối chiếu lúc';$('prepared-time').textContent=time(d.dataset_verified_at);$('version-label').textContent=`Lịch sử tháng 9/2026 tính lúc ${time(d.computed_at)} · bản ${window.AIRLAKE_CONFIG.sha256.slice(0,12)}. Số đo hiện tại tự cập nhật.`;
     const label=$('history-range').value,analysis=d.analytics[label],summary=analysis.stations[String(selected)],station=d.stations.find(s=>s.id===selected);
     $('home-period').textContent=`24 giờ cuối trong bản lịch sử: ${time(new Date(Date.parse(d.window_end_utc)-86400000).toISOString())} → ${time(d.window_end_utc)} · giờ Việt Nam`;
     $('home-period-title').textContent='Một ngày trong bản lịch sử đã có';$('trend-period').textContent=`${time(analysis.start_utc)} → ${time(analysis.end_utc)} · giờ Việt Nam`;
