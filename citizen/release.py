@@ -90,15 +90,20 @@ def prepare(
         if job["status"] != "SUCCEED":
             raise ValueError("Do not replace an uncertain deployment")
         old_jobs[branch] = str(int(job["job_id"]))
-    raw, _, _ = private_credentials(credential_path)
     old_plan_bytes = previous_receipt.with_name("plan.json").read_bytes()
-    old_plan = json.loads(old_plan_bytes)
-    if sha(old_plan_bytes) != previous["plan_sha256"] or old_plan[
-        "credential_sha256"
-    ] != sha(raw):
-        raise ValueError(
-            "Private credential does not match the retained deployment plan"
-        )
+    if sha(old_plan_bytes) != previous["plan_sha256"]:
+        raise ValueError("Previous deployment plan changed")
+    # Without a credential file the existing demo Basic Auth is preserved and
+    # verified read-only; no password is read, stored or changed.
+    raw = None
+    if credential_path is not None:
+        raw, _, _ = private_credentials(credential_path)
+        if json.loads(old_plan_bytes)["credential_sha256"] != sha(raw):
+            raise ValueError(
+                "Private credential does not match the retained deployment plan"
+            )
+    elif failure_containment != "stop_only":
+        raise ValueError("Preserving existing auth requires stop-only containment")
     bundles, details = {}, {}
     for b, source, mode in (
         ("public", public, "public"),
@@ -113,7 +118,10 @@ def prepare(
         "previous_jobs": old_jobs,
         "branches": details,
         "zip_sha256": {b: sha(body) for b, body in bundles.items()},
-        "credential_sha256": sha(raw),
+        "credential_sha256": sha(raw) if raw is not None else None,
+        "auth_mode": "verify_with_credential"
+        if raw is not None
+        else "preserve_existing",
         "helper_sha256": sha(Path(__file__).read_bytes()),
         "max_deployments": 2,
         "new_website_get_budget": 40,
@@ -128,7 +136,8 @@ def prepare(
         "custom_headers": custom_headers,
     }
     packet.mkdir(mode=0o700, parents=True)
-    (packet / "preview-login.json").write_bytes(raw)
+    if raw is not None:
+        (packet / "preview-login.json").write_bytes(raw)
     for b, body in bundles.items():
         (packet / (b + ".zip")).write_bytes(body)
     (packet / "plan.json").write_text(json.dumps(plan, sort_keys=True))
@@ -142,12 +151,20 @@ def load(packet):
         raise ValueError("This release was cancelled by the owner")
     raw = (packet / "plan.json").read_bytes()
     p = json.loads(raw)
-    credentials_raw, _, _ = private_credentials(packet / "preview-login.json")
+    preserve = p.get("auth_mode") == "preserve_existing"
+    credentials_raw = (
+        None if preserve else private_credentials(packet / "preview-login.json")[0]
+    )
+    if preserve and (
+        (packet / "preview-login.json").exists()
+        or p["failure_containment"] != "stop_only"
+    ):
+        raise ValueError("Preserve-auth plan must not carry or need a credential")
     if (
         (p["account"], p["region"], p["app_id"], p["domain"])
         != (ACCOUNT, REGION, APP, DOMAIN)
         or p["helper_sha256"] != sha(Path(__file__).read_bytes())
-        or p["credential_sha256"] != sha(credentials_raw)
+        or (not preserve and p["credential_sha256"] != sha(credentials_raw))
         or set(p["branches"]) != {"public", "demo"}
         or p["max_deployments"] != 2
         or p["new_website_get_budget"] != 40
@@ -163,7 +180,10 @@ def load(packet):
 def preflight(c, packet, plan):
     if c["sts"].get_caller_identity()["Account"] != ACCOUNT:
         raise ValueError("Wrong AWS account")
-    _, credentials, _ = private_credentials(packet / "preview-login.json")
+    preserve = plan.get("auth_mode") == "preserve_existing"
+    credentials = (
+        None if preserve else private_credentials(packet / "preview-login.json")[1]
+    )
     app = c["amplify"].get_app(appId=APP)["app"]
     if (
         app["name"] != NAME
@@ -185,8 +205,10 @@ def preflight(c, packet, plan):
         if (
             actual["enableBasicAuth"] != (b == "demo")
             or actual["enableAutoBuild"]
+            or (b == "demo" and preserve and not actual.get("basicAuthCredentials"))
             or (
                 b == "demo"
+                and not preserve
                 and base64.b64decode(
                     actual.get("basicAuthCredentials", ""), validate=True
                 )
@@ -205,7 +227,20 @@ def preflight(c, packet, plan):
             or str(int(jobs[0]["jobId"])) != plan["previous_jobs"][b]
         ):
             raise ValueError("Deployment changed or is uncertain; stop")
-    return {"status": "PASS_EXISTING_APP_AND_AUTH_UNCHANGED"}
+    demo = c["amplify"].get_branch(appId=APP, branchName="demo")["branch"]
+    return {
+        "status": "PASS_EXISTING_APP_AND_AUTH_UNCHANGED",
+        "demo_auth_fingerprint": auth_fingerprint(demo),
+    }
+
+
+def auth_fingerprint(branch):
+    """Hash of the stored Basic Auth setting; never the password itself."""
+    return sha(
+        json.dumps(
+            [branch.get("enableBasicAuth"), branch.get("basicAuthCredentials", "")]
+        ).encode()
+    )
 
 
 def execute(c, packet, plan, digest):
@@ -213,8 +248,13 @@ def execute(c, packet, plan, digest):
 
     if (packet / "release-receipt.json").exists():
         raise ValueError("Preserve prior attempt; never retry deployment automatically")
-    preflight(c, packet, plan)
-    _, credentials, encoded = private_credentials(packet / "preview-login.json")
+    checked = preflight(c, packet, plan)
+    preserve = plan.get("auth_mode") == "preserve_existing"
+    credentials, encoded = (
+        (None, None)
+        if preserve
+        else private_credentials(packet / "preview-login.json")[1:]
+    )
     receipt = Receipt(packet / "release-receipt.json", digest)
     receipt.value.update(app_id=APP, domain=DOMAIN, deployments={})
     receipt.save()
@@ -224,7 +264,8 @@ def execute(c, packet, plan, digest):
         # AWS returns an encrypted password component. Validate the retained
         # password through HTTPS, never by comparing it with the API field.
         receipt.value["http_checks"] = []
-        for authenticated, expected in ((False, 401), (True, 200)):
+        checks = ((False, 401),) if preserve else ((False, 401), (True, 200))
+        for authenticated, expected in checks:
             item = {
                 "branch": "demo",
                 "authenticated": authenticated,
@@ -305,6 +346,24 @@ def execute(c, packet, plan, digest):
                 status="SUCCEED", url="https://" + b + "." + DOMAIN
             )
             receipt.save()
+        after = c["amplify"].get_branch(appId=APP, branchName="demo")["branch"]
+        if auth_fingerprint(after) != checked["demo_auth_fingerprint"]:
+            raise ValueError("Demo Basic Auth setting changed during release")
+        anonymous = http.get(
+            "https://demo." + DOMAIN + "/", timeout=25, allow_redirects=False
+        )
+        receipt.value["http_checks"].append(
+            {
+                "branch": "demo",
+                "authenticated": False,
+                "after_deploy": True,
+                "status": anonymous.status_code,
+            }
+        )
+        receipt.value["demo_auth_unchanged"] = True
+        receipt.save()
+        if anonymous.status_code != 401:
+            raise ValueError("Demo is not protected after deployment")
         receipt.value["status"] = "PASS_DEPLOYED_BROWSER_VERIFICATION_REQUIRED"
         receipt.save()
         return receipt.value

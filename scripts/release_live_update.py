@@ -78,7 +78,7 @@ def prepare(packet, site_inputs, bot_url, previous_zip):
             "lambda:UpdateFunctionCode bot (RevisionId pinned), wait, verify CodeSha256",
             "Amplify: update_app with unchanged headers, one deployment per branch (public, demo)",
         ],
-        "unchanged": "public API code and URL, schedules, IAM, alarms, historical data, private API",
+        "unchanged": "public API code and URL, schedules, IAM, alarms, historical data, private API, demo Basic Auth (no password read or changed)",
         "browser_get_budget": 40,
         "rollback": [
             "UpdateFunctionCode with previous-refresh.zip",
@@ -227,7 +227,7 @@ def execute(c, packet, plan, digest):
         child,
         packet / "site-public",
         packet / "site-demo",
-        Path(i["credentials"]),
+        Path(i["credentials"]) if "credentials" in i else None,  # None: keep demo auth
         Path(plan["previous_site_receipt"]),
         demo_mode="public",
         failure_containment="stop_only",
