@@ -20,8 +20,10 @@ Series objects: `s3://airlake-701364614078-lake/nowcast/v1/history/<station>.jso
 one row per hour, keyed by the **UTC start** of the hour. Backfill
 (`scripts/backfill_history.py`, 2026-11-15): 4 OpenAQ API calls, 103 OpenAQ
 archive files, 79 Sensor.Community archive files (1 s apart). Result to
-2026-11-15 08:00Z: Dragon 1,778/1,815 hours (98.0 %, one 34-hour outage
-25–26/10); #99385 1,754/1,815 (96.6 %, outage 06–08/11, archive 404 for 07/11).
+2026-11-15 08:00Z: Dragon 1,779 hours (one 34-hour outage 25–26/10); #99385
+1,754 hours to the end of 14/11 UTC (sensor silent 06/11 05:52Z–08/11 10:14Z,
+archive 404 for 07/11). Five archive days that first failed with network
+errors (07, 10, 11, 22, 23/09) were recovered by one bounded retry.
 
 The refresh Lambda extends both series after each publication (never
 before, never blocking it): Dragon `/hours` for the last 72 h when an hour is
@@ -35,7 +37,11 @@ OpenAQ stamps an hourly value with the **end** of the hour (verified: archive
 Glue/Athena export used that stamp as `hour_start`, so every Dragon hour there
 is labelled one hour late and daily means include 00:00–01:00 of the next day.
 The new series fixes the label; after shifting, 719/720 September Dragon
-values match the Glue export exactly (the 720th lies before 1 September).
+values match the Glue export exactly. The remaining pair is the month edge:
+the Glue window selected records by their end stamp, so it holds the OpenAQ
+record `2026-09-01T00:00+07:00` = 63.1 (really 31/08 23:00–24:00) and lacks
+`2026-10-01T00:00+07:00` = 24.1 (really 30/09 23:00–24:00); the new series
+holds the latter and not the former.
 The frozen export is not rewritten; the site describes its convention.
 
 OpenAQ `/hours` rounds values ≥ 100 µg/m³ to whole numbers (12/720 September
