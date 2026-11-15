@@ -18,8 +18,16 @@ from nowcast.public_api import CURRENT_KEY
 PREFIX = "nowcast/v1/"
 
 
+def conditional_writes(s3):
+    """Older Lambda-bundled botocore lacks IfNoneMatch; keys are unique per time anyway."""
+    try:
+        return "IfNoneMatch" in s3.meta.service_model.operation_model("PutObject").input_shape.members
+    except AttributeError:
+        return True
+
+
 def put(s3, key, body, immutable=True):
-    extra = {"IfNoneMatch": "*"} if immutable else {}
+    extra = {"IfNoneMatch": "*"} if immutable and conditional_writes(s3) else {}
     s3.put_object(
         Bucket=BUCKET,
         Key=key,
