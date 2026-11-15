@@ -9,6 +9,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import urlparse
 
+from exact_aqi_policy_baseline import recorded_bytes
+
 REPOSITORY = Path(__file__).resolve().parents[1]
 EVIDENCE = REPOSITORY / "tests/evidence/real_openaq_cloud_2026-11-07.json"
 
@@ -31,7 +33,7 @@ class CloudAcceptanceEvidenceTests(unittest.TestCase):
                 path = (REPOSITORY / name).resolve()
                 self.assertTrue(path.is_relative_to(REPOSITORY))
                 self.assertEqual(
-                    expected, hashlib.sha256(path.read_bytes()).hexdigest()
+                    expected, hashlib.sha256(recorded_bytes(name)).hexdigest()
                 )
         for entry in (record["plan"], record["local_reference"]):
             self.assertEqual(

@@ -75,7 +75,7 @@ def load(store, environment):
     proof_sha = environment.get("AIRLAKE_HISTORY_ACCEPTANCE_SHA256", "")
     if (
         not re.fullmatch(
-            r"historical-demo/20261114_[a-f0-9]{8}/outputs/export.json", key
+            r"historical-demo/2026111[45]_[a-f0-9]{8}/outputs/export.json", key
         )
         or not re.fullmatch("[a-f0-9]{64}", expected)
         or not re.fullmatch("[a-f0-9]{64}", proof_sha)

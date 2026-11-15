@@ -15,10 +15,18 @@ from live_data.contract import ACCOUNT, BUCKET, REGION, sha
 from live_data.deploy import clients
 
 ROOT = Path(__file__).resolve().parents[1]
-RUN = "20261114_7a6e91c2"
+# Run 2 reprocesses the same frozen source with the exact AQI policy. Run 1
+# (20261114_7a6e91c2) stays untouched as evidence of the DOUBLE half-tie.
+RUN = "20261115_90a13b9f"
 PREFIX = "historical-demo/" + RUN + "/"
 DATABASE = "airlake_history_" + RUN
-JOB = "airlake-history-20261114-7a6e91c2"
+JOB = "airlake-history-" + RUN.replace("_", "-")
+SUPERSEDED_RUN = "20261114_7a6e91c2"
+ROLE_PROPAGATION_SECONDS = 30
+# Private API code/config that run 1's publication left deployed (not HTTP-accepted).
+SUPERSEDED_API_SHA256 = (
+    "36ae59d77df60dbd7fdf3979f9c8c0e807bd1815f97f98d0bbf96cc464544af8"
+)
 TABLES = (
     "bronze_measurements",
     "aq_measurements",
@@ -183,6 +191,10 @@ def prepare(packet, source, publication_inputs=None, previous_api_zip=None):
             path: sha(Path(path).read_bytes()) for path in public_files.values()
         },
         "previous_api_sha256": sha(previous) if public_files else None,
+        "superseded_api": {
+            "code_sha256": SUPERSEDED_API_SHA256,
+            "export_key": "historical-demo/" + SUPERSEDED_RUN + "/outputs/export.json",
+        },
         "website_source_sha256": {
             str(path.relative_to(ROOT)): sha(path.read_bytes())
             for path in website_sources
@@ -193,9 +205,12 @@ def prepare(packet, source, publication_inputs=None, previous_api_zip=None):
         "manual_amplify_deployments": 2 if public_files else 0,
         "website_app_id": "dhyvgpdsnj4zi",
         "public_rows": {"hourly": 720, "daily": 30},
-        "protected_rows": {"hourly": 2133, "daily": 90},
+        "protected_rows": {"hourly": 720, "daily": 30},
+        "demo_mode": "public",
+        "demo_stations": [6123215],
+        "website_failure_containment": "stop_only",
         "api_function": "airlake-live-20261114_9e2c740b-api",
-        "new_api_inline_policy": "HistoricalResearch20261114",
+        "new_api_inline_policy": "HistoricalResearch20261115",
         "new_api_read_keys": [
             PREFIX + "outputs/" + name for name in ("export.json", "acceptance.json")
         ],
@@ -412,6 +427,8 @@ def run_glue(c, p, packet, digest):
     )["PolicyDocument"]
     if policy != p["policy"]:
         raise ValueError("Role policy not established")
+    # Run 1 failed to start 5 s after role creation; give IAM time to propagate.
+    time.sleep(ROLE_PROPAGATION_SECONDS)
     r.write("create_one_history_job", lambda: c["glue"].create_job(**definition))
     r.write("start_one_history_run", lambda: c["glue"].start_job_run(JobName=JOB))
     return r.value
