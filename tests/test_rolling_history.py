@@ -406,6 +406,32 @@ class UpdateTests(unittest.TestCase):
             sum("/history/versions/" in k for k in self.store.s3.objects), 2
         )
 
+    def test_latest_dragon_reading_fills_the_hour_until_better_sources_arrive(self):
+        proj = {
+            "recent": {},
+            "observations": [
+                {
+                    "station_id": 6123215,
+                    "fetch_status": "ok",
+                    "observed_at": "2026-11-15T08:00:00Z",
+                    "pm25": 33.9,
+                },
+                {
+                    "station_id": 6123215,
+                    "fetch_status": "fetch_failed",
+                    "observed_at": "2026-11-15T09:00:00Z",
+                    "pm25": 1.0,
+                },
+            ],
+        }
+        h.update(
+            self.store, self.http(fail=True), "SYNTHETIC", proj, NOW.replace(minute=30)
+        )
+        rows = json.loads(self.store.s3.objects[h.key(6123215)])["rows"]
+        self.assertEqual(rows[-1], row("2026-11-15T07:00:00Z", 33.9, "openaq_latest"))
+        merged = h.merge(rows, [row("2026-11-15T07:00:00Z", 33.9, "openaq_archive")])
+        self.assertEqual(merged[-1]["basis"], "openaq_archive")
+
     def test_upstream_failure_never_raises_and_writes_nothing(self):
         before = dict(self.store.s3.objects)
         out = h.update(

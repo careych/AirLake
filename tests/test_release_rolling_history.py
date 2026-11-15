@@ -171,3 +171,71 @@ class ReleaseTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FixReleaseTests(unittest.TestCase):
+    def test_order_concurrency_and_stop_before_site(self):
+        from scripts import release_fix_20261115 as fix
+
+        plan = {
+            "functions": fix.FUNCTIONS,
+            "deployed_code_sha256_b64": {"refresh": fix.DEPLOYED, "api": fix.DEPLOYED},
+            "new_code_sha256_b64": {"refresh": "N", "api": "N"},
+            "schedules_unchanged": list(rel.SCHEDULES),
+            "site_inputs": dict.fromkeys(
+                (
+                    "export",
+                    "audit",
+                    "metadata",
+                    "latest",
+                    "source_metadata",
+                    "evidence",
+                    "acceptance",
+                ),
+                "x",
+            ),
+            "public_api": "https://api.example",
+            "bot_url": "https://t.me/x",
+        }
+        log, reserved = [], {"value": 2}
+        lam = Lambda(plan, log)
+        lam.get_function_concurrency = lambda FunctionName: {
+            "ReservedConcurrentExecutions": reserved["value"]
+        }
+
+        def put(FunctionName, ReservedConcurrentExecutions):
+            log.append(f"concurrency {ReservedConcurrentExecutions}")
+            reserved["value"] = ReservedConcurrentExecutions
+
+        lam.put_function_concurrency = put
+        s3 = S3()
+        s3.objects[rel.CURRENT_KEY] = json.dumps(
+            {"published_at": "2026-11-16T01:00:00Z"}
+        ).encode()
+        c = {
+            "sts": type(
+                "S", (), {"get_caller_identity": lambda self: {"Account": rel.ACCOUNT}}
+            )(),
+            "lambda": lam,
+            "s3": s3,
+            "scheduler": type(
+                "X", (), {"get_schedule": lambda self, Name: {"State": "ENABLED"}}
+            )(),
+        }
+        with tempfile.TemporaryDirectory() as root:
+            packet = Path(root)
+            (packet / "nowcast.zip").write_bytes(b"zip")
+            with (
+                mock.patch("historical.build.build", side_effect=RuntimeError("stop")),
+                self.assertRaises(RuntimeError),
+            ):
+                fix.execute(c, packet, plan, "d" * 64)
+            self.assertEqual(
+                log, ["update_refresh", "invoke", "update_api", "concurrency 10"]
+            )
+            with self.assertRaises(ValueError):  # never retried
+                fix.execute(c, packet, plan, "d" * 64)
+        lam.code = dict(plan["deployed_code_sha256_b64"])
+        reserved["value"] = 5
+        with self.assertRaisesRegex(ValueError, "concurrency changed"):
+            fix.preflight(c, plan)

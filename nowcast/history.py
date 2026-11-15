@@ -8,6 +8,8 @@ instantaneous and are bucketed by the hour they fall in.
 
 Row basis (a better basis replaces a worse one for the same hour):
 - openaq_archive Dragon value from the OpenAQ daily archive (one decimal)
+- openaq_latest  Dragon hourly value from OpenAQ /latest, as published in the
+                 projection; /hours often lags it by an hour or more
 - openaq_hourly  Dragon value from OpenAQ /sensors/{id}/hours (values >= 100
                  come back rounded to whole numbers; used until the archive,
                  which lags ~4 days, has the hour)
@@ -36,7 +38,13 @@ START = "2026-08-31T17:00:00Z"  # 2026-09-01 00:00 Vietnam time
 DRAGON, COMMUNITY = 6123215, 99385
 DRAGON_SENSOR = 14581375
 OPENAQ_HOURS = "https://api.openaq.org/v3/sensors/{}/hours"
-RANK = {"sc_sampled": 0, "sc_archive": 1, "openaq_hourly": 1, "openaq_archive": 2}
+RANK = {
+    "sc_sampled": 0,
+    "sc_archive": 1,
+    "openaq_latest": 1,
+    "openaq_hourly": 1,
+    "openaq_archive": 2,
+}
 VALID_DAY_HOURS = 18  # 75 % of a day, as for US EPA daily PM2.5 validity
 MIN_SAMPLED = 2
 CONVENTION = (
@@ -101,6 +109,26 @@ def openaq_archive_hours(text, sensor_id=DRAGON_SENSOR):
                 "pm25": value(float(r["value"])),
                 "n": 1,
                 "basis": "openaq_archive",
+            }
+        )
+    return rows
+
+
+def openaq_latest_hours(projection):
+    """The projection's Dragon reading is that hour's mean, stamped at its end."""
+    rows = []
+    for o in projection.get("observations", []):
+        if o.get("station_id") != DRAGON or o.get("fetch_status") != "ok":
+            continue
+        end = utc(o["observed_at"])
+        if end.minute or end.second:
+            continue
+        rows.append(
+            {
+                "hour_start": stamp(end - HOUR),
+                "pm25": value(o["pm25"]),
+                "n": 1,
+                "basis": "openaq_latest",
             }
         )
     return rows
@@ -272,6 +300,7 @@ def update(store, http, openaq_key, projection, now):
         current = json.loads(raw)
         rows, new, errors = current["rows"], [], []
         if station == DRAGON:
+            new += openaq_latest_hours(projection)
             latest = utc(rows[-1]["hour_start"]) if rows else utc(START)
             stale = now - utc(current["updated_at"]) >= timedelta(hours=6)
             if latest + 2 * HOUR <= now or stale:

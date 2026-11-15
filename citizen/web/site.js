@@ -55,17 +55,37 @@
   const distText = (d, exact) => (exact ? 'cách khoảng ' : 'cách khoảng ') + (d < 1 ? 'dưới 1 km' : num(d, 0) + ' km') + (exact ? '' : ' (vị trí cảm biến gần đúng)');
   function notice(text) { const n = $('notice'); n.textContent = text || ''; n.hidden = !text; }
 
+  // The public API runs with low reserved concurrency: at most two requests in
+  // flight, identical requests share one fetch, and a refused request (the
+  // throttle reply carries no CORS header, so it surfaces as a network error)
+  // is tried once more after a short pause.
+  const inflight = new Map(), waiting = [];
+  let active = 0;
+  const slot = () => active < 2 ? (active++, Promise.resolve()) : new Promise(r => waiting.push(r));
+  const release = () => { const next = waiting.shift(); if (next) next(); else active--; };
+  async function fetchJSON(url) {
+    await slot();
+    try {
+      for (let attempt = 0; ; attempt++) {
+        const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 15000);
+        try {
+          const r = await fetch(url, {cache: 'no-cache', credentials: 'omit', redirect: 'error', signal: ctl.signal});
+          if (r.ok) return await r.json();
+          if (attempt || ![429, 503].includes(r.status)) throw Error('http ' + r.status);
+        } catch (e) {
+          if (attempt || String(e.message).startsWith('http')) throw e;
+        } finally { clearTimeout(timer); }
+        await new Promise(r => setTimeout(r, 1200 + Math.random() * 800));
+      }
+    } finally { release(); }
+  }
   async function getJSON(url, ttl = 0) {
     const hit = S.cache.get(url);
     if (hit && Date.now() - hit.at < ttl) return hit.value;
-    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 15000);
-    try {
-      const r = await fetch(url, {cache: 'no-cache', credentials: 'omit', redirect: 'error', signal: ctl.signal});
-      if (!r.ok) throw Error('http ' + r.status);
-      const value = await r.json();
-      S.cache.set(url, {at: Date.now(), value});
-      return value;
-    } finally { clearTimeout(timer); }
+    if (inflight.has(url)) return inflight.get(url);
+    const p = fetchJSON(url).then(value => { S.cache.set(url, {at: Date.now(), value}); return value; }).finally(() => inflight.delete(url));
+    inflight.set(url, p);
+    return p;
   }
   async function history(sid, start, end, granularity = 'hourly') {
     if (!API) throw Error('no api');
@@ -472,7 +492,7 @@
     const sorted = rows.map(x => x.pm25).sort((a, b) => a - b), med = sorted.length ? sorted[Math.floor(sorted.length / 2)] : NaN;
     const basis = {}, flags = {};
     rows.forEach(x => { basis[x.basis] = (basis[x.basis] || 0) + 1; x.flags.forEach(f => { flags[f] = (flags[f] || 0) + 1; }); });
-    const BASIS = {openaq_hourly: 'giá trị giờ của OpenAQ', sc_archive: 'trung bình từ kho lưu trữ Sensor.Community', sc_sampled: 'tạm tính từ các lần AirLake lấy mẫu'};
+    const BASIS = {openaq_archive: 'giá trị giờ từ kho lưu trữ OpenAQ', openaq_latest: 'giá trị giờ mới nhất của OpenAQ', openaq_hourly: 'giá trị giờ của OpenAQ', sc_archive: 'trung bình từ kho lưu trữ Sensor.Community', sc_sampled: 'tạm tính từ các lần AirLake lấy mẫu'};
     const FLAG = {very_low: 'rất thấp (dưới 2 µg/m³)', isolated_peak: 'đỉnh đơn lẻ', provisional: 'tạm tính'};
     $('h-tech').replaceChildren(el('ul', {class: 'plain-list'},
       el('li', {text: `Trung vị theo giờ: ${num(med)} µg/m³; thấp nhất ${num(sorted[0])}, cao nhất ${num(sorted[sorted.length - 1])} µg/m³.`}),
