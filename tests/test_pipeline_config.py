@@ -14,6 +14,8 @@ from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
 
+from exact_aqi_policy_baseline import recorded_bytes
+
 REPOSITORY = Path(__file__).resolve().parents[1]
 
 
@@ -197,11 +199,14 @@ class ConfigTests(unittest.TestCase):
             for n in ast.parse((REPOSITORY / "scripts/gold_batch.py").read_text()).body
             if isinstance(n, ast.FunctionDef)
         }
+        # build_hourly_aqi_source deliberately changed on 2026-11-15 to the exact
+        # micro-unit AQI policy; tests/test_aqi_exact_policy.py pins its arithmetic.
         for name in before.keys() - {
             "main",
             "create_spark_session",
             "ensure_breakpoint_table",
             "create_gold_tables",
+            "build_hourly_aqi_source",
         }:
             with self.subTest(function=name):
                 self.assertEqual(ast.dump(before[name]), ast.dump(after[name]))
@@ -239,9 +244,9 @@ class ConfigTests(unittest.TestCase):
                 if name in wiring["current_source_sha256"]:
                     self.assertEqual(digest, wiring["previous_source_sha256"][name])
                     digest = wiring["current_source_sha256"][name]
-                self.assertEqual(
-                    digest, hashlib.sha256((REPOSITORY / name).read_bytes()).hexdigest()
-                )
+                # Evidence describes the pre-policy bytes; verify them in Git.
+                recorded = recorded_bytes(name)
+                self.assertEqual(digest, hashlib.sha256(recorded).hexdigest())
 
 
 class SelectionTests(unittest.TestCase):

@@ -4,7 +4,6 @@ import glob
 import gzip
 import json
 import math
-import os
 import sys
 import time
 
@@ -31,7 +30,7 @@ def parse_args(argv=None):
     parser.add_argument(
         "--topic",
         default="aq_measurements_test1",
-        help="Kafka topic; CLI-only, defaults to aq_measurements_test1.",
+        help="Kafka topic. Defaults to the test topic.",
     )
     parser.add_argument(
         "--max-rows",

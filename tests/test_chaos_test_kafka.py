@@ -5,6 +5,7 @@ Covers:
 2. Verification of Bronze 9-field JSON measurement payload schema.
 3. Verification of Data Loss Rate calculation and report assertions.
 4. Simulated broker failover with buffer error retries and self-healing.
+5. Verification of Fail-safe guard blocking accidental production topic contamination.
 """
 
 from __future__ import annotations
@@ -41,6 +42,22 @@ class TestKafkaChaos(unittest.TestCase):
         self.enterContext(contextlib.redirect_stdout(io.StringIO()))
         self.enterContext(contextlib.redirect_stderr(io.StringIO()))
 
+    def test_default_topic_is_isolated(self):
+        """Verify default topic is isolated and does not target production."""
+        self.assertEqual(self.chaos.DEFAULT_TOPIC, "aq_measurements_chaos_test")
+        self.assertIn("aq_measurements", self.chaos.PRODUCTION_TOPICS)
+
+    def test_failsafe_guard_blocks_production_topic(self):
+        """Verify fail-safe guard prevents running chaos test on production topic without explicit permission."""
+        with self.assertRaises(ValueError) as cm:
+            self.chaos.validate_topic_safety("aq_measurements", allow_production_topic=False)
+        self.assertIn("Không được phép chạy kịch bản kiểm thử", str(cm.exception))
+
+        # Explicit allowance must pass
+        self.chaos.validate_topic_safety("aq_measurements", allow_production_topic=True)
+        # Test topics must always pass
+        self.chaos.validate_topic_safety("aq_measurements_chaos_test", allow_production_topic=False)
+
     def test_producer_configuration_enforces_zero_data_loss(self):
         """Verify that Kafka Producer configuration strictly enforces Zero Data Loss."""
         conf = self.chaos.build_producer_config("10.0.0.11:9092,10.0.1.12:9092")
@@ -58,15 +75,12 @@ class TestKafkaChaos(unittest.TestCase):
             data = json.loads(payload_str)
 
             self.assertIn(":", key)
-            self.assertIn("location_id", data)
-            self.assertIn("sensors_id", data)
-            self.assertIn("location", data)
-            self.assertIn("datetime", data)
-            self.assertIn("parameter", data)
-            self.assertEqual(data["parameter"], "pm25")
-            self.assertIn("value", data)
-            self.assertEqual(data["units"], "µg/m³")
-            self.assertEqual(data["seq_num"], str(seq))
+            self.assertIn(data["location_id"], (4946812, 4946813, 6123215))
+            self.assertIn("pm25", data["parameter"])
+            self.assertGreaterEqual(data["value"], 0.0)
+            self.assertEqual(data["unit"], "ug/m3")
+            self.assertEqual(data["test_marker"], "chaos-experiment-nfr03")
+            self.assertEqual(data["test_seq"], seq)
 
     def test_data_loss_calculation_and_report_verdicts(self):
         """Verify accurate loss rate computation and reporting verdicts."""
@@ -78,11 +92,11 @@ class TestKafkaChaos(unittest.TestCase):
             disruption_time_s=5.2,
             election_latency_ms=1150.0,
             bootstrap_servers="localhost:19092",
-            topic="aq_measurements",
+            topic="aq_measurements_chaos_test",
         )
         self.assertIn("0.00%", report_ok)
-        self.assertIn("🟢 ĐẠT (Zero Data Loss)", report_ok)
-        self.assertIn("🟢 ĐẠT TIÊU CHÍ NFR-03", report_ok)
+        self.assertIn("ĐẠT (PASSED)", report_ok)
+        self.assertIn("aq_measurements_chaos_test", report_ok)
 
         # 2. Defective data loss case (Failing Chaos Test)
         report_fail = self.chaos.generate_chaos_report(
@@ -92,25 +106,24 @@ class TestKafkaChaos(unittest.TestCase):
             disruption_time_s=15.0,
             election_latency_ms=5000.0,
             bootstrap_servers="localhost:19092",
-            topic="aq_measurements",
+            topic="aq_measurements_chaos_test",
         )
         self.assertIn("1.50%", report_fail)
-        self.assertIn("🔴 THẤT BẠI", report_fail)
-        self.assertIn("🔴 CHƯA ĐẠT NFR-03", report_fail)
+        self.assertIn("KHÔNG ĐẠT (FAILED)", report_fail)
 
     def test_run_chaos_test_with_mock_producer_and_failover_retry(self):
         """Verify execution flow with temporary BufferError simulation during broker outage."""
         mock_producer = MagicMock()
         produce_attempts = 0
 
-        def simulated_produce(topic, key, value, callback):
+        def simulated_produce(topic, key, value, on_delivery):
             nonlocal produce_attempts
             produce_attempts += 1
             # Simulate a temporary buffer full / failover on attempt #4
             if produce_attempts == 4:
                 raise BufferError("Simulated buffer full during Kafka leader re-election")
             # Successful ack callback
-            callback(None, MagicMock())
+            on_delivery(None, MagicMock())
 
         mock_producer.produce.side_effect = simulated_produce
         mock_producer.flush.return_value = 0
@@ -125,9 +138,9 @@ class TestKafkaChaos(unittest.TestCase):
             out_report = Path(tmp_dir) / "test_report.md"
             res = self.chaos.run_chaos_test(
                 bootstrap_servers="localhost:19092",
-                topic="aq_measurements",
+                topic="aq_measurements_chaos_test",
                 total_messages=10,
-                rate_per_sec=0,
+                rate_per_sec=1000,
                 disruption_callback=mock_disruption,
                 output_file=str(out_report),
                 producer_instance=mock_producer,
@@ -139,7 +152,7 @@ class TestKafkaChaos(unittest.TestCase):
             self.assertEqual(res["failed"], 0)
             self.assertEqual(res["loss_rate"], 0.0)
             self.assertTrue(out_report.exists(), "Output markdown report must be written")
-            self.assertIn("🟢 ĐẠT TIÊU CHÍ NFR-03", out_report.read_text(encoding="utf-8"))
+            self.assertIn("ĐẠT (PASSED)", out_report.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

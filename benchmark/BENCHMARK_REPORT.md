@@ -1,6 +1,6 @@
 # Báo Cáo So Sánh Thực Nghiệm Hiệu Năng & Chi Phí: Trino vs AWS Athena
 
-- **Thời gian thực hiện**: 2026-11-14 05:57:47
+- **Thời gian thực hiện**: 2026-11-15 10:11:22
 - **Cơ sở dữ liệu Gold**: `airlake_it2_20261108_37179997ad2b42959f4387637e003ab8_gold`
 - **Endpoint Trino**: `3.107.183.65:8080` (EC2 `m7i-flex.large`, đơn giá: ~$0.1008/giờ)
 - **AWS Athena**: Serverless engine (Đơn giá: $5.00/TB quét, min 10MB/query)

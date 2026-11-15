@@ -46,7 +46,7 @@
     if(!active)return;
     $('prepared-time').previousElementSibling.textContent='Bản số liệu đã đối chiếu lúc';$('prepared-time').textContent=time(d.dataset_verified_at);$('version-label').textContent=`Số liệu lịch sử tính lúc ${time(d.computed_at)} · Bản dữ liệu ${window.AIRLAKE_CONFIG.sha256.slice(0,12)} · Không tự làm mới.`;
     const label=$('history-range').value,analysis=d.analytics[label],summary=analysis.stations[String(selected)],station=d.stations.find(s=>s.id===selected);
-    $('home-period').textContent=`24 giờ cuối trong bản lịch sử: ${time(Date.parse(d.window_end_utc)-86400000)} → ${time(d.window_end_utc)} · giờ Việt Nam`;
+    $('home-period').textContent=`24 giờ cuối trong bản lịch sử: ${time(new Date(Date.parse(d.window_end_utc)-86400000).toISOString())} → ${time(d.window_end_utc)} · giờ Việt Nam`;
     $('home-period-title').textContent='Một ngày trong bản lịch sử đã có';$('trend-period').textContent=`${time(analysis.start_utc)} → ${time(analysis.end_utc)} · giờ Việt Nam`;
     const cards=[['Giờ có quan trắc',`${summary.hour_count}/${summary.expected_hours}`],['Độ phủ trong khoảng',num(summary.coverage_percent)+'%'],['Ngày đủ 24 giờ',String(summary.complete_days)]];
     for(const [key,title] of [['lowest_hour','Giờ ghi nhận thấp nhất'],['highest_hour','Giờ ghi nhận cao nhất']]){const r=summary.extremes[key];cards.push([title,r?`${num(r.pm25_avg)} µg/m³ · ${time(r.observed_hour_utc)}`:'Chưa có số liệu']);}

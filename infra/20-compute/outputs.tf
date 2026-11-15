@@ -15,8 +15,23 @@ output "kafka_bootstrap_servers" {
   value       = join(",", [for ip in local.active_kafka_ips : "${ip}:9092"])
 }
 
+output "trino_coordinator_private_ip" {
+  description = "Địa chỉ IP nội bộ của Trino Coordinator"
+  value       = aws_instance.trino_coordinator.private_ip
+}
+
+output "trino_endpoint" {
+  description = "Endpoint kết nối Trino JDBC/HTTP"
+  value       = "http://${aws_instance.trino_coordinator.private_ip}:8080"
+}
+
 output "trino_asg_name" {
-  description = "Tên Auto Scaling Group của cụm Trino"
+  description = "Tên Auto Scaling Group của Trino Workers (backward compatible alias)"
+  value       = aws_autoscaling_group.trino.name
+}
+
+output "trino_workers_asg_name" {
+  description = "Tên Auto Scaling Group của nhóm máy chủ Trino Workers"
   value       = aws_autoscaling_group.trino.name
 }
 

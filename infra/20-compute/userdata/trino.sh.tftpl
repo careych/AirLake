@@ -1,6 +1,7 @@
 #!/bin/bash
 # ==============================================================================
-# AirLake - Trino Query Engine Initialization Script
+# AirLake - Trino Distributed Query Engine Initialization Script
+# Coordinator & Worker Role Configuration with Dynamic Node Discovery
 # Auto-configured for Iceberg Catalog over AWS Glue Data Catalog & S3
 # ==============================================================================
 set -euo pipefail
@@ -13,9 +14,13 @@ systemctl enable --now docker
 mkdir -p /opt/trino/etc/catalog
 mkdir -p /opt/trino/data
 
+# Generate a unique node ID per instance
+NODE_ID=$(cat /proc/sys/kernel/random/uuid 2>/dev/null || cat /etc/machine-id 2>/dev/null || date +%s%N)
+
 # 1. node.properties
-cat <<'EOF' > /opt/trino/etc/node.properties
+cat <<EOF > /opt/trino/etc/node.properties
 node.environment=production
+node.id=$${NODE_ID}
 node.data-dir=/var/lib/trino/data
 EOF
 
@@ -35,13 +40,17 @@ cat <<'EOF' > /opt/trino/etc/jvm.config
 EOF
 
 # 3. config.properties
-cat <<'EOF' > /opt/trino/etc/config.properties
+cat <<EOF > /opt/trino/etc/config.properties
+%{ if is_coordinator ~}
 coordinator=true
-node-scheduler.include-coordinator=true
+node-scheduler.include-coordinator=false
+%{ else ~}
+coordinator=false
+%{ endif ~}
 http-server.http.port=8080
 query.max-memory=5GB
 query.max-memory-per-node=3GB
-discovery.uri=http://localhost:8080
+discovery.uri=http://${coordinator_ip}:8080
 EOF
 
 # 4. catalog/iceberg.properties (Iceberg over AWS Glue Catalog & S3)

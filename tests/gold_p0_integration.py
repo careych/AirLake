@@ -381,6 +381,71 @@ def _worker(root, jar):
             self.assertEqual(20.0, output[0].pm25_avg)
             self.assertEqual(40, output[0].aqi)
 
+        def test_exact_half_tie_is_order_and_partition_independent(self):
+            # Mean is exactly 38.75 -> AQI 77.5; DOUBLE sums give 38.74999999999999.
+            tie = [38.74, 38.76, 38.70, 38.80, 38.65, 38.85] * 2
+            orders = (
+                tie,
+                tie[::-1],
+                sorted(tie),
+                [
+                    38.65,
+                    38.85,
+                    38.8,
+                    38.85,
+                    38.7,
+                    38.74,
+                    38.76,
+                    38.8,
+                    38.65,
+                    38.7,
+                    38.74,
+                    38.76,
+                ],
+            )
+            for order in orders:
+                self._replace(gold.SILVER_TABLE, _silver_rows(order), SILVER_SCHEMA)
+                for partitions in (1, 3, 12):
+                    with self.subTest(order=order, partitions=partitions):
+                        rows, metrics = gold.build_hourly_aqi_source(
+                            spark,
+                            spark.table(gold.SILVER_TABLE).repartition(partitions),
+                            spark.table(gold.BREAKPOINT_TABLE),
+                        )
+                        output = rows.collect()
+                        self.assertEqual(
+                            [(38.75, 78)], [(r.pm25_avg, r.aqi) for r in output]
+                        )
+                        self.assertEqual(0, metrics["pm25_quantized_value_count"])
+                        self.assertEqual(0, metrics["inexact_aqi_hour_count"])
+
+        def test_exact_band_edges_match_pure_reference(self):
+            for value in (
+                0.0,
+                24.99,
+                25.0,
+                38.749999,
+                38.75,
+                49.99,
+                50.0,
+                80.0,
+                149.99,
+                350.0,
+                499.99,
+                500.0,
+                900.0,
+            ):
+                self._replace(gold.SILVER_TABLE, _silver_rows([value]), SILVER_SCHEMA)
+                rows, _ = gold.build_hourly_aqi_source(
+                    spark,
+                    spark.table(gold.SILVER_TABLE),
+                    spark.table(gold.BREAKPOINT_TABLE),
+                )
+                with self.subTest(value=value):
+                    self.assertEqual(
+                        gold.exact_hourly_aqi([value])[1], rows.collect()[0].aqi
+                    )
+
         def test_zero_is_accepted(self):
             self._replace(gold.SILVER_TABLE, _silver_rows([0.0]), SILVER_SCHEMA)
             output, _ = gold.build_hourly_aqi_source(
@@ -856,9 +921,7 @@ def main():
         return _worker(sys.argv[2], jar)
     if len(sys.argv) != 1:
         raise SystemExit("Unexpected integration-runner arguments")
-    with tempfile.TemporaryDirectory(
-        prefix="airlake-gold-p0-", ignore_cleanup_errors=True
-    ) as temporary:
+    with tempfile.TemporaryDirectory(prefix="airlake-gold-p0-") as temporary:
         root = Path(temporary).resolve()
         if root.is_relative_to(REPOSITORY):
             raise SystemExit("Temporary directory must be outside the repository")
@@ -869,15 +932,12 @@ def main():
             for name in (
                 "PATH",
                 "HOME",
-                "HADOOP_HOME",
                 "JAVA_HOME",
                 "LANG",
                 "LC_ALL",
                 "LC_CTYPE",
                 "TZ",
                 "SYSTEMROOT",
-                "TEMP",
-                "TMP",
                 "WINDIR",
             )
             if name in os.environ

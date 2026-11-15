@@ -1,8 +1,7 @@
 [project]
 name = "airlake"
 version = "0.1.0"
-description = "AirLake data pipeline"
-readme = "README.md"
+description = "Air quality data pipeline using OpenAQ and Kafka"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "requests>=2.32,<3",
@@ -13,6 +12,5 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "pytest>=8,<9",
-    "ruff>=0.9,<1",
+    "ruff>=0.16.10",
 ]

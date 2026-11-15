@@ -19,7 +19,6 @@ import sys
 import tempfile
 import uuid
 from datetime import UTC, datetime
-from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
 REPOSITORY = Path(__file__).resolve().parents[1]
@@ -352,8 +351,11 @@ def execute_local(root, rows, report):
         assert actual_silver == expected_silver
         report["gold"] = gold_batch.run_gold_batch(spark)
         hours = collections.defaultdict(list)
+        exact_hours = collections.defaultdict(list)
         for r in unique.values():
-            hours[valid_record(r).replace(minute=0, second=0)].append(float(r["value"]))
+            hour = valid_record(r).replace(minute=0, second=0)
+            hours[hour].append(float(r["value"]))
+            exact_hours[hour].append(str(r["value"]).strip())
         hourly = spark.table(tables["HOURLY_TABLE"]).orderBy("hour_start").collect()
         assert len(hourly) == len(hours)
         for row in hourly:
@@ -364,17 +366,9 @@ def execute_local(root, rows, report):
                 rel_tol=1e-12,
                 abs_tol=1e-12,
             )
-            lo, hi, c_lo, c_hi = next(
-                b for b in gold_batch.BREAKPOINTS if c_lo_hi_match(b, row.pm25_avg)
-            )
-            expected_aqi = (
-                int(
-                    Decimal(
-                        str((hi - lo) / (c_hi - c_lo) * (row.pm25_avg - c_lo) + lo)
-                    ).quantize(Decimal(1), rounding=ROUND_HALF_UP)
-                )
-                if row.pm25_avg < 500
-                else 500
+            # Exact source-decimal reference; never compare against DOUBLE ties.
+            _, expected_aqi = gold_batch.exact_hourly_aqi(
+                exact_hours[row.hour_start.replace(tzinfo=UTC)]
             )
             assert row.aqi == expected_aqi
         dim = spark.table(tables["DIMENSION_TABLE"]).collect()
@@ -430,12 +424,6 @@ def execute_local(root, rows, report):
         save(root, report)
     finally:
         spark.stop()
-
-
-def c_lo_hi_match(breakpoint, value):
-    return (
-        breakpoint[2] <= value < breakpoint[3] or value >= 500 and breakpoint[3] == 500
-    )
 
 
 def main(argv=None):

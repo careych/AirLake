@@ -67,7 +67,15 @@ def private_credentials(path):
     return raw, data, encoded
 
 
-def prepare(packet, public, instructor, credential_path, previous_receipt):
+def prepare(
+    packet,
+    public,
+    instructor,
+    credential_path,
+    previous_receipt,
+    demo_mode="instructor",
+    failure_containment="app_wide_basic_auth",
+):
     if packet.exists() or any(
         (p / ".git").exists() for p in (packet.resolve(), *packet.resolve().parents)
     ):
@@ -93,7 +101,7 @@ def prepare(packet, public, instructor, credential_path, previous_receipt):
     bundles, details = {}, {}
     for b, source, mode in (
         ("public", public, "public"),
-        ("demo", instructor, "instructor"),
+        ("demo", instructor, demo_mode),
     ):
         bundles[b], details[b] = zip_site(source, mode)
     plan = {
@@ -113,6 +121,8 @@ def prepare(packet, public, instructor, credential_path, previous_receipt):
         "new_resources": 0,
         "credential_rotation": False,
         "containment": "existing app-wide password protection only; then STOP",
+        "demo_mode": demo_mode,
+        "failure_containment": failure_containment,
     }
     packet.mkdir(mode=0o700, parents=True)
     (packet / "preview-login.json").write_bytes(raw)
@@ -278,6 +288,10 @@ def execute(c, packet, plan, digest):
         receipt.save()
         return receipt.value
     except BaseException:
+        # Both bundles may be licensed-only; then a failure must not lock the
+        # working public URL. Older plans keep app-wide password containment.
+        if plan.get("failure_containment", "app_wide_basic_auth") == "stop_only":
+            raise
         # Authorized containment preserves data and does not retry a deployment.
         receipt.write(
             "contain_existing_app",
