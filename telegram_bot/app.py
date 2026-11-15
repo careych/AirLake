@@ -12,8 +12,8 @@ import hashlib
 import hmac
 import json
 import os
+import pkgutil
 from datetime import UTC, datetime
-from pathlib import Path
 
 from ingestion.openaq import stamp
 from telegram_bot import messages as m
@@ -21,7 +21,7 @@ from telegram_bot.client import Rejected, Retryable, Telegram
 from telegram_bot.policy import decide, initial_state
 from telegram_bot.store import Store
 
-PATTERN = json.loads(Path(__file__).with_name("hour_pattern.json").read_text())
+PATTERN = json.loads(pkgutil.get_data("telegram_bot", "hour_pattern.json"))
 
 
 def now_utc():
