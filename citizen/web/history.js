@@ -2,7 +2,7 @@
 (() => {
   const $=id=>document.getElementById(id);
   const num=n=>Number.isFinite(n)?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:2}).format(n):'—';
-  const time=t=>!Number.isFinite(Date.parse(t))?'Chưa có thời gian':new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(t));
+  const time=t=>!Number.isFinite(Date.parse(t))?'chưa rõ thời gian':new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(t));
   const day=d=>d.slice(8,10)+'/'+d.slice(5,7);
   const node=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
   const svg=(tag,attrs={},text)=>{const n=document.createElementNS('http://www.w3.org/2000/svg',tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));if(text!==undefined)n.textContent=text;return n;};
@@ -11,7 +11,7 @@
   function bars(id,rows,label,value,readout,reference){
     const box=$(id);box.replaceChildren();
     const good=rows.filter(r=>Number.isFinite(value(r)));
-    if(!good.length){box.append(node('p','Chưa đủ số ngày có quan trắc để trình bày so sánh này.','empty-chart'));return;}
+    if(!good.length){box.append(node('p','Chưa đủ ngày có số liệu để so sánh.','empty-chart'));return;}
     const w=Math.max(300,Math.min(1100,box.clientWidth||940)),h=270,left=47,right=15,top=25,bottom=45,max=Math.ceil(Math.max(10,reference?.value||0,...good.map(value))*1.1/10)*10;
     const drawing=svg('svg',{viewBox:`0 0 ${w} ${h}`,'aria-hidden':'true'}),step=(w-left-right)/rows.length;
     for(let i=0;i<5;i++){const v=max*i/4,y=h-bottom-v/max*(h-top-bottom);drawing.append(svg('line',{x1:left,y1:y,x2:w-right,y2:y,stroke:'#e0e8e3','stroke-dasharray':'3 4'}),svg('text',{x:left-8,y:y+4,'text-anchor':'end','font-size':11,fill:'#52665d'},num(v)));}
@@ -47,11 +47,11 @@
     if(!active)return;
     $('prepared-time').previousElementSibling.textContent='Bản số liệu đã đối chiếu lúc';$('prepared-time').textContent=time(d.dataset_verified_at);$('version-label').textContent=`Lịch sử tháng 9/2026 tính lúc ${time(d.computed_at)} · bản ${window.AIRLAKE_CONFIG.sha256.slice(0,12)}. Số đo hiện tại tự cập nhật.`;
     const label=$('history-range').value,analysis=d.analytics[label],summary=analysis.stations[String(selected)],station=d.stations.find(s=>s.id===selected);
-    $('home-period').textContent=`24 giờ cuối trong bản lịch sử: ${time(new Date(Date.parse(d.window_end_utc)-86400000).toISOString())} → ${time(d.window_end_utc)} · giờ Việt Nam`;
-    $('home-period-title').textContent='Một ngày trong bản lịch sử đã có';$('trend-period').textContent=`${time(analysis.start_utc)} → ${time(analysis.end_utc)} · giờ Việt Nam`;
-    const cards=[['Giờ có quan trắc',`${summary.hour_count}/${summary.expected_hours}`],['Độ phủ trong khoảng',num(summary.coverage_percent)+'%'],['Ngày đủ 24 giờ',String(summary.complete_days)]];
-    const who=summary.who_24h_days;if(who)cards.push(['Ngày có trung bình trên mức WHO khuyến nghị (15 µg/m³)',who.complete_days?`${who.days_above}/${who.complete_days} ngày đủ giờ`:'Chưa có ngày đủ 24 giờ']);
-    for(const [key,title] of [['lowest_hour','Giờ ghi nhận thấp nhất'],['highest_hour','Giờ ghi nhận cao nhất']]){const r=summary.extremes[key];cards.push([title,r?`${num(r.pm25_avg)} µg/m³ · ${time(r.observed_hour_utc)}`:'Chưa có số liệu']);}
+    $('home-period').textContent=`24 giờ cuối tháng 9/2026: ${time(new Date(Date.parse(d.window_end_utc)-86400000).toISOString())} → ${time(d.window_end_utc)} · giờ Việt Nam`;
+    $('home-period-title').textContent='24 giờ cuối của tháng 9/2026';$('trend-period').textContent=`${time(analysis.start_utc)} → ${time(analysis.end_utc)} · giờ Việt Nam`;
+    const cards=[['Số giờ có số liệu',`${summary.hour_count}/${summary.expected_hours}`],['Tỷ lệ giờ có số liệu',num(summary.coverage_percent)+'%'],['Số ngày đủ 24 giờ',String(summary.complete_days)]];
+    const who=summary.who_24h_days;if(who)cards.push(['Ngày vượt mức khuyến nghị của WHO (15 µg/m³ trung bình ngày)',who.complete_days?`${who.days_above}/${who.complete_days} ngày đủ giờ`:'Chưa có ngày đủ 24 giờ']);
+    for(const [key,title] of [['lowest_hour','Giờ có bụi thấp nhất'],['highest_hour','Giờ có bụi cao nhất']]){const r=summary.extremes[key];cards.push([title,r?`${num(r.pm25_avg)} µg/m³ · ${time(r.observed_hour_utc)}`:'Chưa có số liệu']);}
     $('analytics-summary').replaceChildren(...cards.map(([label,value])=>{const card=node('article',undefined,'feature-card');card.append(node('p',label,'muted'),node('strong',value));return card;}));
     $('daily-method').textContent=`${station.name} · ${summary.daily.length} ngày có số liệu; ${summary.complete_days} ngày đủ 24 mốc giờ. Cột nâu nhạt là ngày thiếu giờ; trung bình không được coi là đánh giá sức khỏe. Đường gạch đỏ là hướng dẫn WHO 2021 cho trung bình 24 giờ (15 µg/m³) để tham khảo, không phải ranh giới an toàn hay mức pháp lý.`;
     bars('daily-chart',summary.daily,r=>day(r.date_local),r=>r.pm25_avg,'daily-readout',{value:15,label:'WHO 24 giờ: 15 µg/m³'});heatmap(summary);
@@ -59,15 +59,15 @@
     const weekdays=summary.weekday_weekend;
     $('weekday-comparison').textContent=weekdays.status==='DESCRIPTIVE_ONLY'?`Trong ${weekdays.weekday_days} ngày thường đủ giờ: ${num(weekdays.weekday_mean)} µg/m³; ${weekdays.weekend_days} ngày cuối tuần đủ giờ: ${num(weekdays.weekend_mean)} µg/m³. Mỗi ngày có trọng số bằng nhau. Chỉ là so sánh lịch sử, không dự báo.`:'Cần ít nhất 3 ngày thường và 2 ngày cuối tuần, mỗi ngày đủ 24 giờ, để so sánh có cơ sở.';
     const month=summary.monthly_extremes;
-    $('monthly-extremes').textContent=month.status==='OBSERVED_COMPLETE_DAYS_ONLY'?`Trong ${month.complete_days} ngày đủ giờ của tháng đã chọn: cao nhất ${day(month.highest_day.date_local)} (${num(month.highest_day.pm25_avg)} µg/m³), thấp nhất ${day(month.lowest_day.date_local)} (${num(month.lowest_day.pm25_avg)} µg/m³). Chỉ xét các ngày đủ 24 giờ; không suy đoán ngày bị thiếu.`:`Chưa đủ độ phủ để xác định cực trị tháng: ${month.complete_days} ngày đủ giờ. Cần chọn cả tháng và có ít nhất 80% số ngày đủ 24 giờ. Không suy ra kết quả tháng từ vài giờ.`;
+    $('monthly-extremes').textContent=month.status==='OBSERVED_COMPLETE_DAYS_ONLY'?`Trong ${month.complete_days} ngày đủ giờ của tháng đã chọn: cao nhất ${day(month.highest_day.date_local)} (${num(month.highest_day.pm25_avg)} µg/m³), thấp nhất ${day(month.lowest_day.date_local)} (${num(month.lowest_day.pm25_avg)} µg/m³). Chỉ xét các ngày đủ 24 giờ; không suy đoán ngày bị thiếu.`:`Chưa đủ dữ liệu để chỉ ra ngày cao nhất và thấp nhất: ${month.complete_days} ngày đủ giờ. Cần chọn cả tháng và ít nhất 80% số ngày có đủ 24 giờ. Không suy ra kết quả tháng từ vài giờ.`;
     const all=d.analytics['30d'];
     $('area-cards').replaceChildren(...d.stations.map(s=>{const card=node('article',undefined,'feature-card'),status=window.AirLake.freshness(s.latest);card.append(node('h2',s.name),node('span',status.label,'status '+status.kind),node('p',`${s.latest?num(s.latest.pm25)+' µg/m³':'Chưa có số đo'} · ${s.latest?time(s.latest.observed_at):'chưa có thời gian'}`),node('p',`Vị trí: ${s.coordinates.latitude}, ${s.coordinates.longitude}`));const link=node('a','Mở vị trí trên bản đồ ↗');link.href=`https://www.openstreetmap.org/?mlat=${s.coordinates.latitude}&mlon=${s.coordinates.longitude}#map=14/${s.coordinates.latitude}/${s.coordinates.longitude}`;link.target='_blank';link.rel='noopener noreferrer';card.append(link);return card;}));
     const sets=d.stations.map(s=>new Set(d.hourly.filter(r=>r.station_id===s.id&&Date.parse(r.observed_hour_utc)>=Date.parse(analysis.start_utc)&&Date.parse(r.observed_hour_utc)<Date.parse(analysis.end_utc)).map(r=>r.observed_hour_utc)));
     const common=new Set([...sets[0]].filter(t=>sets.every(set=>set.has(t))));
-    $('area-window').textContent=`${time(analysis.start_utc)} → ${time(analysis.end_utc)} · ${common.size} giờ chung. Không lấy trung bình các trạm để đại diện toàn thành phố.`;
+    $('area-window').textContent=`${time(analysis.start_utc)} → ${time(analysis.end_utc)} · ${common.size} giờ chung. Không gộp các trạm thành một con số cho cả thành phố.`;
     $('area-comparison').replaceChildren(...d.stations.map(s=>{const rs=d.hourly.filter(r=>r.station_id===s.id&&common.has(r.observed_hour_utc)),tr=node('tr'),own=analysis.stations[String(s.id)];[s.name,rs.length?num(rs.reduce((a,r)=>a+r.pm25,0)/rs.length)+' µg/m³':'Chưa có giờ chung',common.size,`${own.hour_count}/${own.expected_hours}`].forEach(v=>tr.append(node('td',v)));return tr;}));
-    for(const card of $('station-status').children){const id=d.stations.find(s=>s.name===card.querySelector('h2').textContent)?.id;if(!id)continue;const s=d.stations.find(s=>s.id===id);for(const label of ['24h','7d','30d']){const q=d.analytics[label].stations[String(id)];card.append(node('p',`${label==='24h'?'24 giờ':label==='7d'?'7 ngày':'30 ngày'} cuối bản lịch sử: ${q.hour_count}/${q.expected_hours} giờ (${num(q.coverage_percent)}%).`));}card.append(node('p',s.source_last_reported_at?`Nguồn báo quan trắc cuối: ${time(s.source_last_reported_at)}. Chưa đồng nghĩa AirLake đã nhận giá trị mới.`:'Chưa có xác nhận mới từ nguồn.'));}
-    $('sample-description').textContent=`Bản lịch sử: ${d.historical_raw_records} bản ghi nguồn hợp lệ → ${d.hourly.length} mốc giờ và ${d.daily.length} dòng theo ngày từ ${d.stations.length} điểm, ${time(d.window_start_utc)} → ${time(d.window_end_utc)}. Không phải dữ liệu trực tiếp.`;
+    for(const card of $('station-status').children){const id=d.stations.find(s=>s.name===card.querySelector('h2').textContent)?.id;if(!id)continue;const s=d.stations.find(s=>s.id===id);for(const label of ['24h','7d','30d']){const q=d.analytics[label].stations[String(id)];card.append(node('p',`${label==='24h'?'24 giờ':label==='7d'?'7 ngày':'30 ngày'} cuối bản lịch sử: ${q.hour_count}/${q.expected_hours} giờ (${num(q.coverage_percent)}%).`));}card.append(node('p',s.source_last_reported_at?`Nguồn ghi nhận số đo cuối lúc ${time(s.source_last_reported_at)}. AirLake có thể chưa nhận số này.`:'Chưa có xác nhận mới từ nguồn.'));}
+    $('sample-description').textContent=`Dữ liệu tháng 9/2026: ${d.hourly.length} giờ và ${d.daily.length} ngày, làm sạch từ ${d.historical_raw_records} số đo gốc, ${time(d.window_start_utc)} → ${time(d.window_end_utc)}. Đây là dữ liệu quá khứ.`;
   }
   window.AirLakeHistory={range:(d,id)=>supports(d)?range(d,id):null,researchRows,renderPreview,render};
   $('history-range').addEventListener('change',()=>window.AirLake.render());
