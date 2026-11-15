@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import re
 import math
 import shutil
 from datetime import timedelta
@@ -28,6 +29,7 @@ def build(
     athena_proof_path=None,
     now_path=None,
     api_base=None,
+    bot_url=None,
 ):
     output = Path(output)
     if (
@@ -181,6 +183,10 @@ def build(
         config.update(
             nowUrl=api_base.rstrip("/") + "/v1/now", apiBase=api_base.rstrip("/")
         )
+    if bot_url is not None:
+        if not re.fullmatch(r"https://t\.me/[A-Za-z0-9_]{5,32}", bot_url):
+            raise ValueError("Unexpected Telegram bot link")
+        config["botUrl"] = bot_url
     (output / "config.js").write_text(
         "window.AIRLAKE_CONFIG=" + json.dumps(config) + ";\n"
     )

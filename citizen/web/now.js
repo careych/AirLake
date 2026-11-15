@@ -11,26 +11,42 @@
   // QĐ 1459 PM2.5 bands applied to a single reading: a reference label, not official VN_AQI.
   const bands=[[25,'Tốt'],[50,'Trung bình'],[80,'Kém'],[150,'Xấu'],[250,'Rất xấu'],[Infinity,'Nguy hại']];
   const band=v=>bands.find(([hi])=>v<hi)[1];
+  const STATION_NAMES={6123215:'Ocean Park, Gia Lâm (Dragon)',99385:'Tây Hồ (cảm biến cộng đồng #99385)'};
+  const COLORS={6123215:'#1f6f8b',99385:'#c0672b'};
   let now=null;
+  function recentChart(){
+    const box=$('now-recent');if(!box||!now?.recent||$('quanh-ban').hidden)return;box.replaceChildren();
+    const series=Object.entries(now.recent).filter(([,rows])=>rows.length);
+    if(!series.length){box.append(node('p','Chưa đủ số đo để vẽ xu hướng 24 giờ.','empty-chart'));return;}
+    const w=Math.max(300,Math.min(1100,box.clientWidth||900)),h=220,left=40,right=10,top=14,bottom=34,end=Date.parse(now.published_at),start=end-86400000;
+    const max=Math.ceil(Math.max(10,...series.flatMap(([,r])=>r.map(x=>x.pm25)))*1.15/10)*10,x=t=>left+(t-start)/(end-start)*(w-left-right),y=v=>h-bottom-v/max*(h-top-bottom);
+    const s=svg('svg',{viewBox:`0 0 ${w} ${h}`,'aria-hidden':'true'});
+    for(let i=0;i<5;i++){const v=max*i/4;s.append(svg('line',{x1:left,y1:y(v),x2:w-right,y2:y(v),stroke:'#e0e8e3','stroke-dasharray':'3 4'}),svg('text',{x:left-6,y:y(v)+4,'text-anchor':'end','font-size':11,fill:'#52665d'},num(v)));}
+    for(let k=0;k<=4;k++){const t=start+k*21600000;s.append(svg('text',{x:x(t),y:h-12,'text-anchor':k===0?'start':k===4?'end':'middle','font-size':11,fill:'#52665d'},hour(new Date(t).toISOString())));}
+    for(const [id,rows] of series){let d='';rows.forEach((r,i)=>{const t=Date.parse(r.observed_at),gap=i&&t-Date.parse(rows[i-1].observed_at)>7200000;d+=`${!i||gap?'M':'L'}${x(t).toFixed(1)},${y(r.pm25).toFixed(1)}`;});
+      s.append(svg('path',{d,fill:'none',stroke:COLORS[id]||'#555','stroke-width':2}));rows.forEach(r=>s.append(svg('circle',{cx:x(Date.parse(r.observed_at)),cy:y(r.pm25),r:2.5,fill:COLORS[id]||'#555'})));}
+    box.append(s);
+    $('now-recent-legend').replaceChildren(...series.map(([id,rows])=>{const e=node('span',`${STATION_NAMES[id]||id} · ${rows.length} số đo`);e.style.setProperty('--c',COLORS[id]||'#555');return e;}));
+  }
 
   function observedCard(o){
     const card=node('article',undefined,'feature-card now-card'),state=o.freshness?.status,recent=state==='recent'&&Number.isFinite(o.pm25);
-    const top=node('div',undefined,'card-top');top.append(node('span','QUAN TRẮC THỰC TẾ','card-kicker'),node('span',recent?'Số đo gần đây':state==='no_data'?'Chưa có số đo':'Số đo đã cũ','status '+(recent?'recent':state==='no_data'?'unknown':'stale')));
-    card.append(top,node('h3',o.name));
+    const top=node('div',undefined,'card-top');top.append(node('span','SỐ ĐO THẬT','card-kicker'),node('span',recent?'Mới':state==='no_data'?'Chưa có số đo':'Số đo cũ','status '+(recent?'recent':state==='no_data'?'unknown':'stale')));
+    card.append(top,node('h3',STATION_NAMES[o.station_id]||o.name),node('p',(o.station_type==='low_cost'?'Cảm biến giá rẻ':'Trạm tham chiếu')+(o.exact_location?'':' · vị trí gần đúng'),'muted small'));
     const value=node('p',undefined,'reading');value.append(node('strong',recent?num(o.pm25):'—'),node('span','µg/m³'));card.append(value);
     if(recent)card.append(node('p',`Mức tham khảo: ${band(o.pm25)}`,'band'));
-    else card.append(node('p','Không dùng số đo cũ để mô tả hiện tại.','muted'));
-    const dl=node('dl',undefined,'reading-meta');for(const [k,v] of [['Đo lúc',time(o.observed_at)],['Cách đây',o.observed_at?age(o.observed_at):'—'],['AirLake lấy lúc',time(o.fetched_at)],['Loại cảm biến',o.station_type==='low_cost'?'Chi phí thấp':'Tham chiếu'],['Vị trí',o.exact_location?'Toạ độ chính xác':'Toạ độ gần đúng (mạng làm tròn)'],['Nguồn',`${o.provider} · ${o.licence}`]]){const d=node('div');d.append(node('dt',k),node('dd',v));dl.append(d);}
+    else card.append(node('p',o.observed_at?'Nguồn chưa gửi số mới; đây là số đo trước đó.':'Nguồn chưa có số đo.','muted'));
+    const dl=node('dl',undefined,'reading-meta');for(const [k,v] of [['Đo lúc',`${time(o.observed_at)}${o.observed_at?' · '+age(o.observed_at):''}`],['AirLake lấy lúc',time(o.fetched_at)],['Nguồn',o.provider]]){const d=node('div');d.append(node('dt',k),node('dd',v));dl.append(d);}
     card.append(dl);if(o.fetch_status==='fetch_failed')card.append(node('p',`Lần lấy dữ liệu gần nhất từ nguồn này không thành công; đang hiển thị số đo trước đó.`,'freshness-note'));return card;
   }
 
   function modelCard(m){
     const card=node('article',undefined,'feature-card now-card model-card');
-    const top=node('div',undefined,'card-top');top.append(node('span','ƯỚC TÍNH MÔ HÌNH','card-kicker'),node('span','Không phải số đo','status unknown'));
-    card.append(top,node('h3','Khu vực trung tâm Hà Nội (ô lưới ~45 km)'));
+    const top=node('div',undefined,'card-top');top.append(node('span','MÔ HÌNH ƯỚC TÍNH','card-kicker'),node('span','Không phải số đo','status unknown'));
+    card.append(top,node('h3','Trung tâm Hà Nội'),node('p','Ô lưới khoảng 45 km, mô hình CAMS','muted small'));
     const value=node('p',undefined,'reading');value.append(node('strong',num(m.current.pm25)),node('span','µg/m³'));card.append(value);
-    card.append(node('p',`Giá trị mô hình cho ${hour(m.current.valid_at)}. Một ô lưới bao phủ nhiều quận nên không mô tả từng con phố.`,'muted'));
-    const dl=node('dl',undefined,'reading-meta');for(const [k,v] of [['Giờ mô hình áp dụng',time(m.current.valid_at)],['Lượt chạy mô hình',time(m.model_run_at)],['Có dữ liệu từ',time(m.model_available_at)],['Nguồn','CAMS Global · Open-Meteo']]){const d=node('div');d.append(node('dt',k),node('dd',v));dl.append(d);}
+    
+    const dl=node('dl',undefined,'reading-meta');for(const [k,v] of [['Áp dụng cho',time(m.current.valid_at)],['Lượt chạy mô hình',time(m.model_run_at)],['Nguồn','CAMS · Open-Meteo']]){const d=node('div');d.append(node('dt',k),node('dd',v));dl.append(d);}
     card.append(dl);if(m.fetch_status==='reused_previous_run')card.append(node('p','Chưa lấy được lượt chạy mới; đang dùng lượt chạy trước.','freshness-note'));return card;
   }
 
@@ -64,7 +80,7 @@
   }
 
   function drawForecast(){if(now&&!$('du-bao').hidden)line($('forecast-chart'),now.model.forecast.slice(0,24));}
-  function notice(){if(!now)return'';const live=now.observations.filter(o=>o.freshness?.status==='recent').length;return`Hiện tại: ${live}/${now.observations.length} điểm quan trắc có giấy phép có số đo gần đây, cùng dự báo mô hình CAMS. Phần lịch sử là bản đã kiểm chứng của tháng 9/2026 tại Dragon, không phải số liệu hôm nay.`;}
+  function notice(){if(!now)return'';const live=now.observations.filter(o=>o.freshness?.status==='recent').length;return`Số đo hiện tại cập nhật khoảng 15 phút một lần (${live}/${now.observations.length} trạm có số mới). Mục Lịch sử là dữ liệu tháng 9/2026 tại Dragon.`;}
   function setNotice(){if(now){$('notice').textContent=notice();$('notice').hidden=false;}}
   window.AirLakeNow={notice};
   let map=null;
@@ -87,7 +103,8 @@
     const card=document.querySelector('.hero .reading-card');if(card)card.hidden=true;
     $('now-observations').replaceChildren(...now.observations.map(observedCard),modelCard(now.model));
     $('now-compare').textContent=compare(now.observations,now.model);
-    $('now-geography').textContent=now.geography;
+    $('now-geography').textContent=`${now.observations.length} trạm đo ngoài trời có giấy phép chia sẻ · cập nhật ${time(now.published_at)}`;
+    recentChart();
     $('now-attribution').replaceChildren(...[...new Set([...now.observations.map(o=>o.attribution),now.model.source.attribution])].map(a=>node('li',a)));
     renderForecast(now.model,now.validation);renderStatus(now);setNotice();renderMap();drawForecast();
   }
@@ -95,15 +112,18 @@
   async function load(){
     const url=window.AIRLAKE_CONFIG?.nowUrl;if(!url)return;
     try{const r=await fetch(url,{cache:'no-cache'});if(!r.ok)throw new Error('http');const next=await r.json();if(next.schema_version!==2)throw new Error('schema');if(now&&next.published_at===now.published_at)return;now=next;}
-    catch{if(!now){$('now-panel').hidden=false;$('now-observations').replaceChildren(node('p','Chưa tải được dữ liệu hiện tại. Phần lịch sử bên dưới vẫn dùng được.','muted'));}return;}
+    catch{if(!now){$('legacy-home').hidden=false;$('notice').textContent='Chưa tải được số đo hiện tại; đang hiển thị bản lưu gần nhất. Trang sẽ thử lại sau ít phút.';$('notice').hidden=false;}return;}
     if(map){map.remove();map=null;}
     render();
   }
+  const bot=window.AIRLAKE_CONFIG?.botUrl;
+  if(bot&&/^https:\/\/t\.me\/[A-Za-z0-9_]{5,32}$/.test(bot)){const a=$('telegram-link');a.href=bot;a.hidden=false;$('telegram-pending').hidden=true;}
   const api=window.AIRLAKE_CONFIG?.apiBase;
   if(api){const box=$('public-api');if(box){box.hidden=false;for(const [label,path] of [['Tài liệu API','/v1'],['Hiện tại (JSON)','/v1/now'],['Dragon theo ngày (CSV)','/v1/history?granularity=daily&format=csv&limit=100'],['Dragon theo giờ, 7 ngày cuối (JSON)','/v1/history?start=2026-09-23T17:00:00Z&limit=200']]){const li=node('li');const a=node('a',label);a.href=api+path;a.rel='noopener';li.append(a,node('code',' '+path));$('public-api-links').append(li);}}}
   setInterval(()=>{if(document.visibilityState==='visible')load();},300000);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')load();});
-  window.addEventListener('hashchange',()=>setTimeout(()=>{renderMap();drawForecast();map?.invalidateSize();},0));
+  window.addEventListener('hashchange',()=>setTimeout(()=>{renderMap();drawForecast();recentChart();map?.invalidateSize();},0));
+  let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{drawForecast();recentChart();},200);});
   window.addEventListener('airlake-ready',()=>setTimeout(setNotice,0));
   window.addEventListener('DOMContentLoaded',load);
 })();
