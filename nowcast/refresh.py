@@ -116,7 +116,7 @@ def attempt(fn):
 
 def source(previous, station_id, fn, now):
     reading, error = attempt(fn)
-    if error is None:
+    if error is None and reading is not None:
         return {"status": "ok", "reading": reading, "fetched_at": stamp(now)}
     old = next(
         (
@@ -126,8 +126,8 @@ def source(previous, station_id, fn, now):
         ),
         None,
     )
-    return {
-        "status": "fetch_failed",
+    return {  # no new reading: keep the last one so it ages into "stale"
+        "status": "fetch_failed" if error else "no_new_reading",
         "error": error,
         "reading": {"observed_at": old["observed_at"], "pm25": old["pm25"]}
         if old and old["observed_at"]

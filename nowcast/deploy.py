@@ -183,11 +183,9 @@ def prepare(packet, secret_arn, history_env, site_inputs):
         "log_retention_days": LOG_RETENTION_DAYS,
         "function_url": {
             "auth": "NONE",
-            "cors": {
-                "AllowOrigins": sorted(ORIGINS),
-                "AllowMethods": ["GET", "HEAD"],
-                "MaxAge": 86400,
-            },
+            # CORS is set only by the handler; a URL-level block duplicates
+            # Access-Control-Allow-Origin and browsers reject the response.
+            "cors": "handler only: " + ", ".join(sorted(ORIGINS)),
             "permissions": [
                 "lambda:InvokeFunctionUrl (FunctionUrlAuthType NONE)",
                 "lambda:InvokeFunction (InvokedViaFunctionUrl true)",
@@ -434,7 +432,7 @@ def execute(c, packet, plan, digest, get=None):
     url = r.write(
         "create_function_url",
         lambda: c["lambda"].create_function_url_config(
-            FunctionName=API, AuthType="NONE", Cors=plan["function_url"]["cors"]
+            FunctionName=API, AuthType="NONE"
         ),
     )["FunctionUrl"]
     if not re.fullmatch(
@@ -506,7 +504,7 @@ def smoke(r, base, published_at, get=None):
         r.save()
         if resp.status_code != expected:
             raise ValueError("Public API smoke mismatch; stop")
-        if path == "/v1/now":
+        if method == "GET" and path == "/v1/now":
             check_projection(resp.json(), published_at)
         if path == "/v1/history?limit=100" and {
             d.get("location_id") for d in resp.json()["data"]

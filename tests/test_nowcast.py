@@ -393,6 +393,24 @@ class RefreshTests(unittest.TestCase):
             refresh.run(s3, self.http([]), "K", {}, NOW + timedelta(minutes=15))
         self.assertEqual(s3.objects["nowcast/v1/current.json"], before)
 
+    def test_no_new_reading_keeps_last_one_to_age(self):
+        import json
+
+        from nowcast import refresh
+
+        s3 = FakeS3()
+        refresh.run(s3, self.http([]), "K", {}, NOW)
+        ok = self.http([])
+        quiet = lambda u, params=None, headers=None: (
+            [] if "sensor.community" in u else ok(u, params, headers)
+        )
+        r = refresh.run(s3, quiet, "K", {}, NOW + timedelta(minutes=15))
+        self.assertEqual(r["sources"][99385], "no_new_reading")
+        sc = json.loads(s3.objects["nowcast/v1/current.json"])["observations"][1]
+        self.assertEqual(
+            (sc["observed_at"], sc["pm25"]), ("2026-11-15T01:15:00Z", 33.0)
+        )
+
 
 class PublicApiTests(unittest.TestCase):
     def event(
