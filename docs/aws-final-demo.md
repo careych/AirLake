@@ -1,3 +1,5 @@
+> **Historical record.** First bounded AWS demo (2026-11-14). Its private IAM API function still exists; the live service is described in [architecture.md](architecture.md).
+
 # Bounded AWS-hosted final demo
 
 ## Verified result — 2026-11-14

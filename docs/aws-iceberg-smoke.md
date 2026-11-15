@@ -1,3 +1,5 @@
+> **Historical record.** Bounded Iceberg/S3/Glue interoperability probe (October 2026), kept as evidence for the lakehouse design.
+
 # AWS Iceberg interoperability probe
 
 `scripts/aws_iceberg_smoke.py` defaults to a local, offline plan. Only

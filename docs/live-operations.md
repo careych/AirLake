@@ -1,3 +1,5 @@
+> **Historical record.** Bounded automatic polling trial with a 5-minute schedule (2026-11-14), now disabled. The live service checks sources every 15 minutes ([architecture.md](architecture.md)).
+
 # Bounded automatic polling and Gold/API refresh
 
 Status: **bounded AWS operations acceptance completed on 14 November 2026**.

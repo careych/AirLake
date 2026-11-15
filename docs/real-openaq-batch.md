@@ -1,3 +1,5 @@
+> **Historical record.** 200-row real-data Kafka-to-Gold acceptance (2026-11-06/07) from the lakehouse phase.
+
 # Bounded real OpenAQ integration
 
 The 2026-11-06 local acceptance moved 200 existing historical OpenAQ PM2.5

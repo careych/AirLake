@@ -1,3 +1,5 @@
+> **Historical record.** First version of the citizen website (three stations, September snapshot). The current site is described in the [README](../README.md) and [architecture.md](architecture.md).
+
 # AirLake Hanoi citizen demo
 
 The new Vietnamese application is implemented under `citizen/web/`. Superset stays
@@ -128,7 +130,7 @@ it only in a trusted local password manager/editor, not in chat or shared logs.
 The deployer verifies anonymous access to the demo HTML, script and data returns
 401, and checks real public/private asset hashes. On failure it attempts app-wide
 password protection, retains job IDs and stops; there is no automatic deployment
-retry or cleanup. Agent verification is capped at 40 website GETs, separate from
+retry or cleanup. Automated verification is capped at 40 website GETs, separate from
 three private API checks. Browser asset loads count against that website allowance.
 
 Costs are managed static-hosting storage/data transfer plus short existing Lambda,
@@ -141,7 +143,7 @@ independent remote HTTP retrieval, and an incognito/phone browser without AWS CL
 credentials, VPN or tunnel. Local screenshots alone never establish AWS hosting.
 Actual hosted browser checks passed against the HTTPS branches. The user
 subsequently confirmed the external-access check; this evidence is recorded
-separately from the agent’s local Chrome results.
+separately from the local Chrome results.
 
 ## 429 investigation
 

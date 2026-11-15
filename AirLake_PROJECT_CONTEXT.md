@@ -1,3 +1,5 @@
+> **Historical record.** Original project context and planned role split (October 2026). It is not a record of final contributions; the final team roster and responsibilities are documented in the course report.
+
 # AirLake project context and handoff
 
 Status reviewed against local source, the GitHub hygiene audit and retained Gold

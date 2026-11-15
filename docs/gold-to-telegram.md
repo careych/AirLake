@@ -1,3 +1,5 @@
+> **Historical record.** Local Gold-to-Telegram slice (SNS publisher, staging consumer). Superseded by the deployed bot ([telegram-bot.md](telegram-bot.md)).
+
 # Gold-to-Telegram local integration
 
 Sprint 3A.2 adds the [bounded Athena reader and staging preparation](athena-alert-runtime.md).

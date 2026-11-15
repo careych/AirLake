@@ -1,3 +1,5 @@
+> **Historical record.** Athena-to-SNS alert runtime prepared for the staging pipeline (Sprint 3A). It was never the production alert path; the deployed bot is described in [telegram-bot.md](telegram-bot.md).
+
 # Athena alert runtime and isolated staging
 
 For the current executable wiring, secret references, exact deployment-command

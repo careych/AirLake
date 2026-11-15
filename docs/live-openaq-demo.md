@@ -1,3 +1,5 @@
+> **Historical record.** Bounded current-data pilot (2026-11-14). Its polling schedule is disabled; live data now comes from the nowcast refresh ([architecture.md](architecture.md)).
+
 # Bounded current-data pilot
 
 ## Actual bounded AWS acceptance — PASS
