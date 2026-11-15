@@ -1,3 +1,5 @@
+> **Historical record.** Local Superset dashboard over early Gold data. It was never deployed publicly; the public interface is the Amplify website.
+
 # Gold dashboard MVP
 
 A working local Superset 6.1.0 dashboard renders retained, real July 2025 Gold

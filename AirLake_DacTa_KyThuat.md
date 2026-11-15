@@ -1,3 +1,5 @@
+> **Historical record.** Original technical specification (target requirements, October 2026). Several planned components were not built or were replaced; see [docs/architecture.md](docs/architecture.md) for the implemented system.
+
 # AirLake — Bản đặc tả kỹ thuật (Technical Specification)
 
 **Phiên bản:** 1.0 · **Dự án:** AirLake — Nền tảng dữ liệu và cảnh báo chất lượng không khí Hà Nội trên AWS · **Môn:** Điện toán đám mây

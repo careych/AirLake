@@ -1,3 +1,5 @@
+> **Historical record.** Localhost API over 72 early Gold facts. Replaced by the public read-only API ([public-api.md](public-api.md)) and the private IAM API.
+
 # Clean Data API: bounded historical Gold
 
 This localhost API serves the **72 real hourly Gold facts and three station

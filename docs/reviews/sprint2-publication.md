@@ -1,3 +1,5 @@
+> **Historical record.** Review of the Sprint 2 `feat/local-lakehouse` pull request.
+
 # Sprint 2 publication review
 
 Proposed PR: `feat/local-lakehouse` → `main`.

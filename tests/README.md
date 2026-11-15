@@ -1,3 +1,5 @@
+> **Current suite.** `uv run python -m unittest discover -s tests` runs 590 offline tests (2026-11-15). Tests for the live service are in `test_nowcast.py`, `test_rolling_history.py`, `test_model_areas.py`, `test_telegram_bot.py`, `test_release_rolling_history.py` and `test_citizen_*.py`; release receipts are in `evidence/`. The sections below document earlier acceptance records and remain valid as history.
+
 # Pipeline regression tests and acceptance evidence
 
 ## Bounded cloud acceptance: 2026-11-07

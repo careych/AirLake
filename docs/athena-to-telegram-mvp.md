@@ -1,3 +1,5 @@
+> **Historical record.** Offline MVP sending one historical Gold value to a staging recipient. Superseded by the deployed bot ([telegram-bot.md](telegram-bot.md)).
+
 # One historical Gold observation to a staging Telegram recipient
 
 The callable MVP is implemented and verified offline. It is **not deployed**.

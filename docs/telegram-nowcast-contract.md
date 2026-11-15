@@ -1,3 +1,5 @@
+> **Historical record.** Integration proposal written before the product bot existed (delivery via Khuê's SNS staging). The implemented design differs: SQS without SNS, policy in `telegram_bot/policy.py` ([telegram-bot.md](telegram-bot.md)).
+
 # Telegram alerts from the live layer: integration contract (PROPOSED)
 
 Owner of delivery: Khuê (SNS -> SQS -> Telegram Lambda, DynamoDB ledger and

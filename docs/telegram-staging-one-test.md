@@ -1,3 +1,5 @@
+> **Historical record.** Preparation of one historical staging Telegram test for Khuê's pipeline. Superseded by the product bot's end-to-end acceptance ([telegram-bot.md](telegram-bot.md)).
+
 # One historical Gold-to-Telegram test
 
 The identity helper and command preparation are local tools. No deployment,
