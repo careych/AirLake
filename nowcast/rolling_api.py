@@ -26,6 +26,7 @@ PLACES = {
 }
 BASIS = {
     "openaq_archive": "hourly value from the OpenAQ daily archive for the AirGradient sensor",
+    "openaq_latest": "hourly value from OpenAQ /latest as captured by AirLake's 15-minute refresh; replaced by the API or archive value when they appear",
     "openaq_hourly": "hourly value from the OpenAQ API (values >= 100 rounded to whole numbers by OpenAQ); replaced by the archive value when it appears",
     "sc_archive": "mean of >= 12 Sensor.Community archive readings in the hour (~24 expected)",
     "sc_sampled": "provisional mean of >= 2 readings sampled by AirLake every 15 min; replaced by the archive mean next day",
