@@ -19,6 +19,9 @@ from nowcast import deploy as nowcast
 from nowcast.public_api import CURRENT_KEY
 
 DEPLOYED_REFRESH_CODE = "5HH3RWWQpi1tDf9vjEUtDh4Tr0ZP/fHXLlaay9mbquE="
+DEPLOYED_BOT_CODE = "hQC+/xv27OLUXYZ2cU6d81Dq8ZLmpUUhUUdnz0VOj4E="
+BOT_FUNCTION = "airlake-telegram-20261115-bot"
+PREVIOUS_BOT_ZIP = "/private/tmp/airlake-telegram-20261115/lambda.zip"
 PUBLIC_API = "https://npe6uhbknh4qojnmylv3w436mi0epxfb.lambda-url.ap-southeast-2.on.aws"
 PREVIOUS_SITE_RECEIPT = (
     "/private/tmp/airlake-nowcast-20261115/website-release/release-receipt.json"
@@ -38,6 +41,14 @@ def prepare(packet, site_inputs, bot_url, previous_zip):
     if code_sha(previous) != DEPLOYED_REFRESH_CODE:
         raise ValueError("Rollback copy is not the deployed refresh code")
     (packet / "previous-refresh.zip").write_bytes(previous)
+    from telegram_bot import deploy as telegram
+
+    bot = telegram.lambda_zip()
+    (packet / "bot.zip").write_bytes(bot)
+    old_bot = Path(PREVIOUS_BOT_ZIP).read_bytes()
+    if code_sha(old_bot) != DEPLOYED_BOT_CODE:
+        raise ValueError("Rollback copy is not the deployed bot code")
+    (packet / "previous-bot.zip").write_bytes(old_bot)
     root = Path(__file__).resolve().parents[1]
     plan = {
         "account": ACCOUNT,
@@ -45,6 +56,10 @@ def prepare(packet, site_inputs, bot_url, previous_zip):
         "refresh_function": nowcast.REFRESH,
         "refresh_code_sha256_b64": code_sha(code),
         "rollback_code_sha256_b64": DEPLOYED_REFRESH_CODE,
+        "bot_function": BOT_FUNCTION,
+        "bot_code_sha256_b64": code_sha(bot),
+        "bot_rollback_code_sha256_b64": DEPLOYED_BOT_CODE,
+        "bot_requires": "Telegram E2E PASS recorded before execute",
         "public_api": PUBLIC_API,
         "bot_url": bot_url,
         "site_inputs": site_inputs,
@@ -60,12 +75,14 @@ def prepare(packet, site_inputs, bot_url, previous_zip):
         "operations": [
             "lambda:UpdateFunctionCode refresh (RevisionId pinned), wait, verify CodeSha256",
             "lambda:Invoke refresh once; s3:GetObject current.json must contain 'recent'",
+            "lambda:UpdateFunctionCode bot (RevisionId pinned), wait, verify CodeSha256",
             "Amplify: update_app with unchanged headers, one deployment per branch (public, demo)",
         ],
         "unchanged": "public API code and URL, schedules, IAM, alarms, historical data, private API",
         "browser_get_budget": 40,
         "rollback": [
             "UpdateFunctionCode with previous-refresh.zip",
+            "UpdateFunctionCode bot with previous-bot.zip",
             "Amplify redeploy of job 3 zips",
         ],
     }
@@ -87,6 +104,10 @@ def load(packet, confirm):
         or nowcast.lambda_zip() != (packet / "refresh.zip").read_bytes()
     ):
         raise ValueError("Refresh code drifted from the plan")
+    from telegram_bot import deploy as telegram
+
+    if telegram.lambda_zip() != (packet / "bot.zip").read_bytes():
+        raise ValueError("Bot code drifted from the plan")
     for name, h in plan["site_source_sha256"].items():
         if sha((root / name).read_bytes()) != h:
             raise ValueError("Website source drifted from the plan")
@@ -112,7 +133,17 @@ def preflight(c, plan):
         app.get("customHeaders"), headers(plan["public_api"])
     ):
         raise ValueError("Amplify headers differ from the live release")
-    return {"status": "PASS_READ_ONLY", "revision": f["RevisionId"]}
+    b = c["lambda"].get_function_configuration(FunctionName=plan["bot_function"])
+    if (
+        b["CodeSha256"] != plan["bot_rollback_code_sha256_b64"]
+        or b["State"] != "Active"
+    ):
+        raise ValueError("Deployed bot code changed; review first")
+    return {
+        "status": "PASS_READ_ONLY",
+        "revision": f["RevisionId"],
+        "bot_revision": b["RevisionId"],
+    }
 
 
 def execute(c, packet, plan, digest):
@@ -121,7 +152,11 @@ def execute(c, packet, plan, digest):
     from historical.build import build
 
     packet = Path(packet)
-    revision = preflight(c, plan)["revision"]
+    checked = preflight(c, plan)
+    revision = checked["revision"]
+    e2e = Path("/private/tmp/airlake-telegram-20261115/e2e-acceptance.json")
+    if not e2e.exists() or json.loads(e2e.read_text()).get("status") != "PASS":
+        raise ValueError("Telegram E2E must pass before the bot code is updated")
     r = Receipt(packet / "receipt.json", digest)
     code = (packet / "refresh.zip").read_bytes()
     r.write(
@@ -153,6 +188,25 @@ def execute(c, packet, plan, digest):
         raise ValueError("Projection lacks the 24-hour series")
     r.value["refresh"] = result
     r.save()
+    bot = (packet / "bot.zip").read_bytes()
+    r.write(
+        "update_bot_code",
+        lambda: c["lambda"].update_function_code(
+            FunctionName=plan["bot_function"],
+            ZipFile=bot,
+            RevisionId=checked["bot_revision"],
+        ),
+    )
+    c["lambda"].get_waiter("function_updated_v2").wait(
+        FunctionName=plan["bot_function"]
+    )
+    if (
+        c["lambda"].get_function_configuration(FunctionName=plan["bot_function"])[
+            "CodeSha256"
+        ]
+        != plan["bot_code_sha256_b64"]
+    ):
+        raise ValueError("Updated bot code does not match")
     i = plan["site_inputs"]
     for branch in ("public", "demo"):
         build(
