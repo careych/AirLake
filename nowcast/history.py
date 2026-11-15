@@ -8,8 +8,9 @@ instantaneous and are bucketed by the hour they fall in.
 
 Row basis (a better basis replaces a worse one for the same hour):
 - openaq_archive Dragon value from the OpenAQ daily archive (one decimal)
-- openaq_latest  Dragon hourly value from OpenAQ /latest, as published in the
-                 projection; /hours often lags it by an hour or more
+- openaq_latest  provisional: Dragon value from OpenAQ /latest (stamped at the
+                 end of its hour) as captured in the projection; /hours often
+                 lags it by an hour or more and replaces it when it arrives
 - openaq_hourly  Dragon value from OpenAQ /sensors/{id}/hours (values >= 100
                  come back rounded to whole numbers; used until the archive,
                  which lags ~4 days, has the hour)
@@ -40,11 +41,12 @@ DRAGON_SENSOR = 14581375
 OPENAQ_HOURS = "https://api.openaq.org/v3/sensors/{}/hours"
 RANK = {
     "sc_sampled": 0,
+    "openaq_latest": 0,  # never replaces an /hours or archive value
     "sc_archive": 1,
-    "openaq_latest": 1,
     "openaq_hourly": 1,
     "openaq_archive": 2,
 }
+PROVISIONAL = {"sc_sampled", "openaq_latest"}
 VALID_DAY_HOURS = 18  # 75 % of a day, as for US EPA daily PM2.5 validity
 MIN_SAMPLED = 2
 CONVENTION = (
@@ -202,7 +204,7 @@ def annotate(rows):
             m = statistics.median(near)
             if r["pm25"] >= 3 * max(m, 1) and r["pm25"] - m >= 50:
                 flags.append("isolated_peak")
-        if r["basis"] == "sc_sampled":
+        if r["basis"] in PROVISIONAL:
             flags.append("provisional")
         out.append({**r, "flags": flags})
     return out
@@ -220,7 +222,7 @@ def daily(rows):
     out = []
     for d, items in sorted(days.items()):
         v = [r["pm25"] for r in items]
-        final = sum(1 for r in items if r["basis"] != "sc_sampled")
+        final = sum(1 for r in items if r["basis"] not in PROVISIONAL)
         out.append(
             {
                 "date_local": d,
@@ -264,7 +266,7 @@ def coverage(rows, start, end):
         "hours_expected": expected,
         "hours_present": len(present),
         "provisional_hours": sum(
-            1 for r in window(rows, start, end) if r["basis"] == "sc_sampled"
+            1 for r in window(rows, start, end) if r["basis"] in PROVISIONAL
         ),
         "percent": round(100 * len(present) / expected, 1) if expected else 0.0,
         "days_in_range": len(full_days),

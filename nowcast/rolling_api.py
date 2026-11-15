@@ -26,7 +26,7 @@ PLACES = {
 }
 BASIS = {
     "openaq_archive": "hourly value from the OpenAQ daily archive for the AirGradient sensor",
-    "openaq_latest": "hourly value from OpenAQ /latest as captured by AirLake's 15-minute refresh; replaced by the API or archive value when they appear",
+    "openaq_latest": "PROVISIONAL: value from OpenAQ /latest (stamped at the end of the hour, i.e. hour_start + 1 h) captured by AirLake's 15-minute refresh; flagged provisional, not counted toward valid_day, and replaced by the OpenAQ /hours or archive value when it appears",
     "openaq_hourly": "hourly value from the OpenAQ API (values >= 100 rounded to whole numbers by OpenAQ); replaced by the archive value when it appears",
     "sc_archive": "mean of >= 12 Sensor.Community archive readings in the hour (~24 expected)",
     "sc_sampled": "provisional mean of >= 2 readings sampled by AirLake every 15 min; replaced by the archive mean next day",
@@ -34,8 +34,8 @@ BASIS = {
 METHOD = {
     "hour_convention": h.CONVENTION,
     "timezone": "UTC for *_utc; Asia/Ho_Chi_Minh (UTC+7, no DST) for *_local and date_local",
-    "daily": f"mean of the hourly values on that Vietnam calendar day; valid_day needs >= {h.VALID_DAY_HOURS}/24 non-provisional hours, complete_day 24/24; provisional_hours counts sc_sampled hours",
-    "flags": "very_low: < 2 µg/m³; isolated_peak: >= 3x and >= 50 µg/m³ above the median of up to 6 neighbouring hours; provisional: sc_sampled. Flagged values are kept unchanged.",
+    "daily": f"mean of the hourly values on that Vietnam calendar day; valid_day needs >= {h.VALID_DAY_HOURS}/24 non-provisional hours, complete_day 24/24; provisional_hours counts sc_sampled and openaq_latest hours",
+    "flags": "very_low: < 2 µg/m³; isolated_peak: >= 3x and >= 50 µg/m³ above the median of up to 6 neighbouring hours; provisional: sc_sampled or openaq_latest. Flagged values are kept unchanged.",
     "gaps": "missing hours are left missing; no interpolation, no model values",
     "basis": BASIS,
     "sensors": "low-cost optical sensors (AirGradient, SDS011); indicative, not reference-grade, no humidity correction",

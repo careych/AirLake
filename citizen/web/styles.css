@@ -116,6 +116,8 @@ input,select{border:1px solid #b7c8bd;border-radius:10px;padding:10px 12px;backg
 .chart .bar.on{fill:var(--brand-dark)}
 .chart .bar.weak.on{fill:#8fb5a8}
 .chart svg:focus-visible{outline:3px solid #1c817c}
+.load-error{background:var(--delayed-bg);color:var(--delayed);border-radius:10px;padding:12px 14px}
+.load-error p{margin:0 0 8px}
 .empty-chart{display:grid;place-items:center;min-height:150px;color:var(--muted)}
 .readout{min-height:22px;font-size:13px;color:var(--muted);margin:6px 0 0}
 .small-chart{min-height:120px}
