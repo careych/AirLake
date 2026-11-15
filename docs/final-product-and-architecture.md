@@ -37,9 +37,9 @@ chart series, and no colour badge implies "safe".
 | EventBridge Scheduler | VERIFIED live | nowcast refresh every 15 min |
 | Lambda ingestion/serving | VERIFIED live | refresh, public API, private API |
 | S3 + Iceberg Bronze/Silver/Gold, Glue (Spark), Athena | VERIFIED | September backfill run 2, two Athena checks |
-| DynamoDB | VERIFIED (live state, staging tables) | Telegram product table PLANNED |
-| SNS/SQS/DLQ alert transport | Staging VERIFIED deployed (Khuê) | product queue + DLQ PLANNED |
-| Telegram bot | Legacy prototype and staging exist | product bot PLANNED (`telegram_bot/`) |
+| DynamoDB | VERIFIED (live state, staging tables) | Telegram product table VERIFIED live (2026-11-15) |
+| SNS/SQS/DLQ alert transport | Staging VERIFIED deployed (Khuê) | product SQS queue + DLQ VERIFIED live; SNS not used by the product bot |
+| Telegram bot | Legacy prototype and Khuê's staging pipeline exist | product bot @AirLakeHanoiBot VERIFIED live, E2E passed 2026-11-15 (`telegram_bot/`) |
 | Amplify hosting | VERIFIED live | public + Basic-Auth demo |
 | IAM, Secrets Manager, CloudWatch alarms | VERIFIED | scoped roles; 3 nowcast alarms (no notification target) |
 | Kafka | Local only (`infra/local`) | replaced on AWS by scheduled pull; volumes are tiny |
@@ -49,3 +49,27 @@ chart series, and no colour badge implies "safe".
 | Terraform, CI/CD | Not implemented | releases use frozen, hash-pinned plans with receipts |
 | ALB/WAF | Not used | public API bounded by handler limits and reserved concurrency |
 | Free-form SQL for researchers | Not public | Athena for signed-in operators; public API offers filtered JSON/CSV |
+
+## 4. Deviations from the original report (owner decisions, 2026-11-15)
+
+- **Source polling: about 5 minutes planned, 15 minutes operated.** The
+  EventBridge schedule checks the sources every 15 minutes. This is an
+  ingestion check frequency, not a promise of 15-minute measurement freshness:
+  Dragon publishes one hourly mean (reaching AirLake 16–20 min after the
+  hour) and #99385 reports every ~150 s. Freshness is judged per source from
+  the observation time (see `rolling-history-and-freshness.md`).
+- **AQI.** The report planned an hourly AQI. The project-specific value in the
+  September lakehouse tables (`aqi`, `aqi_mvp`) is NOT official VN_AQI and is
+  no longer shown to residents; residents see PM2.5 in µg/m³ with time and
+  completeness. The value stays in the validated September evidence and the
+  archive export, labelled as an internal pipeline check.
+- **Telegram ownership.** Khuê designed and deployed the staging alert
+  pipeline (SNS/SQS/Lambda/DynamoDB ledger, runner, CloudWatch evidence),
+  which shaped the delivery contract. On the owner's instruction the product
+  bot @AirLakeHanoiBot was then built and released end to end from
+  `telegram_bot/` by Carey's session; Khuê's staging resources were left
+  untouched.
+- **Public data.** Two licensed sources are public, each as its own dataset:
+  Dragon under CC BY 4.0 and Sensor.Community #99385 under ODbL 1.0 / DbCL 1.0
+  (the AirLake-derived database for #99385 is offered under ODbL 1.0).
+  Hanoi network stations stay private.

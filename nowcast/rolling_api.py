@@ -41,6 +41,31 @@ METHOD = {
 }
 
 
+ODBL = "https://opendatacommons.org/licenses/odbl/1-0/"
+DBCL = "https://opendatacommons.org/licenses/dbcl/1-0/"
+CC_BY = "https://creativecommons.org/licenses/by/4.0/"
+# Each station's history is a separate dataset under its own source's terms;
+# the two are never combined into one response or file.
+DATASET_LICENCE = {
+    h.DRAGON: {
+        "dataset_licence": "CC BY 4.0",
+        "dataset_licence_url": CC_BY,
+        "source": "OpenAQ, location 6123215 / sensor 14581375 (AirGradient 'Dragon'): https://explore.openaq.org/locations/6123215",
+        "changes": "AirLake relabels each OpenAQ hourly value from the end to the start of its hour, prefers the OpenAQ daily archive over the API value, computes Vietnam-day means and completeness, and adds quality flags; measured values are not altered",
+        "licence_notice": "PM2.5 data by AirGradient via OpenAQ, licensed CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Changes made by AirLake: hour relabelled to its start, daily means and flags added.",
+    },
+    h.COMMUNITY: {
+        "dataset_licence": "ODbL 1.0",
+        "dataset_licence_url": ODBL,
+        "contents_licence": "DbCL 1.0",
+        "contents_licence_url": DBCL,
+        "source": "Sensor.Community sensor 99385 (SDS011), daily archive https://archive.sensor.community/ and API https://data.sensor.community/",
+        "changes": "AirLake derives hourly means (>= 12 archive readings, or >= 2 provisional 15-minute samples), Vietnam-day means, completeness and quality flags",
+        "licence_notice": "Contains Sensor.Community data (https://sensor.community/), made available under the Open Database License v1.0 (https://opendatacommons.org/licenses/odbl/1-0/); contents under the Database Contents License v1.0 (https://opendatacommons.org/licenses/dbcl/1-0/). This AirLake derived database (hourly and daily values for sensor 99385) is made available under the Open Database License v1.0 (https://opendatacommons.org/licenses/odbl/1-0/); individual contents under the Database Contents License v1.0 (https://opendatacommons.org/licenses/dbcl/1-0/). The whole derived database can be retrieved from this API in consecutive ranges.",
+    },
+}
+
+
 def station(sid):
     meta = project.DRAGON if sid == h.DRAGON else project.COMMUNITY
     return {
@@ -58,6 +83,7 @@ def station(sid):
         "licence_url": meta["licence_url"],
         "attribution": meta["attribution"],
         "share_alike": meta["share_alike"],
+        **DATASET_LICENCE[sid],
     }
 
 
@@ -190,14 +216,24 @@ def to_csv(value):
     )
     out = io.StringIO()
     w = csv.writer(out, lineterminator="\n")
-    w.writerow(["station_id", *fields, "attribution", "licence"])
+    extra = ["licence", "licence_url"] + (
+        ["contents_licence", "contents_licence_url"] if "contents_licence" in s else []
+    )
+    w.writerow(["station_id", *fields, "attribution", *extra, "licence_notice"])
     for r in value["rows"]:
         w.writerow(
             [
                 s["station_id"],
                 *("|".join(r[f]) if f == "flags" else r[f] for f in fields),
                 s["attribution"],
-                s["licence"],
+                s["dataset_licence"],
+                s["dataset_licence_url"],
+                *(
+                    [s["contents_licence"], s["contents_licence_url"]]
+                    if "contents_licence" in s
+                    else []
+                ),
+                s["licence_notice"],
             ]
         )
     return out.getvalue()

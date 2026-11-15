@@ -76,8 +76,9 @@ DOCS = {
         "archive hour_start / aqi": "September export only: hour_start is OpenAQ's END-of-hour stamp; aqi is an internal pipeline check value, not VN_AQI and not a health category",
     },
     "licences": {
-        "6123215": "CC BY 4.0, attribution 'AirGradient via OpenAQ'",
-        "99385": "Sensor.Community data under ODbL 1.0 (derived database offered under ODbL 1.0)",
+        "6123215": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), attribution 'AirGradient via OpenAQ'; AirLake changes listed in each response",
+        "99385": "Contains Sensor.Community data under ODbL 1.0 (https://opendatacommons.org/licenses/odbl/1-0/) / DbCL 1.0 (https://opendatacommons.org/licenses/dbcl/1-0/); the AirLake derived database for 99385 is made available under ODbL 1.0, contents under DbCL 1.0",
+        "separation": "each history response and file holds one station under that station's licence; datasets are never merged",
         "now.model": "CAMS via Open-Meteo, CC BY 4.0; credit Copernicus Atmosphere Monitoring Service",
     },
     "not_served": "Other Hanoi stations have no redistribution licence; no SQL access",
@@ -180,6 +181,8 @@ def rolling(event, store, headers, path):
         "cache-control": "public, max-age=300",
         "etag": etag,
     }
+    if path == "/v1/history":
+        out["link"] = f'<{value["station"]["dataset_licence_url"]}>; rel="license"'
     if kind.startswith("text/csv"):
         out["content-disposition"] = (
             f'attachment; filename="airlake-{p["station_id"]}-{p["granularity"]}.csv"'

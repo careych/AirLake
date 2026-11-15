@@ -568,7 +568,7 @@
     $('q-summary').textContent = 'Đang tải…';
     try {
       const v = await getJSON(`${API}/v1/history?station_id=${id}&start=${from}&end=${dateKey(end)}&granularity=${g}&limit=1000`, 300000), c = v.coverage;
-      $('q-summary').textContent = `${v.total_rows} dòng · ${c.hours_present}/${c.hours_expected} giờ có số liệu (${num(c.percent)}%) · ${c.valid_days}/${c.days_in_range} ngày đủ dữ liệu · ${v.station.attribution} · ${v.station.licence}.`;
+      $('q-summary').textContent = `${v.total_rows} dòng · ${c.hours_present}/${c.hours_expected} giờ có số liệu (${num(c.percent)}%) · ${c.valid_days}/${c.days_in_range} ngày đủ dữ liệu · Giấy phép bộ dữ liệu: ${v.station.dataset_licence} (${v.station.dataset_licence_url}) · ${v.station.attribution}.`;
       const cols = g === 'hourly' ? ['hour_start_local', 'pm25', 'n_readings', 'basis', 'flags'] : ['date_local', 'pm25', 'hours', 'valid_day', 'complete_day'];
       $('q-preview').replaceChildren(el('thead', {}, el('tr', {}, ...cols.map(x => el('th', {text: x})))), el('tbody', {}, ...v.rows.slice(0, 10).map(r => el('tr', {}, ...cols.map(x => el('td', {text: Array.isArray(r[x]) ? r[x].join('|') : String(r[x])}))))));
       const base = `${API}/v1/history?station_id=${id}&start=${from}&end=${dateKey(end)}&granularity=${g}`;
