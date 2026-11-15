@@ -18,6 +18,9 @@ HYSTERESIS = 0.8
 COOLDOWN = timedelta(hours=3)
 SAMPLE_GAP = timedelta(minutes=10)
 SINGLE_SAMPLE_STATIONS = {99385}
+# "fresh" since the 2026-11-15 freshness states; "recent" in older projections.
+# Delayed and stale readings never alert.
+ALERTABLE = {"fresh", "recent"}
 
 
 def initial_state():
@@ -37,7 +40,7 @@ def decide(state, observation, threshold, now):
     if (
         observation.get("kind") != "observed"
         or observation.get("fetch_status") != "ok"
-        or observation.get("freshness", {}).get("status") != "recent"
+        or observation.get("freshness", {}).get("status") not in ALERTABLE
         or at is None
         or value is None
         or (state["last_observed_at"] and utc(at) <= utc(state["last_observed_at"]))
