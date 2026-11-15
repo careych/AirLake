@@ -501,6 +501,29 @@ class FreshnessTests(unittest.TestCase):
         self.assertIn("cập nhật chậm", line("delayed"))
         self.assertIn("đã cũ", line("stale"))
 
+    def test_alert_policy_accepts_the_projection_freshness_states(self):
+        from telegram_bot.policy import decide, initial_state
+
+        at = (NOW - timedelta(minutes=20)).isoformat().replace("+00:00", "Z")
+        o = {
+            "station_id": 6123215,
+            "kind": "observed",
+            "fetch_status": "ok",
+            "observed_at": at,
+            "pm25": 60.0,
+            "freshness": project.freshness(6123215, at, NOW),
+        }
+        self.assertEqual(o["freshness"]["status"], "fresh")
+        self.assertTrue(decide(initial_state(), o, 50, NOW)[0])
+        old = (NOW - timedelta(hours=2)).isoformat().replace("+00:00", "Z")
+        delayed = {
+            **o,
+            "observed_at": old,
+            "freshness": project.freshness(6123215, old, NOW),
+        }
+        self.assertEqual(delayed["freshness"]["status"], "delayed")
+        self.assertFalse(decide(initial_state(), delayed, 50, NOW)[0])
+
     def test_future_reading_is_not_published_as_current(self):
         from nowcast import refresh
 
