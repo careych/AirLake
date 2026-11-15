@@ -285,6 +285,33 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(len(page["rows"]), 100)
         self.assertIn("offset=100", page["next"])
 
+    def test_each_dataset_carries_its_own_licence_with_uris(self):
+        sc = self.call("/v1/history", "station_id=99385&format=csv")
+        rows = list(csv.DictReader(io.StringIO(sc["body"])))
+        self.assertEqual(rows[0]["licence"], "ODbL 1.0")
+        self.assertEqual(rows[0]["licence_url"], rolling_api.ODBL)
+        self.assertEqual(rows[0]["contents_licence_url"], rolling_api.DBCL)
+        self.assertIn("This AirLake derived database", rows[0]["licence_notice"])
+        self.assertEqual(sc["headers"]["link"], f'<{rolling_api.ODBL}>; rel="license"')
+        dragon = self.call("/v1/history", "station_id=6123215&format=csv")["body"]
+        first = next(iter(csv.DictReader(io.StringIO(dragon))))
+        self.assertEqual(
+            (first["licence"], first["licence_url"]), ("CC BY 4.0", rolling_api.CC_BY)
+        )
+        self.assertNotIn("contents_licence", first)
+        self.assertNotIn("ODbL", dragon)  # never relicensed or mixed
+        v = json.loads(self.call("/v1/history", "station_id=99385")["body"])["station"]
+        self.assertEqual(
+            (v["dataset_licence_url"], v["contents_licence_url"]),
+            (rolling_api.ODBL, rolling_api.DBCL),
+        )
+        self.assertIn(
+            "relabels",
+            json.loads(self.call("/v1/history", "station_id=6123215")["body"])[
+                "station"
+            ]["changes"],
+        )
+
     def test_stations_and_head(self):
         v = json.loads(self.call("/v1/stations")["body"])
         self.assertEqual([s["station_id"] for s in v["stations"]], [6123215, 99385])
