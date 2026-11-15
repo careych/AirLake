@@ -18,6 +18,21 @@ def vn_time(value):
     return t.strftime("%H:%M %d/%m")
 
 
+def measured(station_id, observed_at):
+    """Dragon reports hourly means stamped at the END of the hour."""
+    if station_id == 6123215:
+        start = utc(observed_at) - timedelta(hours=1) + VIETNAM
+        return f"trung bình {start:%H:%M}–{vn_time(observed_at)}"
+    return f"đo lúc {vn_time(observed_at)}"
+
+
+FRESHNESS_NOTE = {
+    "recent": "",  # projections written before 2026-11-16
+    "fresh": "",
+    "delayed": " (điểm đo cập nhật chậm)",
+}
+
+
 def age(value, now):
     minutes = int((utc(now) - utc(value)).total_seconds() // 60)
     return (
@@ -109,8 +124,8 @@ def subscribed(station_id, threshold):
 def reading_line(o, now):
     if o.get("observed_at") is None or o.get("pm25") is None:
         return f"• {STATIONS[o['station_id']]}: chưa có số đo."
-    old = "" if o.get("freshness", {}).get("status") == "recent" else " (số đo đã cũ)"
-    return f"• {STATIONS[o['station_id']]}: {number(o['pm25'])} µg/m³, đo lúc {vn_time(o['observed_at'])} ({age(o['observed_at'], now)}){old}"
+    old = FRESHNESS_NOTE.get(o.get("freshness", {}).get("status"), " (số đo đã cũ)")
+    return f"• {STATIONS[o['station_id']]}: {number(o['pm25'])} µg/m³, {measured(o['station_id'], o['observed_at'])} ({age(o['observed_at'], now)}){old}"
 
 
 def latest(projection, now):
@@ -165,7 +180,7 @@ def alert(station_id, value, threshold, observed_at, now):
         f"Trạm: {STATIONS[station_id]}\n"
         f"PM2.5: {number(value)} µg/m³\n"
         f"Ngưỡng bạn chọn: {threshold} µg/m³\n"
-        f"Đo lúc: {vn_time(observed_at)} ({age(observed_at, now)})\n\n"
+        f"Thời gian: {measured(station_id, observed_at)} ({age(observed_at, now)})\n\n"
         "Số đo thật tại trạm đã đạt ngưỡng bạn đăng ký. Bạn có thể cân nhắc giảm hoạt động gắng sức ngoài trời.\n\n"
         f"Xem chi tiết: {SITE}\n"
         "Đổi cài đặt: /settings · Tắt cảnh báo: /unsubscribe"

@@ -1,127 +1,127 @@
 {
  "station_id": 6123215,
- "period": "tháng 9/2026",
- "source": "Dragon (AirGradient via OpenAQ, CC BY 4.0); AirLake Glue run 2, Athena-verified",
+ "period": "30 ngày 16/10–14/11/2026",
+ "source": "Dragon (AirGradient via OpenAQ, CC BY 4.0); AirLake rolling history, hours labelled by their start (Vietnam time)",
  "hours": [
   {
    "hour": 0,
-   "pm25": 44.5,
-   "days": 30
+   "pm25": 40.5,
+   "days": 29
   },
   {
    "hour": 1,
-   "pm25": 46.5,
-   "days": 30
+   "pm25": 41.7,
+   "days": 29
   },
   {
    "hour": 2,
-   "pm25": 47.3,
-   "days": 30
+   "pm25": 44.4,
+   "days": 29
   },
   {
    "hour": 3,
    "pm25": 49.0,
-   "days": 30
+   "days": 29
   },
   {
    "hour": 4,
-   "pm25": 47.7,
-   "days": 30
+   "pm25": 51.9,
+   "days": 29
   },
   {
    "hour": 5,
-   "pm25": 47.9,
-   "days": 30
+   "pm25": 51.3,
+   "days": 29
   },
   {
    "hour": 6,
-   "pm25": 49.8,
-   "days": 30
+   "pm25": 55.3,
+   "days": 29
   },
   {
    "hour": 7,
-   "pm25": 51.8,
-   "days": 30
+   "pm25": 53.0,
+   "days": 29
   },
   {
    "hour": 8,
-   "pm25": 51.8,
-   "days": 30
+   "pm25": 44.4,
+   "days": 28
   },
   {
    "hour": 9,
-   "pm25": 45.9,
-   "days": 30
+   "pm25": 37.9,
+   "days": 28
   },
   {
    "hour": 10,
-   "pm25": 40.3,
-   "days": 30
+   "pm25": 36.4,
+   "days": 28
   },
   {
    "hour": 11,
-   "pm25": 34.8,
-   "days": 30
+   "pm25": 33.8,
+   "days": 27
   },
   {
    "hour": 12,
-   "pm25": 30.6,
-   "days": 30
+   "pm25": 31.9,
+   "days": 28
   },
   {
    "hour": 13,
-   "pm25": 30.9,
-   "days": 30
+   "pm25": 30.1,
+   "days": 28
   },
   {
    "hour": 14,
-   "pm25": 29.3,
-   "days": 30
+   "pm25": 29.5,
+   "days": 28
   },
   {
    "hour": 15,
-   "pm25": 28.8,
-   "days": 30
+   "pm25": 28.1,
+   "days": 28
   },
   {
    "hour": 16,
-   "pm25": 29.7,
-   "days": 30
+   "pm25": 29.2,
+   "days": 28
   },
   {
    "hour": 17,
-   "pm25": 28.2,
-   "days": 30
+   "pm25": 35.1,
+   "days": 28
   },
   {
    "hour": 18,
-   "pm25": 33.1,
-   "days": 30
+   "pm25": 40.2,
+   "days": 29
   },
   {
    "hour": 19,
-   "pm25": 39.6,
-   "days": 30
+   "pm25": 40.3,
+   "days": 29
   },
   {
    "hour": 20,
-   "pm25": 42.1,
-   "days": 30
+   "pm25": 39.0,
+   "days": 29
   },
   {
    "hour": 21,
-   "pm25": 42.6,
-   "days": 30
+   "pm25": 41.5,
+   "days": 29
   },
   {
    "hour": 22,
-   "pm25": 42.9,
-   "days": 30
+   "pm25": 43.2,
+   "days": 29
   },
   {
    "hour": 23,
-   "pm25": 46.4,
-   "days": 30
+   "pm25": 42.3,
+   "days": 29
   }
  ]
 }
