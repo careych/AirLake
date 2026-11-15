@@ -34,13 +34,20 @@ HEADERS_PREVIOUS = """customHeaders:
 """
 
 
-def headers(api_origin=None):
-    """Security headers; OpenStreetMap tiles need the origin as referrer."""
+def headers(api_origin=None, geolocation=False):
+    """Security headers; OpenStreetMap tiles need the origin as referrer.
+
+    geolocation=True lets this site itself (never embedded frames) ask the
+    browser for the visitor's location after an explicit button press.
+    """
     connect = "'self'" + (" " + api_origin if api_origin else "")
+    base = (
+        HEADERS_PREVIOUS.replace("geolocation=()", "geolocation=(self)")
+        if geolocation
+        else HEADERS_PREVIOUS
+    )
     return (
-        HEADERS_PREVIOUS.replace(
-            "value: no-referrer", "value: strict-origin-when-cross-origin"
-        )
+        base.replace("value: no-referrer", "value: strict-origin-when-cross-origin")
         .replace(
             "img-src 'self' data:;",
             "img-src 'self' data: https://tile.openstreetmap.org;",
@@ -82,11 +89,10 @@ def zip_site(path, mode):
         raise ValueError("Dataset path/mode mismatch")
     assets = [
         "index.html",
-        "app.js",
+        "site.js",
         "styles.css",
         "icon.svg",
-        "history.js",
-        "now.js",
+        "areas.json",
         "leaflet.js",
         "leaflet.css",
     ]
@@ -339,7 +345,7 @@ def deploy(c, packet, p, digest):
             return response
 
         # Protect every demo asset, not only its HTML route.
-        for path in ("", p["branches"]["demo"]["data_path"], "app.js"):
+        for path in ("", p["branches"]["demo"]["data_path"], "site.js"):
             if get("demo", path).status_code != 401:
                 raise PermissionError("Restricted branch protection failed")
         for branch, private in [("public", False), ("demo", True)]:
