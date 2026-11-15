@@ -1,0 +1,62 @@
+{
+ "release": "site-only copy cleanup",
+ "date": "2026-11-15",
+ "plan_sha256": "564354865242943331d1c78fbce51e6b39419574e31c3573f0e7aca8451e4a1b",
+ "commit": "40a4f4b",
+ "amplify": {
+  "demo": {
+   "job_id": "7",
+   "status": "SUCCEED"
+  },
+  "public": {
+   "job_id": "7",
+   "status": "SUCCEED"
+  }
+ },
+ "demo_basic_auth": {
+  "anonymous_checks": [
+   {
+    "authenticated": false,
+    "branch": "demo",
+    "status": 401
+   },
+   {
+    "after_deploy": true,
+    "authenticated": false,
+    "branch": "demo",
+    "status": 401
+   }
+  ],
+  "unchanged": true
+ },
+ "removed_blocks_absent": {
+  "desktop": {
+   "Vì sao chỉ có 2 điểm đo": true,
+   "Điện toán đám mây": true,
+   "Không phải dịch vụ khuyến cáo": true,
+   "Cảnh báo chỉ dành cho 2 điểm đo": true
+  },
+  "mobile_390": {
+   "Vì sao chỉ có 2 điểm đo": true,
+   "Điện toán đám mây": true,
+   "Không phải dịch vụ khuyến cáo": true,
+   "Cảnh báo chỉ dành cho 2 điểm đo": true
+  }
+ },
+ "hosted_checks": {
+  "gets": 28,
+  "desktop_errors": [],
+  "overflow": {
+   "desktop": false,
+   "mobile": false
+  },
+  "desktop_journeys": "Gia Lâm GPS card with Telegram st_6123215; 7-day history 168/168; Hoàng Mai model state",
+  "note": "the mobile pass hit the 28-request guard, so its live-data requests were blocked by the test harness and the page showed its 'could not load' notice; layout and removal were verified there"
+ },
+ "headers": {
+  "permissions-policy": "camera=(), microphone=(), geolocation=(self)",
+  "x-frame-options": "DENY",
+  "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self' https://npe6uhbknh4qojnmylv3w436mi0epxfb.lambda-url.ap-southeast-2.on.aws; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+ },
+ "untouched": "Lambda code, concurrency, IAM, S3, schedulers, Telegram"
+}
