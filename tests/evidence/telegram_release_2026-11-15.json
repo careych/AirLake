@@ -1,0 +1,104 @@
+{
+ "bot": {
+  "username": "AirLakeHanoiBot",
+  "webhook": {
+   "allowed_updates": [
+    "message",
+    "callback_query"
+   ],
+   "has_custom_certificate": false,
+   "last_error_message": null,
+   "max_connections": 5,
+   "pending_update_count": 0,
+   "url_matches": true
+  }
+ },
+ "e2e": {
+  "after_unsubscribe": "subscription deleted; evaluation 3 queued 0",
+  "bot_errors_3h": 0,
+  "dedup": "evaluation 2 queued 0; one alert ledger key",
+  "dlq_messages": 0,
+  "evaluations": [
+   {
+    "projection": "2026-11-15T05:16:11Z",
+    "queued": 1,
+    "status": "EVALUATED"
+   },
+   {
+    "projection": "2026-11-15T05:31:11Z",
+    "queued": 0,
+    "status": "EVALUATED"
+   },
+   {
+    "projection": "2026-11-15T05:31:11Z",
+    "queued": 0,
+    "status": "EVALUATED"
+   }
+  ],
+  "journey": [
+   "/start",
+   "subscribe Gia Lâm (Dragon) threshold 25",
+   "/status",
+   "alert received",
+   "no duplicate",
+   "/unsubscribe",
+   "no alert after unsubscribe"
+  ],
+  "owner_confirmed_message": {
+   "observed_local": "12:00 15/11/2026",
+   "pm25": 43.8,
+   "station": "Gia Lâm (Dragon)",
+   "threshold": 25
+  },
+  "plan_sha256": "8cfe8871b1aa83f82b8942cb49cd7137fb627a9878952486c2447965b9cdc839",
+  "recipient": "owner's consenting Telegram account (identifier not recorded)",
+  "status": "PASS"
+ },
+ "function_url_auth": "NONE + X-Telegram-Bot-Api-Secret-Token",
+ "plan_sha256": "8cfe8871b1aa83f82b8942cb49cd7137fb627a9878952486c2447965b9cdc839",
+ "resources": [
+  "create_table",
+  "enable_ttl",
+  "create_dlq",
+  "create_queue",
+  "create_webhook_secret",
+  "create_log_group",
+  "retention",
+  "create_role_airlake-telegram-20261115-bot",
+  "put_role_policy_airlake-telegram-20261115-bot",
+  "create_role_airlake-telegram-20261115-scheduler",
+  "put_role_policy_airlake-telegram-20261115-scheduler",
+  "create_function",
+  "concurrency",
+  "create_function_url",
+  "permit_url",
+  "permit_url_invoke",
+  "sqs_mapping"
+ ],
+ "schedule": {
+  "expression": "cron(5/15 * * * ? *)",
+  "status": "SCHEDULE_ENABLED"
+ },
+ "smoke": {
+  "evaluate": {
+   "projection": "2026-11-15T04:01:11Z",
+   "queued": 0,
+   "status": "EVALUATED"
+  },
+  "sqs_mapping": [
+   {
+    "batch": 10,
+    "queue": "airlake-telegram-20261115-alerts",
+    "response_types": [
+     "ReportBatchItemFailures"
+    ],
+    "state": "Enabled"
+   }
+  ],
+  "unsigned_webhook_status": 403,
+  "url_permissions": [
+   "lambda:InvokeFunction",
+   "lambda:InvokeFunctionUrl"
+  ]
+ }
+}
