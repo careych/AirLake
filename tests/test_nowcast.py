@@ -185,5 +185,157 @@ class ValidationTests(unittest.TestCase):
         self.assertEqual(r["hourly"]["n"], 0)
 
 
+class FakeS3:
+    class exceptions:
+        class NoSuchKey(Exception):
+            pass
+
+    def __init__(self, objects=None):
+        self.objects = dict(objects or {})
+        self.puts = []
+
+    def get_object(self, Bucket, Key, ExpectedBucketOwner):
+        if Key not in self.objects:
+            raise self.exceptions.NoSuchKey()
+        import io
+
+        return {"Body": io.BytesIO(self.objects[Key])}
+
+    def put_object(self, Bucket, Key, Body, **kw):
+        if kw.get("IfNoneMatch") == "*" and Key in self.objects:
+            raise AssertionError("immutable overwrite " + Key)
+        self.objects[Key] = Body
+        self.puts.append(Key)
+
+
+class RefreshTests(unittest.TestCase):
+    def http(self, calls):
+        def get(url, params=None, headers=None):
+            calls.append(url)
+            if url == openmeteo.META:
+                return META
+            if url == openmeteo.API:
+                return model_body()
+            if "openaq" in url:
+                return {
+                    "results": [
+                        {
+                            "sensorsId": 14581375,
+                            "value": 50.0,
+                            "datetime": {"utc": "2026-11-15T01:00:00Z"},
+                        }
+                    ]
+                }
+            return [
+                {
+                    "sensor": {"id": 99385},
+                    "location": {"indoor": 0},
+                    "timestamp": "2026-11-15 01:15:00",
+                    "sensordatavalues": [{"value_type": "P2", "value": "33"}],
+                }
+            ]
+
+        return get
+
+    def test_model_downloads_once_per_run_and_current_is_replaced(self):
+        from nowcast import refresh
+
+        s3, calls = FakeS3(), []
+        first = refresh.run(
+            s3, self.http(calls), "SYNTHETIC", {"status": "SYNTHETIC"}, NOW
+        )
+        self.assertEqual(first["status"], "PUBLISHED")
+        self.assertEqual(calls.count(openmeteo.API), 1)
+        later = NOW + timedelta(minutes=15)
+        refresh.run(s3, self.http(calls), "SYNTHETIC", {"status": "SYNTHETIC"}, later)
+        self.assertEqual(calls.count(openmeteo.API), 1)  # same run reused from S3
+        self.assertEqual(
+            sum(k.startswith("nowcast/v1/projections/") for k in s3.objects), 2
+        )
+        self.assertEqual(
+            sum("/observations/" in k for k in s3.objects), 2
+        )  # not duplicated
+        import json
+
+        current = json.loads(s3.objects["nowcast/v1/current.json"])
+        self.assertEqual(current["generated_at"], "2026-11-15T01:35:00Z")
+
+
+class PublicApiTests(unittest.TestCase):
+    def event(
+        self,
+        path,
+        query="",
+        method="GET",
+        origin="https://public.dhyvgpdsnj4zi.amplifyapp.com",
+    ):
+        return {
+            "rawPath": path,
+            "rawQueryString": query,
+            "headers": {"origin": origin},
+            "requestContext": {"http": {"method": method}},
+        }
+
+    def test_history_is_pinned_to_licensed_station(self):
+        from nowcast import public_api
+
+        self.assertEqual(
+            public_api.history_event(self.event("/v1/history", "granularity=daily"))[
+                "rawQueryString"
+            ],
+            "granularity=daily&station_id=6123215",
+        )
+        for q in (
+            "station_id=4946812",
+            "location_id=4946813",
+            "sensor_id=13502151",
+            "station_id=6123215&station_id=4946812",
+        ):
+            r = public_api.handler(self.event("/v1/history", q), None, store=object())
+            self.assertEqual(r["statusCode"], 404, q)
+
+    def test_read_only_cors_and_safe_errors(self):
+        from nowcast import public_api
+
+        self.assertEqual(
+            public_api.handler(self.event("/v1/now", method="POST"), None)[
+                "statusCode"
+            ],
+            405,
+        )
+        docs = public_api.handler(self.event("/v1"), None)
+        self.assertEqual(
+            docs["headers"]["access-control-allow-origin"],
+            "https://public.dhyvgpdsnj4zi.amplifyapp.com",
+        )
+        other = public_api.handler(
+            self.event("/v1", origin="https://evil.example"), None
+        )
+        self.assertNotIn("access-control-allow-origin", other["headers"])
+        self.assertEqual(
+            public_api.handler(
+                self.event("/v1/history", "limit=abc"), None, store=object()
+            )["statusCode"],
+            400,
+        )
+        broken = public_api.handler(
+            self.event("/v1/now"), None, store=type("S", (), {"s3": FakeS3()})()
+        )
+        self.assertEqual(broken["statusCode"], 503)
+        self.assertNotIn("nowcast", broken["body"])
+
+    def test_now_serves_current_projection_with_short_cache(self):
+        from nowcast import public_api
+
+        store = type(
+            "S", (), {"s3": FakeS3({public_api.CURRENT_KEY: b'{"schema_version": 1}'})}
+        )()
+        r = public_api.handler(self.event("/v1/now"), None, store=store)
+        self.assertEqual(
+            (r["statusCode"], r["headers"]["cache-control"]),
+            (200, "public, max-age=300"),
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
