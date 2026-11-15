@@ -1,0 +1,81 @@
+#!/bin/bash
+# ==============================================================================
+# AirLake - Kafka KRaft Cluster Node Initialization Script
+# Node ID: ${node_id} | Node IP: ${node_ip}
+# ==============================================================================
+set -euo pipefail
+
+echo "==> [AirLake Kafka Node ${node_id}] Initializing system and Docker..."
+dnf update -y
+dnf install -y docker
+systemctl enable --now docker
+
+mkdir -p /opt/kafka/config
+mkdir -p /opt/kafka/data
+
+echo "==> Configuring KRaft server.properties..."
+cat <<'EOF' > /opt/kafka/config/server.properties
+process.roles=broker,controller
+node.id=${node_id}
+controller.quorum.voters=${quorum_voters}
+listeners=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+advertised.listeners=PLAINTEXT://${node_ip}:9092
+controller.listener.names=CONTROLLER
+listener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+num.network.threads=3
+num.io.threads=8
+socket.send.buffer.bytes=102400
+socket.receive.buffer.bytes=102400
+socket.request.max.bytes=104857600
+log.dirs=/var/lib/kafka/data
+num.partitions=3
+num.recovery.threads.per.data.dir=1
+offsets.topic.replication.factor=${default_rf}
+transaction.state.log.replication.factor=${default_rf}
+transaction.state.log.min.isr=${min_isr}
+default.replication.factor=${default_rf}
+log.retention.hours=168
+log.segment.bytes=1073741824
+log.retention.check.interval.ms=300000
+auto.create.topics.enable=true
+EOF
+
+echo "==> Formatting storage with cluster ID ${cluster_id}..."
+docker run --rm \
+  -v /opt/kafka/config/server.properties:/etc/kafka/server.properties \
+  -v /opt/kafka/data:/var/lib/kafka/data \
+  apache/kafka:3.8.0 \
+  /opt/kafka/bin/kafka-storage.sh format -t "${cluster_id}" -c /etc/kafka/server.properties --ignore-formatted
+
+echo "==> Starting Kafka container in KRaft mode..."
+docker run -d \
+  --name kafka \
+  --restart always \
+  --net host \
+  -v /opt/kafka/config/server.properties:/etc/kafka/server.properties \
+  -v /opt/kafka/data:/var/lib/kafka/data \
+  apache/kafka:3.8.0 \
+  /opt/kafka/bin/kafka-server-start.sh /etc/kafka/server.properties
+
+# If this is node 1, wait for cluster availability and create topic aq_measurements
+%{ if node_id == 1 ~}
+echo "==> Node 1: Waiting for Kafka cluster to become available..."
+for attempt in {1..30}; do
+  if docker exec kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server 127.0.0.1:9092 --list &>/dev/null; then
+    echo "==> Kafka cluster is up! Creating topic 'aq_measurements'..."
+    docker exec kafka /opt/kafka/bin/kafka-topics.sh \
+      --bootstrap-server 127.0.0.1:9092 \
+      --create --if-not-exists \
+      --topic aq_measurements \
+      --partitions 3 \
+      --replication-factor ${default_rf} \
+      --config min.insync.replicas=${min_isr}
+    echo "==> Topic 'aq_measurements' initialized successfully."
+    break
+  fi
+  echo "Waiting for Kafka broker (attempt $attempt/30)..."
+  sleep 5
+done
+%{ endif ~}
+
+echo "==> [AirLake Kafka Node ${node_id}] Setup completed successfully."
