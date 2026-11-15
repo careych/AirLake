@@ -87,9 +87,10 @@ queued and 0 errors. No test messages were sent after acceptance.
 **Defect found after release (documentation audit, 2026-11-15):** since the
 rolling-history release changed the projection's freshness states to
 `fresh`/`delayed`/`stale`, the deployed alert policy (which required `recent`)
-cannot fire. Fixed in commit `30b8535`; the bot-only release that deploys it
-awaits approval. Until then, evaluations run without errors but cannot queue
-alerts.
+cannot fire. Fixed in commit `30b8535` and deployed (bot code `/adfqOaq…`,
+`tests/evidence/bot_policy_fix_2026-11-15.json`); the deployed code was checked
+offline against the live projection and the next scheduled evaluation ran
+without errors. No new Telegram message was sent.
 
 ## Final release acceptance (2026-11-15, plan ceb5c35a)
 
