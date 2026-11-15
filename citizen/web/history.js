@@ -8,14 +8,15 @@
   const svg=(tag,attrs={},text)=>{const n=document.createElementNS('http://www.w3.org/2000/svg',tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));if(text!==undefined)n.textContent=text;return n;};
   const supports=d=>d?.schema_version===2&&d.analytics;
   function range(d,id){const end=Date.parse(d.window_end_utc);return {end,start:Math.max(Date.parse(d.window_start_utc),end-(id==='home-chart'?1:({'24h':1,'7d':7,'30d':30}[$('history-range').value]||7))*86400000)};}
-  function bars(id,rows,label,value,readout){
+  function bars(id,rows,label,value,readout,reference){
     const box=$(id);box.replaceChildren();
     const good=rows.filter(r=>Number.isFinite(value(r)));
     if(!good.length){box.append(node('p','Chưa đủ số ngày có quan trắc để trình bày so sánh này.','empty-chart'));return;}
-    const w=Math.max(300,Math.min(1100,box.clientWidth||940)),h=270,left=47,right=15,top=25,bottom=45,max=Math.ceil(Math.max(10,...good.map(value))*1.1/10)*10;
+    const w=Math.max(300,Math.min(1100,box.clientWidth||940)),h=270,left=47,right=15,top=25,bottom=45,max=Math.ceil(Math.max(10,reference?.value||0,...good.map(value))*1.1/10)*10;
     const drawing=svg('svg',{viewBox:`0 0 ${w} ${h}`,'aria-hidden':'true'}),step=(w-left-right)/rows.length;
     for(let i=0;i<5;i++){const v=max*i/4,y=h-bottom-v/max*(h-top-bottom);drawing.append(svg('line',{x1:left,y1:y,x2:w-right,y2:y,stroke:'#e0e8e3','stroke-dasharray':'3 4'}),svg('text',{x:left-8,y:y+4,'text-anchor':'end','font-size':11,fill:'#52665d'},num(v)));}
     rows.forEach((r,i)=>{const x=left+i*step;if(Number.isFinite(value(r))){const v=value(r),y=h-bottom-v/max*(h-top-bottom),bar=svg('rect',{x:x+step*.15,y,width:step*.7,height:h-bottom-y,fill:r.complete_24_hours===false?'#9b8256':'#28685b',tabindex:0,role:'button','data-history-value':true,'aria-label':`${label(r)}: ${num(v)} µg/m³`});const show=()=>$(readout).textContent=`${label(r)} · ${num(v)} µg/m³${r.hours_present!==undefined?` · ${r.hours_present}/24 giờ`:r.days!==undefined?` · ${r.days} ngày có quan trắc`:''}`;bar.append(svg('title',{},`${label(r)} · ${num(v)} µg/m³`));bar.addEventListener('focus',show);bar.addEventListener('pointerenter',show);bar.addEventListener('click',show);drawing.append(bar);}if(i%Math.ceil(rows.length/(w<500?5:10))===0||i===rows.length-1)drawing.append(svg('text',{x:x+step/2,y:h-20,'text-anchor':'middle','font-size':11,fill:'#52665d'},label(r)));});
+    if(reference){const y=h-bottom-reference.value/max*(h-top-bottom);drawing.append(svg('line',{x1:left,y1:y,x2:w-right,y2:y,stroke:'#9a3b2e','stroke-width':1.5,'stroke-dasharray':'6 4'}),svg('line',{x1:left,y1:11,x2:left+18,y2:11,stroke:'#9a3b2e','stroke-width':1.5,'stroke-dasharray':'6 4'}),svg('text',{x:left+24,y:15,'font-size':11,fill:'#9a3b2e'},reference.label));}
     drawing.append(svg('text',{x:w-right,y:15,'text-anchor':'end','font-size':11,fill:'#52665d'},'µg/m³'));box.append(drawing);
   }
   function heatmap(summary){
@@ -49,10 +50,11 @@
     $('home-period').textContent=`24 giờ cuối trong bản lịch sử: ${time(new Date(Date.parse(d.window_end_utc)-86400000).toISOString())} → ${time(d.window_end_utc)} · giờ Việt Nam`;
     $('home-period-title').textContent='Một ngày trong bản lịch sử đã có';$('trend-period').textContent=`${time(analysis.start_utc)} → ${time(analysis.end_utc)} · giờ Việt Nam`;
     const cards=[['Giờ có quan trắc',`${summary.hour_count}/${summary.expected_hours}`],['Độ phủ trong khoảng',num(summary.coverage_percent)+'%'],['Ngày đủ 24 giờ',String(summary.complete_days)]];
+    const who=summary.who_24h_days;if(who)cards.push(['Ngày có trung bình trên mức WHO khuyến nghị (15 µg/m³)',who.complete_days?`${who.days_above}/${who.complete_days} ngày đủ giờ`:'Chưa có ngày đủ 24 giờ']);
     for(const [key,title] of [['lowest_hour','Giờ ghi nhận thấp nhất'],['highest_hour','Giờ ghi nhận cao nhất']]){const r=summary.extremes[key];cards.push([title,r?`${num(r.pm25_avg)} µg/m³ · ${time(r.observed_hour_utc)}`:'Chưa có số liệu']);}
     $('analytics-summary').replaceChildren(...cards.map(([label,value])=>{const card=node('article',undefined,'feature-card');card.append(node('p',label,'muted'),node('strong',value));return card;}));
-    $('daily-method').textContent=`${station.name} · ${summary.daily.length} ngày có số liệu; ${summary.complete_days} ngày đủ 24 mốc giờ. Cột nâu nhạt là ngày thiếu giờ; trung bình không được coi là đánh giá sức khỏe.`;
-    bars('daily-chart',summary.daily,r=>day(r.date_local),r=>r.pm25_avg,'daily-readout');heatmap(summary);
+    $('daily-method').textContent=`${station.name} · ${summary.daily.length} ngày có số liệu; ${summary.complete_days} ngày đủ 24 mốc giờ. Cột nâu nhạt là ngày thiếu giờ; trung bình không được coi là đánh giá sức khỏe. Đường gạch đỏ là hướng dẫn WHO 2021 cho trung bình 24 giờ (15 µg/m³) để tham khảo, không phải ranh giới an toàn hay mức pháp lý.`;
+    bars('daily-chart',summary.daily,r=>day(r.date_local),r=>r.pm25_avg,'daily-readout',{value:15,label:'WHO 24 giờ: 15 µg/m³'});heatmap(summary);
     bars('hour-pattern-chart',summary.hour_of_day,r=>String(r.hour_local).padStart(2,'0')+':00',r=>r.pm25_avg,'pattern-readout');
     const weekdays=summary.weekday_weekend;
     $('weekday-comparison').textContent=weekdays.status==='DESCRIPTIVE_ONLY'?`Trong ${weekdays.weekday_days} ngày thường đủ giờ: ${num(weekdays.weekday_mean)} µg/m³; ${weekdays.weekend_days} ngày cuối tuần đủ giờ: ${num(weekdays.weekend_mean)} µg/m³. Mỗi ngày có trọng số bằng nhau. Chỉ là so sánh lịch sử, không dự báo.`:'Cần ít nhất 3 ngày thường và 2 ngày cuối tuần, mỗi ngày đủ 24 giờ, để so sánh có cơ sở.';

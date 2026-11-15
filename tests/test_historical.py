@@ -46,6 +46,34 @@ class AnalyticsTests(unittest.TestCase):
         self.assertEqual(s["weekday_weekend"]["status"], "DESCRIPTIVE_ONLY")
         self.assertEqual(s["mean_24h_descriptive"]["hour_count"], 24)
         self.assertTrue(all(r["days"] == 30 for r in s["hour_of_day"]))
+        # Synthetic hours are 10..33 µg/m³, so every complete day averages 21.5.
+        self.assertEqual(
+            (s["who_24h_days"]["days_above"], s["who_24h_days"]["complete_days"]),
+            (30, 30),
+        )
+        self.assertEqual(s["hourly_distribution"]["mean"], 21.5)
+        self.assertEqual(s["hourly_distribution"]["median"], 21.5)
+
+    def test_who_days_count_only_complete_days_strictly_above_guideline(self):
+        rows = synthetic_facts(3)
+        for r in rows[:24]:
+            r["pm25_avg"] = 15.0
+        for r in rows[24:48]:
+            r["pm25_avg"] = 15.5
+        del rows[60]
+        s = summarize(rows, START, "2026-09-03T17:00:00Z", [6123215])["stations"][
+            "6123215"
+        ]
+        self.assertEqual(
+            (s["who_24h_days"]["days_above"], s["who_24h_days"]["complete_days"]),
+            (1, 2),
+        )
+        self.assertEqual(s["hourly_distribution"]["hour_count"], 71)
+
+    def test_no_data_has_no_distribution_or_who_days(self):
+        s = summarize([], START, END, [6123215])["stations"]["6123215"]
+        self.assertIsNone(s["hourly_distribution"])
+        self.assertEqual(s["who_24h_days"]["status"], "NO_COMPLETE_DAYS")
 
     def test_sparse_hours_never_become_monthly_or_weekly_claims(self):
         rows = synthetic_facts()[:4]
