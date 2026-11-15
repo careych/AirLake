@@ -53,7 +53,7 @@ def window(series, start, hours):
     )
 
 
-def normalize(meta, body, now):
+def normalize(meta, body, now, point=POINT):
     """Validate one Open-Meteo response; split into current estimate and forecast."""
     now = utc(now)
     run_at, available_at = (
@@ -63,8 +63,8 @@ def normalize(meta, body, now):
     if meta.get("update_interval_seconds") != 43200 or available_at < run_at:
         raise ValueError("Unexpected CAMS Global update metadata")
     lat, lon = body["latitude"], body["longitude"]
-    if abs(lat - POINT[0]) > 0.5 or abs(lon - POINT[1]) > 0.5:
-        raise ValueError("Model grid cell is not the Hanoi-area cell")
+    if abs(lat - point[0]) > 0.3 or abs(lon - point[1]) > 0.3:
+        raise ValueError("Model grid cell is not the requested Hanoi-area cell")
     if body.get("hourly_units", {}).get("pm2_5") != "μg/m³":
         raise ValueError("Unexpected model unit")
     times, values = body["hourly"]["time"], body["hourly"]["pm2_5"]
@@ -128,7 +128,7 @@ def normalize(meta, body, now):
     return {
         "kind": "model",
         "source": SOURCE,
-        "grid_cell": {"latitude": lat, "longitude": lon, "requested": list(POINT)},
+        "grid_cell": {"latitude": lat, "longitude": lon, "requested": list(point)},
         "model_run_at": stamp(run_at),
         "model_available_at": stamp(available_at),
         "update_interval_hours": 12,

@@ -53,7 +53,7 @@ SECURITY = {
 DOCS = {
     "service": "AirLake public data API (Hanoi PM2.5 pilot)",
     "routes": {
-        "GET /v1/now": "Current projection: observations, CAMS model estimate and forecast, kept separate; no query parameters",
+        "GET /v1/now": "Current projection: observations, CAMS model estimate and forecast, kept separate; model_areas gives the CAMS estimate for each of the 126 Hanoi phuong/xa, grouped by native 0.4° cell (same value within a group, model not measurement); no query parameters",
         "GET /v1/stations": "Public stations with licence, location precision and history availability",
         "GET /v1/history": "Rolling cleaned hourly/daily PM2.5 per public station since 2026-09-01 (Vietnam time), with coverage and gaps",
         "GET /v1/archive/september-2026": "Frozen AWS Glue/Athena export for Dragon, September 2026 (previous /v1/history)",
