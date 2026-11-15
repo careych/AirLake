@@ -1,10 +1,10 @@
 # Historical Hanoi pilot: actual coverage and release
 
-The hosted site still serves the first sparse bounded snapshot. The September
-backfill passed local acceptance, then succeeded on AWS with two Athena checks.
-**Release is blocked by one cross-environment experimental AQI rounding difference.**
-The private history API code/config is deployed but HTTP acceptance has not run;
-Amplify remains unchanged. Later sections record the exact attempts and blocker.
+The September 2026 backfill is released. Glue run 2 (`20261115_90a13b9f`)
+uses exact hourly AQI arithmetic, matched every row in two Athena checks, backs
+the IAM-protected history API, and is served on both Amplify branches
+(`public` and Basic-Auth `demo`) as Dragon-only historical data. Run 1 and its
+half-tie blocker are kept below as evidence. See "Run 2 release" at the end.
 PR #17 is merged at `36f454b64508ea3637be5dceb2512feb95256996`.
 PR #12 remains excluded. The two cosmetic-only release plans were cancelled.
 
@@ -242,3 +242,30 @@ websites still serve job 1. Scheduler remains DISABLED, poller/refresh concurren
 See `tests/evidence/historical_recovery_2026-11-15.json`. A reviewed numerical
 resolution and new exact-scope continuation approval are required. This is NOT
 a successful consolidated website release.
+
+## Run 2 release — 15 November
+
+Resolution of the half-tie: Gold quantizes each reading HALF_UP to 1e-6 µg/m³,
+sums BIGINT micro-units and applies band selection and HALF_UP with integer
+arithmetic (`scripts/gold_batch.py`, reference `exact_hourly_aqi`). The Glue job
+fails if any hourly AQI or mean differs from the exact source calculation.
+
+- Glue `jr_cd305b85b01ff2b87270bee4176a37e320381a800d50b256f3895f3ea8249881`
+  SUCCEEDED (152 s, 305 DPU-seconds): 17,181 source records, 2,133 hourly and
+  90 daily rows. Nhân Chính 2026-09-07T12:00Z is now AQI 78 (mean 38.75); run 1
+  reported 77. Zero AQI or mean differences against the local accepted output.
+- Athena `6be6a99b-7e3c-4d16-8113-6086e790dc29` (2,133/2,133 hourly) and
+  `83fcbadf-bd3d-4377-ae1f-22ae962d1dfb` (90/90 daily) PASS.
+- Private API repointed to the run-2 export with a new two-object read policy;
+  AWS_IAM unchanged, the run-1 policy retained for rollback.
+- Signed HTTP: the first attempt stopped at the third path (200, 200, 403)
+  because SigV4 signed the raw `:` in `start=` while Lambda URLs canonicalize
+  `%3A`. After percent-encoding before signing and an approved amendment, the
+  three remaining paths returned 200 (`historical/resume.py`).
+- Amplify job 2 on `public` and `demo`: Dragon-only, 720 hourly / 30 daily rows.
+  Anonymous requests to every demo asset return 401; browser checks at 390 px
+  passed with 33 of 40 budgeted GETs.
+
+Evidence: `tests/evidence/historical_run2_2026-11-15.json`. Scheduler remains
+DISABLED; the site is a fixed historical snapshot, not current air quality.
+
