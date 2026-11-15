@@ -52,8 +52,9 @@ class Store:
     def set_active(self, chat, active):
         self.table.update_item(
             Key={"pk": "sub#" + chat},
-            UpdateExpression="SET active = :a, version = version + :one",
+            UpdateExpression="SET #a = :a, #v = #v + :one",
             ConditionExpression="attribute_exists(pk)",
+            ExpressionAttributeNames={"#a": "active", "#v": "version"},
             ExpressionAttributeValues={":a": active, ":one": 1},
         )
 
@@ -66,9 +67,9 @@ class Store:
         try:
             self.table.update_item(
                 Key={"pk": "sub#" + chat},
-                UpdateExpression="SET #s = :s, version = :next",
-                ConditionExpression="version = :v",
-                ExpressionAttributeNames={"#s": "state"},
+                UpdateExpression="SET #s = :s, #v = :next",
+                ConditionExpression="#v = :v",
+                ExpressionAttributeNames={"#s": "state", "#v": "version"},
                 ExpressionAttributeValues={
                     ":s": state,
                     ":v": version,
@@ -85,7 +86,8 @@ class Store:
         items, start = [], None
         while True:
             kw = {
-                "FilterExpression": "begins_with(pk, :p) AND active = :t",
+                "FilterExpression": "begins_with(pk, :p) AND #a = :t",
+                "ExpressionAttributeNames": {"#a": "active"},
                 "ExpressionAttributeValues": {":p": "sub#", ":t": True},
             }
             if start:

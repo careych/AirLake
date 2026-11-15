@@ -63,11 +63,22 @@ class Bot:
             return {"statusCode": 503, "body": "Retry"}
         except Rejected:
             pass  # e.g. the user blocked the bot; nothing to retry
+        except Exception as e:  # noqa: BLE001 -- odd update shapes must not cause endless Telegram retries
+            print(
+                json.dumps(
+                    {
+                        "metric": "AirLakeTelegramUpdateIgnored",
+                        "error": type(e).__name__,
+                    }
+                )
+            )
         return {"statusCode": 200, "body": "OK"}
 
     def handle(self, update):
         if "callback_query" in update:
             q = update["callback_query"]
+            if q.get("message", {}).get("chat", {}).get("type", "private") != "private":
+                return None
             chat = str(q["message"]["chat"]["id"])
             self.telegram.answer(q["id"])
             return self.button(chat, str(q.get("data", "")))

@@ -49,7 +49,7 @@ class FakeTable:
         item = self.items.get(Key["pk"])
         v = ExpressionAttributeValues
         if item is None or (
-            ConditionExpression == "version = :v" and item["version"] != v[":v"]
+            ConditionExpression == "#v = :v" and item["version"] != v[":v"]
         ):
             raise ConditionFailed()
         if ":a" in v:
@@ -57,7 +57,13 @@ class FakeTable:
         else:
             item.update(state=v[":s"], version=v[":next"])
 
-    def scan(self, FilterExpression, ExpressionAttributeValues, ExclusiveStartKey=None):
+    def scan(
+        self,
+        FilterExpression,
+        ExpressionAttributeValues,
+        ExpressionAttributeNames=None,
+        ExclusiveStartKey=None,
+    ):
         return {
             "Items": [
                 dict(i)
@@ -214,6 +220,14 @@ class WebhookTests(unittest.TestCase):
         h.telegram.fail = None
         self.assertEqual(h.bot.webhook(event, SECRET)["statusCode"], 200)
         self.assertEqual(len(h.telegram.sent), 1)
+
+    def test_unexpected_update_shapes_are_acknowledged_not_retried(self):
+        h = Harness()
+        self.assertEqual(h.post({"callback_query": {"id": "x"}})["statusCode"], 200)
+        self.assertEqual(
+            h.post({"edited_message": {"text": "/start"}})["statusCode"], 200
+        )
+        self.assertEqual(h.telegram.sent, [])
 
 
 class OnboardingTests(unittest.TestCase):
