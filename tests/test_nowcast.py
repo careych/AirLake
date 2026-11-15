@@ -228,6 +228,16 @@ class FakeS3:
 
         return {"Body": io.BytesIO(self.objects[Key]), "ETag": self.etag(Key)}
 
+    def list_objects_v2(
+        self, Bucket, Prefix, ExpectedBucketOwner, ContinuationToken=None
+    ):
+        return {
+            "Contents": [
+                {"Key": k} for k in sorted(self.objects) if k.startswith(Prefix)
+            ],
+            "IsTruncated": False,
+        }
+
     def put_object(self, Bucket, Key, Body, Condition=None, **kw):
         c = Condition or {}
         if c.get("If-None-Match") == "*" and Key in self.objects:
@@ -429,6 +439,23 @@ class RefreshTests(unittest.TestCase):
         self.assertEqual(
             cur["recent"]["6123215"], []
         )  # older than 24 h dropped, no filling
+
+    def test_first_new_style_run_seeds_recent_from_stored_observations(self):
+        import json
+
+        from nowcast import refresh
+
+        s3 = FakeS3()
+        refresh.run(s3, self.http([]), "K", {}, NOW)
+        cur = json.loads(s3.objects["nowcast/v1/current.json"])
+        del cur["recent"]  # a projection written by the previous code version
+        s3.objects["nowcast/v1/current.json"] = json.dumps(cur).encode()
+        refresh.run(s3, self.http([]), "K", {}, NOW + timedelta(minutes=15))
+        cur = json.loads(s3.objects["nowcast/v1/current.json"])
+        self.assertEqual(
+            [r["observed_at"] for r in cur["recent"]["99385"]], ["2026-11-15T01:15:00Z"]
+        )
+        self.assertEqual(len(cur["recent"]["6123215"]), 1)
 
 
 class PublicApiTests(unittest.TestCase):

@@ -15,12 +15,13 @@ import os
 import pkgutil
 from datetime import UTC, datetime
 
-from ingestion.openaq import stamp
+from ingestion.openaq import stamp, utc
 from telegram_bot import messages as m
 from telegram_bot.client import Rejected, Retryable, Telegram
 from telegram_bot.policy import decide, initial_state
 from telegram_bot.store import Store
 
+STALE_PROJECTION_SECONDS = 1800  # refresh runs every 15 minutes
 PATTERN = json.loads(pkgutil.get_data("telegram_bot", "hour_pattern.json"))
 
 
@@ -92,6 +93,14 @@ class Bot:
             return self.free_text(chat, text)
         self.store.clear_flow(chat)
         if command == "/start":
+            payload = text.split()[1] if len(text.split()) > 1 else ""
+            if (
+                payload.startswith("st_")
+                and payload[3:].isdigit()
+                and int(payload[3:]) in m.STATIONS
+            ):
+                self.telegram.send(chat, m.welcome())
+                return self.telegram.send(chat, *m.choose_threshold(int(payload[3:])))
             return self.telegram.send(chat, m.welcome(), m.MAIN_MENU)
         if command == "/help":
             return self.telegram.send(chat, m.HELP)
@@ -190,7 +199,21 @@ class Bot:
     def evaluate(self):
         now = self.clock()
         projection = self.projection()
-        observations = {o["station_id"]: o for o in projection["observations"]}
+        if (
+            now - utc(projection["published_at"])
+        ).total_seconds() > STALE_PROJECTION_SECONDS:
+            return {
+                "status": "SKIPPED_STALE_PROJECTION",
+                "projection": projection["published_at"],
+                "queued": 0,
+            }
+        observations = {
+            o["station_id"]: o
+            for o in projection["observations"]
+            if o.get("observed_at")
+            and (now - utc(o["observed_at"])).total_seconds()
+            <= (o.get("freshness") or {}).get("threshold_seconds", 10800)
+        }  # freshness re-checked at evaluation time, not only at publication
         queued = 0
         for sub in self.store.active():
             obs = observations.get(sub["station_id"])

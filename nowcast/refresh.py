@@ -9,6 +9,7 @@ published if no model run is available or S3 rejects a write.
 import hashlib
 import json
 import os
+from datetime import timedelta
 
 from ingestion.openaq import stamp, utc
 from live_data.contract import ACCOUNT, BUCKET
@@ -40,6 +41,18 @@ class Store:
     def inject(self, params, **kwargs):
         if self.pending:
             params["headers"].update(self.pending)
+
+    def keys(self, prefix):
+        out, token = [], None
+        while True:
+            kw = {"Bucket": BUCKET, "Prefix": prefix, "ExpectedBucketOwner": ACCOUNT}
+            if token:
+                kw["ContinuationToken"] = token
+            page = self.s3.list_objects_v2(**kw)
+            out += [o["Key"] for o in page.get("Contents", [])]
+            if not page.get("IsTruncated"):
+                return out
+            token = page["NextContinuationToken"]
 
     def get(self, key):
         try:
@@ -171,11 +184,35 @@ def run_model(store, http, previous, now):
     return model
 
 
+SOURCES = {"openaq-6123215": "6123215", "sensor-community-99385": "99385"}
+
+
+def stored_recent(store, now):
+    """One-time seed of the 24-hour series from immutable stored observations."""
+    series = {}
+    days = sorted({(now - timedelta(hours=h)).date().isoformat() for h in (0, 24)})
+    for name, station in SOURCES.items():
+        rows = []
+        for day in days:
+            for key in store.keys(f"{PREFIX}observations/{name}/{day}/"):
+                reading = json.loads(store.get(key)[0])
+                if now - timedelta(hours=24) <= utc(reading["observed_at"]) <= now:
+                    rows.append(
+                        {"observed_at": reading["observed_at"], "pm25": reading["pm25"]}
+                    )
+        series[station] = sorted(
+            {r["observed_at"]: r for r in rows}.values(), key=lambda r: r["observed_at"]
+        )
+    return series
+
+
 def run(s3, http, openaq_key, validation, now):
     now = utc(now)
     store = s3 if isinstance(s3, Store) else Store(s3)
     raw_previous, etag = store.get(CURRENT_KEY)
     previous = json.loads(raw_previous) if raw_previous else None
+    if previous is not None and "recent" not in previous:
+        previous = {**previous, "recent": stored_recent(store, now)}
     model = run_model(store, http, previous, now)
     dragon = source(
         previous,

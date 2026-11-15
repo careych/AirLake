@@ -288,6 +288,14 @@ class OnboardingTests(unittest.TestCase):
         h.text("/hours")
         self.assertIn("không phải dự báo", h.last())
 
+    def test_start_deep_link_opens_threshold_choice_for_that_station(self):
+        h = Harness()
+        h.text("/start st_99385")
+        self.assertIn("Tây Hồ", h.last())
+        self.assertIn("µg/m³", h.last())
+        h.text("/start st_4946812")
+        self.assertIn("2 điểm đo", h.last())  # unknown station: normal welcome
+
 
 class PolicyTests(unittest.TestCase):
     def test_one_alert_per_crossing_with_rearm_and_cooldown(self):
@@ -412,6 +420,22 @@ class EvaluateAndDeliverTests(unittest.TestCase):
         h2.telegram.fail = Rejected(403)
         h2.bot.deliver([{"messageId": "1", "body": json.dumps(h2.queue.messages[0])}])
         self.assertFalse(h2.store.subscription(CHAT)["active"])
+
+    def test_evaluation_rechecks_freshness_and_skips_stale_projection(self):
+        h = self.subscribed()
+        h.clock[0] = T0 + timedelta(hours=3)  # observation 03:00Z is now 3 h old
+        h.current = projection(
+            {
+                **observation(),
+                "freshness": {"status": "recent", "threshold_seconds": 7200},
+            }
+        )
+        h.current["published_at"] = "2026-11-15T06:05:00Z"
+        self.assertEqual(h.bot.evaluate()["queued"], 0)
+        h.current["published_at"] = (
+            "2026-11-15T04:00:00Z"  # refresh stalled for > 30 min
+        )
+        self.assertEqual(h.bot.evaluate()["status"], "SKIPPED_STALE_PROJECTION")
 
     def test_station_names_are_only_licensed_stations(self):
         self.assertEqual(set(m.STATIONS), {6123215, 99385})
