@@ -311,3 +311,19 @@ class ReleaseTests(unittest.TestCase):
             ):
                 release.execute(c, packet, plan, "synthetic-plan")
             c["amplify"].create_deployment.assert_not_called()
+
+
+class SecurityHeaderTests(unittest.TestCase):
+    def test_new_headers_only_add_osm_tiles_api_origin_and_origin_referrer(self):
+        from citizen import hosting, release
+
+        new = hosting.headers("https://abc123.lambda-url.ap-southeast-2.on.aws")
+        self.assertIn(
+            "connect-src 'self' https://abc123.lambda-url.ap-southeast-2.on.aws;", new
+        )
+        self.assertIn("img-src 'self' data: https://tile.openstreetmap.org;", new)
+        self.assertIn("script-src 'self';", new)
+        self.assertIn("value: strict-origin-when-cross-origin", new)
+        self.assertIn("value: no-referrer", hosting.HEADERS_PREVIOUS)
+        self.assertTrue(release.security_headers_match(new, new))
+        self.assertFalse(release.security_headers_match(hosting.HEADERS_PREVIOUS, new))

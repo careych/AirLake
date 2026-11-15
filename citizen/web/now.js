@@ -20,8 +20,8 @@
     const value=node('p',undefined,'reading');value.append(node('strong',recent?num(o.pm25):'—'),node('span','µg/m³'));card.append(value);
     if(recent)card.append(node('p',`Mức tham khảo: ${band(o.pm25)}`,'band'));
     else card.append(node('p','Không dùng số đo cũ để mô tả hiện tại.','muted'));
-    const dl=node('dl',undefined,'reading-meta');for(const [k,v] of [['Đo lúc',time(o.observed_at)],['Cách đây',o.observed_at?age(o.observed_at):'—'],['Loại cảm biến',o.station_type==='low_cost'?'Chi phí thấp':'Tham chiếu'],['Nguồn',`${o.provider} · ${o.licence}`]]){const d=node('div');d.append(node('dt',k),node('dd',v));dl.append(d);}
-    card.append(dl);return card;
+    const dl=node('dl',undefined,'reading-meta');for(const [k,v] of [['Đo lúc',time(o.observed_at)],['Cách đây',o.observed_at?age(o.observed_at):'—'],['AirLake lấy lúc',time(o.collected_at)],['Loại cảm biến',o.station_type==='low_cost'?'Chi phí thấp':'Tham chiếu'],['Vị trí',o.exact_location?'Toạ độ chính xác':'Toạ độ gần đúng (mạng làm tròn)'],['Nguồn',`${o.provider} · ${o.licence}`]]){const d=node('div');d.append(node('dt',k),node('dd',v));dl.append(d);}
+    card.append(dl);if(o.fetch_status==='fetch_failed')card.append(node('p',`Lần lấy dữ liệu gần nhất từ nguồn này không thành công; đang hiển thị số đo trước đó.`,'freshness-note'));return card;
   }
 
   function modelCard(m){
@@ -30,8 +30,8 @@
     card.append(top,node('h3','Khu vực trung tâm Hà Nội (ô lưới ~45 km)'));
     const value=node('p',undefined,'reading');value.append(node('strong',num(m.current.pm25)),node('span','µg/m³'));card.append(value);
     card.append(node('p',`Giá trị mô hình cho ${hour(m.current.valid_at)}. Một ô lưới bao phủ nhiều quận nên không mô tả từng con phố.`,'muted'));
-    const dl=node('dl',undefined,'reading-meta');for(const [k,v] of [['Lượt chạy mô hình',time(m.model_run_at)],['Có dữ liệu từ',time(m.model_available_at)],['Nguồn','CAMS Global · Open-Meteo']]){const d=node('div');d.append(node('dt',k),node('dd',v));dl.append(d);}
-    card.append(dl);return card;
+    const dl=node('dl',undefined,'reading-meta');for(const [k,v] of [['Giờ mô hình áp dụng',time(m.current.valid_at)],['Lượt chạy mô hình',time(m.model_run_at)],['Có dữ liệu từ',time(m.model_available_at)],['Nguồn','CAMS Global · Open-Meteo']]){const d=node('div');d.append(node('dt',k),node('dd',v));dl.append(d);}
+    card.append(dl);if(m.fetch_status==='reused_previous_run')card.append(node('p','Chưa lấy được lượt chạy mới; đang dùng lượt chạy trước.','freshness-note'));return card;
   }
 
   function line(box,rows){
@@ -77,22 +77,32 @@
   }
 
   function renderStatus(n){
-    const rows=[...n.observations.map(o=>[o.name,'Quan trắc',time(o.observed_at),time(o.ingested_at)]),['CAMS Global (Open-Meteo)','Mô hình',`Chạy ${time(n.model.model_run_at)}`,`Có từ ${time(n.model.model_available_at)}`]];
+    const rows=[...n.observations.map(o=>[o.name,'Quan trắc',`Đo ${time(o.observed_at)}`,`Lấy ${time(o.collected_at)}${o.fetch_status==='fetch_failed'?' · lần gần nhất lỗi':''}`]),['CAMS Global (Open-Meteo)','Mô hình',`Chạy ${time(n.model.model_run_at)}`,`Có từ ${time(n.model.model_available_at)}`]];
     $('now-status').replaceChildren(...rows.map(r=>{const tr=node('tr');r.forEach((c,i)=>tr.append(node(i?'td':'th',c)));return tr;}));
-    $('now-generated').textContent=`Bản "hiện tại" được tạo lúc ${time(n.generated_at)}. Trang không tự làm mới; tải lại để lấy bản mới nhất.`;
+    $('now-generated').textContent=`Bản "hiện tại" được công bố lúc ${time(n.published_at)}. Trang tự kiểm tra bản mới mỗi 5 phút khi đang mở; nguồn đo có nhịp riêng (Dragon theo giờ, cảm biến cộng đồng vài phút, mô hình 12 giờ).`;
   }
 
-  async function load(){
-    const url=window.AIRLAKE_CONFIG?.nowUrl;if(!url)return;
-    try{const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw new Error('http');now=await r.json();}catch{$('now-panel').hidden=false;$('now-observations').replaceChildren(node('p','Chưa tải được dữ liệu hiện tại. Phần lịch sử bên dưới vẫn dùng được.','muted'));return;}
+  function render(){
     $('now-panel').hidden=false;$('du-bao-empty').hidden=true;$('du-bao-body').hidden=false;
     const card=document.querySelector('.hero .reading-card');if(card)card.hidden=true;
     $('now-observations').replaceChildren(...now.observations.map(observedCard),modelCard(now.model));
     $('now-compare').textContent=compare(now.observations,now.model);
     $('now-geography').textContent=now.geography;
-    setNotice();
-    renderForecast(now.model,now.validation);renderStatus(now);renderMap();
+    $('now-attribution').replaceChildren(...[...new Set([...now.observations.map(o=>o.attribution),now.model.source.attribution])].map(a=>node('li',a)));
+    renderForecast(now.model,now.validation);renderStatus(now);setNotice();renderMap();drawForecast();
   }
+
+  async function load(){
+    const url=window.AIRLAKE_CONFIG?.nowUrl;if(!url)return;
+    try{const r=await fetch(url,{cache:'no-cache'});if(!r.ok)throw new Error('http');const next=await r.json();if(next.schema_version!==2)throw new Error('schema');if(now&&next.published_at===now.published_at)return;now=next;}
+    catch{if(!now){$('now-panel').hidden=false;$('now-observations').replaceChildren(node('p','Chưa tải được dữ liệu hiện tại. Phần lịch sử bên dưới vẫn dùng được.','muted'));}return;}
+    if(map){map.remove();map=null;}
+    render();
+  }
+  const api=window.AIRLAKE_CONFIG?.apiBase;
+  if(api){const box=$('public-api');if(box){box.hidden=false;for(const [label,path] of [['Tài liệu API','/v1'],['Hiện tại (JSON)','/v1/now'],['Dragon theo ngày (CSV)','/v1/history?granularity=daily&format=csv&limit=100'],['Dragon theo giờ, 7 ngày cuối (JSON)','/v1/history?start=2026-09-23T17:00:00Z&limit=200']]){const li=node('li');const a=node('a',label);a.href=api+path;a.rel='noopener';li.append(a,node('code',' '+path));$('public-api-links').append(li);}}}
+  setInterval(()=>{if(document.visibilityState==='visible')load();},300000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')load();});
   window.addEventListener('hashchange',()=>setTimeout(()=>{renderMap();drawForecast();map?.invalidateSize();},0));
   window.addEventListener('airlake-ready',()=>setTimeout(setNotice,0));
   window.addEventListener('DOMContentLoaded',load);

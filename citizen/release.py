@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from citizen.hosting import HEADERS, NAME, clients, zip_site
+from citizen.hosting import HEADERS, HEADERS_PREVIOUS, NAME, clients, zip_site
 from final_demo.control import Receipt
 from live_data.contract import ACCOUNT, REGION, sha
 
@@ -16,13 +16,13 @@ APP = "dhyvgpdsnj4zi"
 DOMAIN = APP + ".amplifyapp.com"
 
 
-def security_headers_match(value):
-    if value == HEADERS:
+def security_headers_match(value, headers=HEADERS):
+    if value == headers:
         return True
     # Amplify canonicalizes the submitted YAML as a JSON array in GetApp.
     expected = {}
     key = None
-    for line in HEADERS.splitlines():
+    for line in headers.splitlines():
         line = line.strip()
         if line.startswith("- key:"):
             key = line.split(":", 1)[1].strip()
@@ -75,6 +75,7 @@ def prepare(
     previous_receipt,
     demo_mode="instructor",
     failure_containment="app_wide_basic_auth",
+    custom_headers=None,
 ):
     if packet.exists() or any(
         (p / ".git").exists() for p in (packet.resolve(), *packet.resolve().parents)
@@ -123,6 +124,8 @@ def prepare(
         "containment": "existing app-wide password protection only; then STOP",
         "demo_mode": demo_mode,
         "failure_containment": failure_containment,
+        "previous_headers": HEADERS_PREVIOUS,
+        "custom_headers": custom_headers,
     }
     packet.mkdir(mode=0o700, parents=True)
     (packet / "preview-login.json").write_bytes(raw)
@@ -168,7 +171,13 @@ def preflight(c, packet, plan):
         or app["platform"] != "WEB"
         or app.get("enableBasicAuth")
         or app.get("enableBranchAutoBuild")
-        or not security_headers_match(app.get("customHeaders"))
+        or not any(
+            security_headers_match(app.get("customHeaders"), h)
+            for h in {
+                plan.get("previous_headers", HEADERS_PREVIOUS),
+                plan.get("custom_headers") or HEADERS,
+            }
+        )
     ):
         raise ValueError("Existing app changed; review before writing")
     for b in ("public", "demo"):
@@ -235,6 +244,18 @@ def execute(c, packet, plan, digest):
             receipt.save()
             if response.status_code != expected:
                 raise ValueError("Existing demo credential/authentication not verified")
+        if plan.get("custom_headers"):
+            receipt.write(
+                "update_security_headers",
+                lambda: c["amplify"].update_app(
+                    appId=APP, customHeaders=plan["custom_headers"]
+                ),
+            )
+            if not security_headers_match(
+                c["amplify"].get_app(appId=APP)["app"].get("customHeaders"),
+                plan["custom_headers"],
+            ):
+                raise ValueError("Security headers not applied as planned")
         for b in ("public", "demo"):
             d = receipt.write(
                 "prepare_upload_" + b,

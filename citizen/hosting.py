@@ -4,6 +4,7 @@ import argparse
 import base64
 import io
 import json
+import re
 import secrets
 import time
 import zipfile
@@ -15,7 +16,7 @@ from live_data.contract import ACCOUNT, REGION, sha
 
 NAME = "airlake-hanoi-citizen-20261114"
 ROOT = Path(__file__).resolve().parents[1]
-HEADERS = """customHeaders:
+HEADERS_PREVIOUS = """customHeaders:
   - pattern: '**/*'
     headers:
       - key: X-Content-Type-Options
@@ -23,14 +24,32 @@ HEADERS = """customHeaders:
       - key: X-Frame-Options
         value: DENY
       - key: Referrer-Policy
-        value: strict-origin-when-cross-origin
+        value: no-referrer
       - key: Cache-Control
         value: no-store
       - key: Permissions-Policy
         value: 'camera=(), microphone=(), geolocation=()'
       - key: Content-Security-Policy
-        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
 """
+
+
+def headers(api_origin=None):
+    """Security headers; OpenStreetMap tiles need the origin as referrer."""
+    connect = "'self'" + (" " + api_origin if api_origin else "")
+    return (
+        HEADERS_PREVIOUS.replace(
+            "value: no-referrer", "value: strict-origin-when-cross-origin"
+        )
+        .replace(
+            "img-src 'self' data:;",
+            "img-src 'self' data: https://tile.openstreetmap.org;",
+        )
+        .replace("connect-src 'self';", "connect-src " + connect + ";")
+    )
+
+
+HEADERS = headers()
 
 # Live observations allowed on public bundles: Dragon (CC BY 4.0) and
 # Sensor.Community #99385 (DbCL 1.0).
@@ -72,6 +91,15 @@ def zip_site(path, mode):
         "leaflet.css",
     ]
     live = {"now.json"} if cfg.get("nowUrl") == "now.json" else set()
+    if (
+        not live
+        and "nowUrl" in cfg
+        and not re.fullmatch(
+            r"https://[a-z0-9]+\.lambda-url\.ap-southeast-2\.on\.aws/v1/now",
+            cfg["nowUrl"],
+        )
+    ):
+        raise ValueError("Unexpected live data endpoint")
     if set(files) != {*assets, "config.js", name, *live}:
         raise ValueError("Unapproved deployment files")
     if live:
