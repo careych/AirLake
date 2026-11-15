@@ -9,12 +9,20 @@ the source on 2026-11-15), PLANNED.
 | Source | Kind | Hanoi coverage | Latest seen | Cadence | Licence / permission | Access | Decision |
 |---|---|---|---|---|---|---|---|
 | Dragon 6123215 (AirGradient via OpenAQ) | Low-cost sensor, PM2.5 µg/m³ | 20.9933, 105.9441 (Gia Lâm) | 2026-11-15 | hourly | CC BY 4.0 | OpenAQ v3, API key (server side) | Publish |
-| Sensor.Community 99385 (SDS011) | Low-cost sensor, P2 µg/m³ | 21.070, 105.824 (Tây Hồ, rounded) | 2026-11-15 | ~150 s | ODC DbCL 1.0 | Open API + daily CSV archive, no key, User-Agent required | Publish |
+| Sensor.Community 99385 (SDS011) | Low-cost sensor, P2 µg/m³ | 21.070, 105.824 (Tây Hồ, rounded) | 2026-11-15 | ~150 s | DbCL 1.0 (contents), which requires ODbL 1.0 compliance | Open API + daily CSV archive, no key, User-Agent required | Publish |
 | Sensor.Community 44434 | Indoor sensor | 20.964, 105.830 | 2026-11-15 | ~150 s | DbCL 1.0 | same | Excluded: indoor |
 | AirNow 7441 (US Embassy) | Reference monitor | Hanoi | 2025-04-09 | hourly | US Public Domain | OpenAQ | Historical only (ended) |
 | Hanoi Air Quality Monitoring Network (incl. Nhân Chính, Giải Phóng; 37 locations) | Reference monitors | City-wide | 2026-11-15 for 4 | hourly | No licence on OpenAQ | OpenAQ | Not published; needs written permission |
 | StateAir, SPARTAN, HabitatMap | Mixed | Hanoi | 2016-2020 | — | No licence | OpenAQ | Not used |
 | CAMS Global via Open-Meteo | Model estimate and forecast, PM2.5 µg/m³ | 0.4° (~45 km) grid | run every 12 h | 3-hourly native, hourly interpolated, 5 days | CC BY 4.0 (Open-Meteo), Copernicus attribution; free tier non-commercial, <10,000 calls/day | Open API, no key | Publish as model |
+
+Sensor.Community licence: the site lists only the Database Contents License
+(DbCL 1.0). DbCL 2.2-2.3 require compliance with the ODbL and leave database
+rights to the ODbL. AirLake therefore attributes "Contains Sensor.Community
+data ... ODbL 1.0", offers its derived hourly/projection data for this source
+under ODbL 1.0 (share-alike), and keeps per-record licence fields so the
+Dragon CC BY 4.0 data is never relicensed. Sensor #99385 metadata: outdoor
+(`indoor` 0), SDS011 (PM2.5/PM10), `exact_location` 0 (approximate), reporting.
 
 Sensor.Community: 2 PM sensors within 40 km, one outdoor. September archive:
 719/720 hours; hourly r = 0.80 against Dragon with peak correlation at lag 0-1 h
@@ -69,6 +77,24 @@ immutable projections, replaced `current.json`) -> public Lambda URL
 Realistic freshness: Dragon about 1 h after the hour; Sensor.Community up to
 ~20 min (15-min schedule); CAMS 12-hourly runs, available ~10 h after
 initialisation. The site shows each timestamp; the schedule is not a data SLA.
+
+Failure handling: a source error (HTTP 429, network, malformed body) keeps
+the last reading with `fetch_status=fetch_failed`, so it ages into "stale";
+a CAMS failure reuses the stored validated run, and with no run nothing is
+published. `current.json` is replaced only after the immutable projection is
+written. The site polls `/v1/now` every 5 minutes while visible, so no
+Amplify deployment is needed for new data.
+
+Public API controls: the Function URL is public regardless of CORS. GET/HEAD
+only; paths `/v1`, `/v1/now`, `/v1/history`; strict query allowlist; history
+pinned to Dragon and its 30-day window; at most 1,000 rows and 1 MB; cached
+immutable export; generic 400/404/405/503; reserved concurrency 5; alarms on
+>2,000 invocations/hour, any throttle, and refresh errors.
+
+Containment: `python -m nowcast.deploy contain` sets the public API's reserved
+concurrency to 0 (all requests rejected) and disables the schedule; nothing is
+deleted. Worst case before containment is bounded by concurrency 5 at about
+$0.20 per million requests plus 256 MB-seconds.
 
 Calls per day: 96 metadata + ~2 forecast (Open-Meteo), 96 OpenAQ, 96
 Sensor.Community. Lambda/S3 cost is within the free tier for this volume.
