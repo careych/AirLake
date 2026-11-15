@@ -191,10 +191,9 @@ class DeployTests(unittest.TestCase):
                 FunctionName=deploy.API, ReservedConcurrentExecutions=2
             )
             c["lambda"].create_function_url_config.assert_called_once()
-            self.assertEqual(
-                c["lambda"].create_function_url_config.call_args.kwargs["AuthType"],
-                "NONE",
-            )
+            kwargs = c["lambda"].create_function_url_config.call_args.kwargs
+            self.assertEqual(kwargs["AuthType"], "NONE")
+            self.assertNotIn("Cors", kwargs)  # handler-only CORS
 
     def test_smoke_mismatch_stops_before_alarms_and_schedule(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -411,6 +410,38 @@ class DeployTests(unittest.TestCase):
         c["lambda"].put_function_concurrency.assert_called_once_with(
             FunctionName=deploy.API, ReservedConcurrentExecutions=0
         )
+
+    def test_smoke_does_not_parse_the_post_405_error_body(self):
+        good = {
+            "schema_version": 2,
+            "published_at": "p",
+            "observations": [
+                {
+                    "station_id": 6123215,
+                    "observed_at": "o",
+                    "fetched_at": "f",
+                    "fetch_status": "ok",
+                }
+            ],
+            "model": {
+                "model_run_at": "r",
+                "model_available_at": "a",
+                "current": {"valid_at": "v"},
+                "forecast": [{"valid_at": "v"}],
+            },
+            "data": [{"location_id": 6123215}],
+        }
+
+        def get(method, url):
+            path = url.split(".on.aws", 1)[1]
+            code = {(m, p): e for m, p, e in deploy.API_SMOKE}[(method, path)]
+            body = {"error": "read_only"} if method == "POST" else good
+            return Mock(status_code=code, json=Mock(return_value=body))
+
+        with tempfile.TemporaryDirectory() as tmp:
+            r = deploy.Receipt(Path(tmp) / "r.json", "D")
+            deploy.smoke(r, "https://x.lambda-url.ap-southeast-2.on.aws", "p", get)
+            self.assertEqual(len(r.value["smoke"]), 7)
 
 
 if __name__ == "__main__":
