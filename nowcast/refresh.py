@@ -203,7 +203,7 @@ def run(s3, http, openaq_key, validation, now):
             store.put_new(
                 content_key(f"{PREFIX}observations/{name}/{at[:10]}/", at, body), body
             )
-    value = project.build(now, dragon, community, model, validation)
+    value = project.build(now, dragon, community, model, validation, previous)
     validate(value, previous)
     body = json.dumps(
         value, ensure_ascii=False, sort_keys=True, allow_nan=False
