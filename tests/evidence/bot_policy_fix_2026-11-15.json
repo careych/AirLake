@@ -1,0 +1,32 @@
+{
+ "release": "bot-only alert policy fix",
+ "date": "2026-11-15",
+ "plan_sha256": "5a146ca0064539a305dc8faec2b9cd00c0f1a17a90a6741ccb0cf6c95f32c972",
+ "commit": "30b8535",
+ "operations": [
+  [
+   "update_bot_code",
+   "RETURNED_SUCCESS"
+  ]
+ ],
+ "bot_code_sha256": "/adfqOaqI+6R9M7KTz2o4/p+ulbKfodsA3AZWXJSr1I=",
+ "rollback_code_sha256": "ym3nARy2wDmZrMuXsMOFvvSvFQJxj8TD4dLph9P0nMY=",
+ "defect": "policy required freshness 'recent'; projections since the 2026-11-15 rolling-history release use fresh/delayed/stale, so no alert could fire",
+ "offline_check_of_deployed_zip_on_live_projection": {
+  "6123215 fresh 33.2 µg/m³, threshold 5": true,
+  "6123215 threshold 500": false,
+  "99385 first reading (needs two readings 10 min apart)": false
+ },
+ "scheduled_evaluation_after_deploy": {
+  "at": "2026-11-15T10:50:50Z",
+  "status": "EVALUATED",
+  "queued": 0,
+  "errors": 0,
+  "note": "no active subscription crossed a threshold; no Telegram message was sent"
+ },
+ "queues": {
+  "alerts": 0,
+  "dlq": 0
+ },
+ "schedules": "both ENABLED"
+}
