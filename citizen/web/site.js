@@ -192,6 +192,12 @@
   }
 
   // ---- charts -------------------------------------------------------------
+  // A failed load must never look like "no data": say so and offer a retry.
+  function loadError(what, retry) {
+    return el('div', {class: 'load-error', role: 'alert'},
+      el('p', {text: `${what} Máy chủ đang bận hoặc mạng bị gián đoạn; điều này không có nghĩa là không có số liệu.`}),
+      el('button', {type: 'button', class: 'secondary', onclick: retry, text: 'Thử lại'}));
+  }
   function lineChart(box, rows, start, end, readout, opts = {}) {
     box.replaceChildren();
     const slots = Math.round((end - start) / H), byT = new Map(rows.map(r => [Date.parse(r.hour_start_utc), r]));
@@ -328,7 +334,7 @@
         parts.push(`Số đo hiện tại cao hơn ${num(below, 0)}% số giờ có số liệu trong 30 ngày qua tại điểm này (${vals.length} giờ).`);
       }
       ctx().replaceChildren(...parts.map(t => el('p', {text: t})));
-    } catch { if (ctx()) ctx().replaceChildren(el('p', {class: 'muted', text: 'Chưa tải được lịch sử 24 giờ. Thử lại sau ít phút.'})); }
+    } catch { if (ctx()) { ctx().replaceChildren(loadError('Chưa tải được lịch sử 24 giờ.', () => fillContext(s))); $('spark-' + s.id)?.replaceChildren(); } }
   }
   function renderRegional() {
     const box = $('regional'), m = S.now?.model;
@@ -407,11 +413,11 @@
     try {
       const span = r.end - r.start, prevStart = r.start - span;
       const [hourly, daily, prev] = await Promise.all([history(s.id, r.start, r.end), r.days ? history(s.id, r.start, r.end, 'daily') : null,
-        r.days && prevStart >= FIRST ? history(s.id, prevStart, r.start, 'daily') : null]);
+        r.days && prevStart >= FIRST ? history(s.id, prevStart, r.start, 'daily').catch(() => null) : null]); // the comparison is optional
       if (token !== S.h.token) return;
       drawHistory(s, r, hourly, daily, prev);
     } catch {
-      if (token === S.h.token) $('h-chart').replaceChildren(el('p', {class: 'warn', text: 'Chưa tải được lịch sử. Vui lòng thử lại sau ít phút.'}));
+      if (token === S.h.token) $('h-chart').replaceChildren(loadError('Chưa tải được lịch sử của khoảng này.', renderHistory));
     }
   }
   function drawHistory(s, r, hourly, daily, prev) {
@@ -420,7 +426,7 @@
     $('h-coverage').replaceChildren(el('div', {class: 'cov-bar', role: 'img', 'aria-label': `${num(c.percent)}% số giờ có số liệu`}, el('span', {style: `width:${Math.min(100, c.percent)}%`})),
       el('p', {}, el('strong', {text: `${c.hours_present}/${c.hours_expected} giờ có số liệu (${num(c.percent)}%).`}), ' ',
         r.days ? `${c.valid_days}/${c.days_in_range} ngày đủ dữ liệu (ít nhất 18/24 giờ), ${c.complete_days} ngày đủ cả 24 giờ.` : '',
-        c.provisional_hours ? ` Trong đó ${c.provisional_hours} giờ là số tạm tính từ các lần AirLake lấy mẫu, sẽ được thay bằng số đầy đủ từ kho lưu trữ hôm sau.` : '',
+        c.provisional_hours ? ` Trong đó ${c.provisional_hours} giờ là số tạm tính (${STATIONS[S.h.station].hourly ? 'giá trị giờ mới nhất OpenAQ chưa xác nhận' : 'tính từ các lần AirLake lấy mẫu'}), sẽ được thay khi nguồn công bố số chính thức.` : '',
         c.gap_count ? ` ${c.gap_count} khoảng trống; dài nhất ${longest.hours} giờ, từ ${hm(Date.parse(longest.start))} ${dm(Date.parse(longest.start))}.` : ' Không có giờ nào bị thiếu.'),
       ...(c.percent < 50 ? [el('p', {class: 'warn', text: 'Khoảng này thiếu nhiều số liệu. Các con số bên dưới chỉ mô tả phần có số liệu, không đại diện cho cả khoảng.'})] : []));
     const ref = {v: 15, label: 'WHO: 15 µg/m³ / 24 giờ'};
@@ -579,7 +585,7 @@
       const st = API ? await getJSON(API + '/v1/stations', 300000) : null;
       t.replaceChildren(el('thead', {}, el('tr', {}, ...['Điểm đo', 'Có dữ liệu từ', 'Đến', 'Số giờ', 'Giấy phép'].map(x => el('th', {text: x})))),
         el('tbody', {}, ...(st?.stations || []).map(x => el('tr', {}, el('td', {text: x.name}), el('td', {text: x.history.first_hour_utc ? when(Date.parse(x.history.first_hour_utc)) : '—'}), el('td', {text: x.history.last_hour_utc ? when(Date.parse(x.history.last_hour_utc) + H) : '—'}), el('td', {text: num(x.history.hours, 0)}), el('td', {text: x.licence})))));
-    } catch { t.replaceChildren(el('caption', {text: 'Chưa tải được danh sách bộ dữ liệu.'})); }
+    } catch { t.replaceChildren(el('caption', {text: 'Chưa tải được danh sách bộ dữ liệu (máy chủ bận hoặc mất kết nối). Tải lại trang để thử lại.'})); }
   }
   async function runQuery() {
     const id = Number($('q-station').value), g = $('q-gran').value, from = $('q-from').value, to = $('q-to').value;
@@ -593,7 +599,7 @@
       $('q-preview').replaceChildren(el('thead', {}, el('tr', {}, ...cols.map(x => el('th', {text: x})))), el('tbody', {}, ...v.rows.slice(0, 10).map(r => el('tr', {}, ...cols.map(x => el('td', {text: Array.isArray(r[x]) ? r[x].join('|') : String(r[x])}))))));
       const base = `${API}/v1/history?station_id=${id}&start=${from}&end=${dateKey(end)}&granularity=${g}`;
       $('q-links').replaceChildren(el('a', {class: 'button-link', href: base + '&format=csv', text: 'Tải CSV'}), el('a', {class: 'button-link secondary', href: base, text: 'Mở JSON'}), ...(v.next ? [el('span', {class: 'muted', text: ' Hơn 1.000 dòng: dùng tham số offset để lấy trang tiếp theo.'})] : []));
-    } catch { $('q-summary').textContent = 'Không tải được. Thử lại sau ít phút.'; }
+    } catch { $('q-summary').textContent = 'Chưa tải được dữ liệu (máy chủ bận hoặc mất kết nối); điều này không có nghĩa là không có số liệu. Bấm “Xem trước” để thử lại.'; }
   }
   async function renderStatus() {
     const rows = ORDER.map(id => {

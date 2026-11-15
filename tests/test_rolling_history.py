@@ -431,6 +431,15 @@ class UpdateTests(unittest.TestCase):
         self.assertEqual(rows[-1], row("2026-11-15T07:00:00Z", 33.9, "openaq_latest"))
         merged = h.merge(rows, [row("2026-11-15T07:00:00Z", 33.9, "openaq_archive")])
         self.assertEqual(merged[-1]["basis"], "openaq_archive")
+        self.assertEqual(h.annotate(rows)[-1]["flags"], ["provisional"])
+        confirmed = h.merge(rows, [row("2026-11-15T07:00:00Z", 34.0)])
+        self.assertEqual(confirmed[-1]["basis"], "openaq_hourly")
+        again = h.merge(
+            confirmed, h.openaq_latest_hours(proj)
+        )  # next refresh, same /latest
+        self.assertEqual(again[-1]["basis"], "openaq_hourly")  # never downgraded
+        day = h.daily(hours("2026-11-13T17:00:00Z", 24, 10.0, "openaq_latest"))[0]
+        self.assertEqual((day["provisional_hours"], day["valid_day"]), (24, False))
 
     def test_upstream_failure_never_raises_and_writes_nothing(self):
         before = dict(self.store.s3.objects)
