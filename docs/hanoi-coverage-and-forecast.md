@@ -91,10 +91,28 @@ pinned to Dragon and its 30-day window; at most 1,000 rows and 1 MB; cached
 immutable export; generic 400/404/405/503; reserved concurrency 5; alarms on
 >2,000 invocations/hour, any throttle, and refresh errors.
 
+Publication safety: every immutable object is written with `If-None-Match: *`
+and the pointer with `If-Match: <etag read at start>`, sent as raw headers in
+a botocore before-call hook (works with any SDK version in the Lambda runtime;
+S3 enforces them). Keys are `published_at` plus a content hash. A projection
+must pass validation (licensed stations only, schema, 24-hour forecast) and be
+newer than the current one before the pointer moves; one object is kept per
+source observation.
+
+Traffic and cost (estimates from list prices, not a cap; free tier not assumed):
+reserved concurrency 2 limits parallel executions, and excess requests are
+throttled with 429. It is not a per-client rate limit. `/v1/now` returns an
+ETag and 304 for repeat polls, a 60-second container cache and `max-age=60`;
+history is served from a cached, SHA-pinned export with `max-age=3600`.
+Normal demo use is well under one US dollar per month. Sustained abuse at the
+concurrency limit (~20 requests/s at ~100 ms) could reach roughly 50 million
+requests per month, about USD 40 for Lambda requests, compute and request logs,
+until containment. The alarms have no notification target, so they are checked
+in the console during the demo period.
+
 Containment: `python -m nowcast.deploy contain` sets the public API's reserved
 concurrency to 0 (all requests rejected) and disables the schedule; nothing is
-deleted. Worst case before containment is bounded by concurrency 5 at about
-$0.20 per million requests plus 256 MB-seconds.
+deleted.
 
 Calls per day: 96 metadata + ~2 forecast (Open-Meteo), 96 OpenAQ, 96
 Sensor.Community. Lambda/S3 cost is within the free tier for this volume.

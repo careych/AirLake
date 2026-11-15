@@ -8,6 +8,7 @@ objects plus the immutable export pinned by SHA-256. The IAM-protected
 private API is separate and unchanged.
 """
 
+import hashlib
 import json
 import os
 import time
@@ -164,11 +165,11 @@ def handler(event, context, store=None, environment=None):
                 )["Body"].read(MAX_BODY + 1)
                 if len(body) > MAX_BODY or json.loads(body).get("schema_version") != 2:
                     raise RuntimeError("Unexpected projection")
-                result = reply(
-                    200,
-                    body.decode(),
-                    headers={**headers, "cache-control": "public, max-age=300"},
-                )
+                etag = '"' + hashlib.sha256(body).hexdigest()[:32] + '"'
+                cache = {**headers, "cache-control": "public, max-age=60", "etag": etag}
+                if (event.get("headers") or {}).get("if-none-match") == etag:
+                    return reply(304, "", headers=cache)  # repeat polls: no body
+                result = reply(200, body.decode(), headers=cache)
             else:
                 from historical.api import handle
 

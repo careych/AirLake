@@ -1,6 +1,6 @@
 """Serving projection for "now": observations, model estimate and forecast kept apart.
 
-Times: observed_at (sensor), collected_at (our fetch), published_at (projection
+Times: observed_at (sensor), fetched_at (our fetch), published_at (projection
 written), model_run_at / model_available_at (CAMS), valid_at (forecast hour).
 """
 
@@ -43,14 +43,14 @@ def openaq_latest(body, sensor_id=14581375):
 
 
 def observation(meta, source, now):
-    """source: {status, reading, collected_at, error}; failed fetches keep the last reading."""
+    """source: {status, reading, fetched_at, error}; failed fetches keep the last reading."""
     reading = source.get("reading") or {}
     item = {k: v for k, v in meta.items() if k != "cadence_seconds"}
     item.update(
         kind="observed",
         observed_at=reading.get("observed_at"),
         pm25=reading.get("pm25"),
-        collected_at=source.get("collected_at"),
+        fetched_at=source.get("fetched_at"),
         fetch_status=source["status"],
         fetch_error=source.get("error"),
     )

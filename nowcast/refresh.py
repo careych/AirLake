@@ -6,6 +6,7 @@ forecast is downloaded only when Open-Meteo reports a new run. Nothing is
 published if no model run is available or S3 rejects a write.
 """
 
+import hashlib
 import json
 import os
 
@@ -18,34 +19,90 @@ from nowcast.public_api import CURRENT_KEY
 PREFIX = "nowcast/v1/"
 
 
-def conditional_writes(s3):
-    """Older Lambda-bundled botocore lacks IfNoneMatch; keys are unique per time anyway."""
-    try:
-        return "IfNoneMatch" in s3.meta.service_model.operation_model("PutObject").input_shape.members
-    except AttributeError:
-        return True
+LICENSED = {6123215, 99385}
 
 
-def put(s3, key, body, immutable=True):
-    extra = {"IfNoneMatch": "*"} if immutable and conditional_writes(s3) else {}
-    s3.put_object(
-        Bucket=BUCKET,
-        Key=key,
-        Body=body,
-        ExpectedBucketOwner=ACCOUNT,
-        ServerSideEncryption="AES256",
-        ContentType="application/json",
-        **extra,
+class Store:
+    """S3 with conditional writes sent as raw If-None-Match / If-Match headers.
+
+    The header is injected in a before-call hook, so it works with any botocore
+    version bundled in the Lambda runtime; S3 enforces it server-side (412).
+    """
+
+    def __init__(self, s3):
+        self.s3 = s3
+        self.pending = None
+        events = getattr(getattr(s3, "meta", None), "events", None)
+        self.hooked = events is not None
+        if self.hooked:
+            events.register("before-call.s3.PutObject", self.inject)
+
+    def inject(self, params, **kwargs):
+        if self.pending:
+            params["headers"].update(self.pending)
+
+    def get(self, key):
+        try:
+            r = self.s3.get_object(Bucket=BUCKET, Key=key, ExpectedBucketOwner=ACCOUNT)
+        except self.s3.exceptions.NoSuchKey:
+            return None, None
+        return r["Body"].read(4_000_001), r.get("ETag")
+
+    def put(self, key, body, condition):
+        self.pending = condition
+        try:
+            extra = {} if self.hooked else {"Condition": condition}  # test doubles
+            self.s3.put_object(
+                Bucket=BUCKET,
+                Key=key,
+                Body=body,
+                ExpectedBucketOwner=ACCOUNT,
+                ServerSideEncryption="AES256",
+                ContentType="application/json",
+                **extra,
+            )
+        finally:
+            self.pending = None
+
+    def put_new(self, key, body):
+        """Create once; an identical existing object is accepted, a different one stops."""
+        try:
+            self.put(key, body, {"If-None-Match": "*"})
+        except Exception as e:
+            if not precondition_failed(e) or self.get(key)[0] != body:
+                raise
+
+    def replace_current(self, body, etag):
+        """Swap the pointer only if nobody changed it since we read it."""
+        self.put(
+            CURRENT_KEY, body, {"If-Match": etag} if etag else {"If-None-Match": "*"}
+        )
+
+
+def precondition_failed(e):
+    return getattr(e, "response", {}).get("Error", {}).get("Code") in (
+        "PreconditionFailed",
+        "412",
     )
 
 
-def get(s3, key):
-    try:
-        return s3.get_object(Bucket=BUCKET, Key=key, ExpectedBucketOwner=ACCOUNT)[
-            "Body"
-        ].read(4_000_001)
-    except s3.exceptions.NoSuchKey:
-        return None
+def content_key(prefix, label, body):
+    return (
+        f"{prefix}{label.replace(':', '')}-{hashlib.sha256(body).hexdigest()[:16]}.json"
+    )
+
+
+def validate(value, previous):
+    """Last checks before a projection may become current."""
+    if (
+        value["schema_version"] != 2
+        or {o["station_id"] for o in value["observations"]} - LICENSED
+        or value["model"]["kind"] != "model"
+        or len(value["model"]["forecast"]) < 24
+    ):
+        raise ValueError("Projection failed validation")
+    if previous and utc(value["published_at"]) <= utc(previous["published_at"]):
+        raise ValueError("Projection is not newer than the current one")
 
 
 def attempt(fn):
@@ -60,7 +117,7 @@ def attempt(fn):
 def source(previous, station_id, fn, now):
     reading, error = attempt(fn)
     if error is None:
-        return {"status": "ok", "reading": reading, "collected_at": stamp(now)}
+        return {"status": "ok", "reading": reading, "fetched_at": stamp(now)}
     old = next(
         (
             o
@@ -75,34 +132,35 @@ def source(previous, station_id, fn, now):
         "reading": {"observed_at": old["observed_at"], "pm25": old["pm25"]}
         if old and old["observed_at"]
         else None,
-        "collected_at": old.get("collected_at") if old else None,
+        "fetched_at": old.get("fetched_at") if old else None,
     }
 
 
-def run_model(s3, http, previous, now):
+def run_model(store, http, previous, now):
     meta, error = attempt(lambda: http(openmeteo.META))
     run = meta.get("last_run_initialisation_time") if meta else None
     if error is None and run is not None:
         key = f"{PREFIX}model/cams_global/{run}.json"
-        raw = get(s3, key)
+        raw, _ = store.get(key)
         if raw is None:
             body, error = attempt(lambda: http(openmeteo.API, openmeteo.PARAMS))
             if error is None:
                 raw = json.dumps(body, sort_keys=True).encode()
-        if raw is not None:
+                model, error = attempt(lambda: openmeteo.normalize(meta, body, now))
+                if error is None:
+                    store.put_new(key, raw)  # only validated runs are stored
+        if raw is not None and error is None:
             model, error = attempt(
                 lambda: openmeteo.normalize(meta, json.loads(raw), now)
             )
             if error is None:
-                if get(s3, key) is None:
-                    put(s3, key, raw)
                 model["fetch_status"] = "ok"
-                return model, meta
+                return model
     old = (previous or {}).get("model")
     if not old:
         raise RuntimeError("No validated model run available; nothing published")
     run = int(utc(old["model_run_at"]).timestamp())
-    raw = get(s3, f"{PREFIX}model/cams_global/{run}.json")
+    raw, _ = store.get(f"{PREFIX}model/cams_global/{run}.json")
     old_meta = {
         "last_run_initialisation_time": run,
         "last_run_availability_time": int(utc(old["model_available_at"]).timestamp()),
@@ -110,14 +168,15 @@ def run_model(s3, http, previous, now):
     }
     model = openmeteo.normalize(old_meta, json.loads(raw), now)
     model.update(fetch_status="reused_previous_run", fetch_error=error)
-    return model, old_meta
+    return model
 
 
 def run(s3, http, openaq_key, validation, now):
     now = utc(now)
-    raw_previous = get(s3, CURRENT_KEY)
+    store = s3 if isinstance(s3, Store) else Store(s3)
+    raw_previous, etag = store.get(CURRENT_KEY)
     previous = json.loads(raw_previous) if raw_previous else None
-    model, _ = run_model(s3, http, previous, now)
+    model = run_model(store, http, previous, now)
     dragon = source(
         previous,
         6123215,
@@ -136,26 +195,30 @@ def run(s3, http, openaq_key, validation, now):
         ("openaq-6123215", dragon),
         ("sensor-community-99385", community),
     ):
-        reading = src["reading"]
-        if src["status"] != "ok" or not reading:
-            continue
-        at = reading["observed_at"]
-        key = f"{PREFIX}observations/{name}/{at[:10]}/{at.replace(':', '')}.json"
-        if get(s3, key) is None:  # one immutable object per source observation
-            put(
-                s3,
-                key,
-                json.dumps({**reading, "collected_at": src["collected_at"]}).encode(),
+        if src["status"] == "ok" and src["reading"]:
+            body = json.dumps(
+                src["reading"], sort_keys=True
+            ).encode()  # one object per observation
+            at = src["reading"]["observed_at"]
+            store.put_new(
+                content_key(f"{PREFIX}observations/{name}/{at[:10]}/", at, body), body
             )
     value = project.build(now, dragon, community, model, validation)
+    validate(value, previous)
     body = json.dumps(
         value, ensure_ascii=False, sort_keys=True, allow_nan=False
     ).encode()
-    put(s3, f"{PREFIX}projections/{stamp(now).replace(':', '')}.json", body)
-    put(s3, CURRENT_KEY, body, immutable=False)  # only after the immutable copy exists
+    key = content_key(
+        f"{PREFIX}projections/{value['published_at'][:10]}/",
+        value["published_at"],
+        body,
+    )
+    store.put_new(key, body)
+    store.replace_current(body, etag)  # only after the immutable copy exists
     return {
         "status": "PUBLISHED",
         "published_at": value["published_at"],
+        "projection_key": key,
         "model_run_at": model["model_run_at"],
         "model_fetch": model["fetch_status"],
         "sources": {o["station_id"]: o["fetch_status"] for o in value["observations"]},
