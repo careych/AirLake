@@ -382,7 +382,7 @@ class EvaluateAndDeliverTests(unittest.TestCase):
         for part in (
             "PM2.5: 60,0 µg/m³",
             "Ngưỡng bạn chọn: 50 µg/m³",
-            "Đo lúc: 10:00 15/11",
+            "Thời gian: trung bình 09:00–10:00 15/11",
             "/unsubscribe",
         ):
             self.assertIn(part, text)
