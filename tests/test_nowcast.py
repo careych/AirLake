@@ -411,6 +411,25 @@ class RefreshTests(unittest.TestCase):
             (sc["observed_at"], sc["pm25"]), ("2026-11-15T01:15:00Z", 33.0)
         )
 
+    def test_recent_series_accumulates_distinct_real_readings_for_24_hours(self):
+        import json
+
+        from nowcast import refresh
+
+        s3 = FakeS3()
+        refresh.run(s3, self.http([]), "K", {}, NOW)
+        refresh.run(s3, self.http([]), "K", {}, NOW + timedelta(minutes=15))
+        cur = json.loads(s3.objects["nowcast/v1/current.json"])
+        self.assertEqual(
+            len(cur["recent"]["6123215"]), 1
+        )  # same hourly value not repeated
+        self.assertEqual(cur["recent"]["6123215"][0]["pm25"], 50.0)
+        refresh.run(s3, self.http([]), "K", {}, NOW + timedelta(hours=26))
+        cur = json.loads(s3.objects["nowcast/v1/current.json"])
+        self.assertEqual(
+            cur["recent"]["6123215"], []
+        )  # older than 24 h dropped, no filling
+
 
 class PublicApiTests(unittest.TestCase):
     def event(
