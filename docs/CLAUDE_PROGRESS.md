@@ -48,8 +48,13 @@ Updated 2026-11-15 (Asia/Ho_Chi_Minh). Labels: VERIFIED (this session), REPORTED
   self-pinned). Amendment `amendment-1.json` sha `b045c2d14a44c4db8eeccf68763f5815a4259915f30bf3c5e67ff1b83f7e498c`:
   3 remaining signed GETs, then unchanged Amplify phase. Offline site dry-run: 1 station/720 rows
   both branches, 0 restricted strings; 7-day route local 200/168. 483 tests OK.
-- Amplify NOT yet deployed (still job 1).
+- Owner approved amendment ("tiếp tục"). Resume GETs 3-5: 200/200/200 (168 rows, current 14, latest 3).
+- Amplify job 2 SUCCEED on `public` and `demo` (derived plan `abd98cd1…0565`), Dragon-only 720 h / 30 d.
+  Demo anonymous `/`, data, config.js, app.js, history.js = 401; Basic Auth 200. Browser (Chrome 390px):
+  0 console errors, no overflow, 0 restricted strings. HTTP used 33/40. Screenshots in session scratchpad `live/`.
+- Post-release UI bug (live, found in screenshot): trend sentence said "720 giờ" in 7-day view;
+  fixed locally in `citizen/web/app.js` (scoped to selected range) — needs next release.
 
 ## Next action
-Awaiting approval of amendment b045c2d1…498c: `python -m historical.resume smoke-api-resume`
-then `publish-site` (both `--confirm-plan-sha256 aaed… --confirm-amendment-sha256 b045…`).
+Push `fix/aqi-half-tie` + PR (needs approval). Then product work: dashboards, licensed stations,
+near-realtime refresh, research API UX, Telegram with Khuê, 5-min demo script.
