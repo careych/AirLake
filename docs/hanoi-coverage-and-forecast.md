@@ -12,7 +12,7 @@ the source on 2026-11-15), PLANNED.
 | Sensor.Community 99385 (SDS011) | Low-cost sensor, P2 µg/m³ | 21.070, 105.824 (Tây Hồ, rounded) | 2026-11-15 | ~150 s | ODC DbCL 1.0 | Open API + daily CSV archive, no key, User-Agent required | Publish |
 | Sensor.Community 44434 | Indoor sensor | 20.964, 105.830 | 2026-11-15 | ~150 s | DbCL 1.0 | same | Excluded: indoor |
 | AirNow 7441 (US Embassy) | Reference monitor | Hanoi | 2025-04-09 | hourly | US Public Domain | OpenAQ | Historical only (ended) |
-| Hanoi Air Quality Monitoring Network (incl. Nhân Chính, Giải Phóng; 38 locations) | Reference monitors | City-wide | 2026-11-15 for 4 | hourly | No licence on OpenAQ | OpenAQ | Not published; needs written permission |
+| Hanoi Air Quality Monitoring Network (incl. Nhân Chính, Giải Phóng; 37 locations) | Reference monitors | City-wide | 2026-11-15 for 4 | hourly | No licence on OpenAQ | OpenAQ | Not published; needs written permission |
 | StateAir, SPARTAN, HabitatMap | Mixed | Hanoi | 2016-2020 | — | No licence | OpenAQ | Not used |
 | CAMS Global via Open-Meteo | Model estimate and forecast, PM2.5 µg/m³ | 0.4° (~45 km) grid | run every 12 h | 3-hourly native, hourly interpolated, 5 days | CC BY 4.0 (Open-Meteo), Copernicus attribution; free tier non-commercial, <10,000 calls/day | Open API, no key | Publish as model |
 
