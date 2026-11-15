@@ -143,11 +143,66 @@ def release_site(c, packet, plan, digest):
     return r.value
 
 
+def fix_cors(c, packet, plan, digest, get=None):
+    """Remove the Function URL CORS block; the handler already sets one header."""
+    packet = Path(packet)
+    verify = json.loads((packet / "verify-receipt.json").read_text())
+    browser = json.loads((packet / "browser-evidence.json").read_text())
+    if (
+        verify["status"] != "PASS_LIVE_UPDATE_WITHOUT_REDEPLOYMENT"
+        or browser.get("status") != "FAIL"
+        or "duplicate Access-Control-Allow-Origin" not in browser.get("reason", "")
+    ):
+        raise ValueError("Not the recorded CORS failure")
+    url = recorded_state(packet, digest)["function_url"].rstrip("/")
+    r = Receipt(packet / "cors-receipt.json", digest)
+    r.write(
+        "remove_url_cors",
+        lambda: c["lambda"].update_function_url_config(
+            FunctionName=deploy.API, AuthType="NONE", Cors={}
+        ),
+    )
+    config = c["lambda"].get_function_url_config(FunctionName=deploy.API)
+    if config["AuthType"] != "NONE" or (config.get("Cors") or {}).get("AllowOrigins"):
+        raise ValueError("Function URL CORS was not cleared; stop")
+    if get is None:
+        import requests
+
+        http = requests.Session()
+        http.trust_env = False
+
+        def get(path, origin):
+            return http.get(url + path, headers={"Origin": origin}, timeout=15)
+
+    origin = "https://public." + __import__("citizen.release", fromlist=["x"]).DOMAIN
+    resp = get("/v1/now", origin)
+    r.value["check"] = {
+        "status": resp.status_code,
+        "allow_origin": resp.headers.get("access-control-allow-origin"),
+    }
+    r.save()
+    if (
+        resp.status_code != 200
+        or resp.headers.get("access-control-allow-origin") != origin
+    ):
+        raise ValueError("CORS header is not exactly one allowed origin")
+    r.value["status"] = "PASS_SINGLE_CORS_HEADER"
+    r.save()
+    return r.value
+
+
 def main():
     a = argparse.ArgumentParser(description=__doc__)
     a.add_argument(
         "command",
-        choices=("check", "alarms", "release-site", "verify-live", "enable-schedule"),
+        choices=(
+            "check",
+            "alarms",
+            "release-site",
+            "verify-live",
+            "fix-cors",
+            "enable-schedule",
+        ),
     )
     a.add_argument("--packet", type=Path, required=True)
     a.add_argument("--confirm-plan-sha256", required=True)
@@ -162,6 +217,7 @@ def main():
         "alarms": alarms,
         "release-site": release_site,
         "verify-live": deploy.verify_live,
+        "fix-cors": fix_cors,
         "enable-schedule": deploy.enable_schedule,
     }[x.command]
     print(json.dumps(action(c, x.packet, plan, x.confirm_plan_sha256)))

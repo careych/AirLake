@@ -76,6 +76,52 @@ class ResumeTests(unittest.TestCase):
             with self.assertRaises(ValueError):  # receipt exists: never twice
                 nowcast_resume.alarms(c, p, plan, "D")
 
+    def test_fix_cors_only_after_recorded_failure_and_checks_single_header(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = Path(tmp)
+            (p / "receipt.json").write_text(json.dumps(receipt("D")))
+            (p / "verify-receipt.json").write_text(
+                json.dumps({"status": "PASS_LIVE_UPDATE_WITHOUT_REDEPLOYMENT"})
+            )
+            (p / "browser-evidence.json").write_text(json.dumps({"status": "PASS"}))
+            c = {"lambda": Mock()}
+            with self.assertRaises(ValueError):
+                nowcast_resume.fix_cors(c, p, {}, "D")
+            c["lambda"].update_function_url_config.assert_not_called()
+            (p / "browser-evidence.json").write_text(
+                json.dumps(
+                    {
+                        "status": "FAIL",
+                        "reason": "duplicate Access-Control-Allow-Origin (x)",
+                    }
+                )
+            )
+            c["lambda"].get_function_url_config.return_value = {"AuthType": "NONE"}
+            origin = "https://public.dhyvgpdsnj4zi.amplifyapp.com"
+            ok = lambda path, o: Mock(
+                status_code=200, headers={"access-control-allow-origin": o}
+            )
+            self.assertEqual(
+                nowcast_resume.fix_cors(c, p, {}, "D", ok)["status"],
+                "PASS_SINGLE_CORS_HEADER",
+            )
+            self.assertEqual(
+                c["lambda"].update_function_url_config.call_args.kwargs["Cors"], {}
+            )
+            (p / "cors-receipt.json").unlink()
+            dup = lambda path, o: Mock(
+                status_code=200, headers={"access-control-allow-origin": f"{o}, {o}"}
+            )
+            with self.assertRaises(ValueError):
+                nowcast_resume.fix_cors(c, p, {}, "D", dup)
+            (p / "cors-receipt.json").unlink()
+            c["lambda"].get_function_url_config.return_value = {
+                "AuthType": "NONE",
+                "Cors": {"AllowOrigins": [origin]},
+            }
+            with self.assertRaises(ValueError):
+                nowcast_resume.fix_cors(c, p, {}, "D", ok)
+
 
 if __name__ == "__main__":
     unittest.main()
