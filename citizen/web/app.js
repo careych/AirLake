@@ -3,7 +3,7 @@
   const $ = id => document.getElementById(id);
   const cfg = window.AIRLAKE_CONFIG;
   const colors = ['#28685b', '#b2733c', '#556c9b'];
-  const pages = ['quanh-ban', 'xu-huong', 'telegram', 'nghien-cuu', 'tinh-trang', 'khu-vuc'];
+  const pages = ['quanh-ban', 'du-bao', 'xu-huong', 'telegram', 'nghien-cuu', 'tinh-trang', 'khu-vuc'];
   let data = null, selected = null, metric = 'pm25', lastAttempt = 0;
   const fmt = new Intl.DateTimeFormat('vi-VN', {timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'});
   const number = n => Number.isFinite(n) ? new Intl.NumberFormat('vi-VN', {maximumFractionDigits: 2}).format(n) : '—';
@@ -100,7 +100,7 @@
     if(data?.mode==='instructor') parts.push('BẢN TRÌNH DIỄN CÓ XÁC THỰC · Một số nguồn chưa rõ quyền công bố. Không chia sẻ dữ liệu hạn chế ra ngoài.');
     else if(data) parts.push(`Bản công bố thí điểm · ${data.stations.length} điểm đủ điều kiện chia sẻ. Các nguồn khác đang được xác minh quyền công bố.`);
     if(!navigator.onLine)parts.push('Bạn đang ngoại tuyến. Nếu số đo còn hiển thị, đó là bản đã tải trước; thời gian đo không thay đổi.');
-    $('notice').textContent=parts.join(' ');$('notice').hidden=!parts.length;
+    $('notice').textContent=window.AirLakeNow?.notice()||parts.join(' ');$('notice').hidden=!$('notice').textContent;
   }
   function render() {
     if(!data)return;

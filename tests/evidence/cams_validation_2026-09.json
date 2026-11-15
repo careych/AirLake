@@ -1,0 +1,198 @@
+{
+ "period_utc": [
+  "2026-08-31T17:00:00Z",
+  "2026-09-30T17:00:00Z"
+ ],
+ "model": "CAMS Global via Open-Meteo archive (domains=cams_global), most recent run per hour; near-analysis, not forecast-lead skill",
+ "alignment": "model instants at both hour edges averaged against observation hour-bucket means; UTC",
+ "observations": {
+  "6123215": {
+   "name": "Dragon (AirGradient, CC BY 4.0)",
+   "source": "AirLake Glue run 2 export (Athena-verified)",
+   "grid_cell": [
+    21.0,
+    105.899994
+   ],
+   "hourly": {
+    "n": 720,
+    "mae": 27.96,
+    "bias": 16.93,
+    "pearson_r": 0.39,
+    "observed_mean": 40.9,
+    "model_mean": 57.83
+   },
+   "daily_complete": {
+    "n": 30,
+    "mae": 20.38,
+    "bias": 16.93,
+    "pearson_r": 0.54,
+    "observed_mean": 40.9,
+    "model_mean": 57.83
+   },
+   "calibration_test": {
+    "method": "observed/model ratio fitted on local days 1-15, tested on later days",
+    "ratio": 0.66,
+    "test_raw": {
+     "n": 360,
+     "mae": 24.92,
+     "bias": 13.37,
+     "pearson_r": 0.46,
+     "observed_mean": 41.99,
+     "model_mean": 55.36
+    },
+    "test_calibrated": {
+     "n": 360,
+     "mae": 18.26,
+     "bias": -5.44,
+     "pearson_r": 0.46,
+     "observed_mean": 41.99,
+     "model_mean": 36.55
+    }
+   }
+  },
+  "99385": {
+   "name": "Sensor.Community #99385 (SDS011, DbCL 1.0)",
+   "source": "archive.sensor.community daily CSV, hours with >=12 readings",
+   "grid_cell": [
+    21.099998,
+    105.80002
+   ],
+   "hourly": {
+    "n": 719,
+    "mae": 33.18,
+    "bias": 32.28,
+    "pearson_r": 0.53,
+    "observed_mean": 18.76,
+    "model_mean": 51.04
+   },
+   "daily_complete": {
+    "n": 29,
+    "mae": 31.9,
+    "bias": 31.9,
+    "pearson_r": 0.81,
+    "observed_mean": 18.86,
+    "model_mean": 50.75
+   },
+   "calibration_test": {
+    "method": "observed/model ratio fitted on local days 1-15, tested on later days",
+    "ratio": 0.387,
+    "test_raw": {
+     "n": 359,
+     "mae": 36.51,
+     "bias": 35.83,
+     "pearson_r": 0.64,
+     "observed_mean": 19.36,
+     "model_mean": 55.2
+    },
+    "test_calibrated": {
+     "n": 359,
+     "mae": 8.27,
+     "bias": 2.01,
+     "pearson_r": 0.64,
+     "observed_mean": 19.36,
+     "model_mean": 21.37
+    }
+   }
+  },
+  "4946812": {
+   "name": "Hanoi network reference station (observations not redistributed; aggregate metrics only)",
+   "grid_cell": [
+    21.0,
+    105.80002
+   ],
+   "hourly": {
+    "n": 720,
+    "mae": 28.86,
+    "bias": 21.51,
+    "pearson_r": 0.4,
+    "observed_mean": 31.71,
+    "model_mean": 53.22
+   },
+   "daily_complete": {
+    "n": 30,
+    "mae": 22.2,
+    "bias": 21.51,
+    "pearson_r": 0.82,
+    "observed_mean": 31.71,
+    "model_mean": 53.22
+   },
+   "calibration_test": {
+    "method": "observed/model ratio fitted on local days 1-15, tested on later days",
+    "ratio": 0.635,
+    "test_raw": {
+     "n": 360,
+     "mae": 30.34,
+     "bias": 25.04,
+     "pearson_r": 0.54,
+     "observed_mean": 32.14,
+     "model_mean": 57.18
+    },
+    "test_calibrated": {
+     "n": 360,
+     "mae": 16.84,
+     "bias": 4.16,
+     "pearson_r": 0.54,
+     "observed_mean": 32.14,
+     "model_mean": 36.3
+    }
+   }
+  },
+  "4946813": {
+   "name": "Hanoi network reference station (observations not redistributed; aggregate metrics only)",
+   "grid_cell": [
+    21.0,
+    105.80002
+   ],
+   "hourly": {
+    "n": 693,
+    "mae": 30.77,
+    "bias": 17.52,
+    "pearson_r": 0.25,
+    "observed_mean": 34.16,
+    "model_mean": 51.68
+   },
+   "daily_complete": {
+    "n": 18,
+    "mae": 22.74,
+    "bias": 20.59,
+    "pearson_r": 0.76,
+    "observed_mean": 38.47,
+    "model_mean": 59.06
+   },
+   "calibration_test": {
+    "method": "observed/model ratio fitted on local days 1-15, tested on later days",
+    "ratio": 0.679,
+    "test_raw": {
+     "n": 342,
+     "mae": 29.25,
+     "bias": 19.84,
+     "pearson_r": 0.45,
+     "observed_mean": 36.14,
+     "model_mean": 55.97
+    },
+    "test_calibrated": {
+     "n": 342,
+     "mae": 19.53,
+     "bias": 1.85,
+     "pearson_r": 0.45,
+     "observed_mean": 36.14,
+     "model_mean": 37.99
+    }
+   }
+  }
+ },
+ "sensor_checks": {
+  "99385_vs_6123215_hourly_r": 0.8,
+  "99385_mean_ratio_to_other_stations": [
+   0.46,
+   0.59
+  ],
+  "timestamp_check": "peak correlation at lag 0-1 h confirms UTC archive timestamps"
+ },
+ "conclusion": [
+  "Model exceeds every station: hourly bias +17 to +32 µg/m³; hourly r 0.25-0.53.",
+  "Day-to-day variation is captured better: daily r 0.54-0.82.",
+  "An observed/model ratio fitted on days 1-15 reduced MAE on days 16-30 at all four stations, but one wet-season month cannot calibrate the dry season.",
+  "Use the forecast for relative higher/lower periods, labelled as an external model; do not present raw values as expected street-level concentrations."
+ ]
+}

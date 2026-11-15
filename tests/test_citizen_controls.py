@@ -63,6 +63,48 @@ class ControlTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 hosting.zip_site(p, "public")
 
+    def test_live_projection_must_only_hold_licensed_observations(self):
+        with tempfile.TemporaryDirectory() as root:
+            p = Path(root)
+            (p / "config.js").write_text(
+                "window.AIRLAKE_CONFIG="
+                + json.dumps(
+                    {
+                        "dataUrl": "data/" + "a" * 64 + ".json",
+                        "sha256": "a" * 64,
+                        "mode": "public",
+                        "nowUrl": "now.json",
+                    }
+                )
+                + ";\n"
+            )
+            for name in (
+                "index.html",
+                "app.js",
+                "styles.css",
+                "icon.svg",
+                "history.js",
+                "now.js",
+                "leaflet.js",
+                "leaflet.css",
+            ):
+                (p / name).write_text("synthetic")
+            (p / "data").mkdir()
+            (p / "data" / ("a" * 64 + ".json")).write_text("{}")
+            (p / "now.json").write_text(
+                json.dumps(
+                    {
+                        "observations": [
+                            {"station_id": 6123215},
+                            {"station_id": 4946812},
+                        ],
+                        "model": {"kind": "model"},
+                    }
+                )
+            )
+            with self.assertRaisesRegex(ValueError, "unlicensed"):
+                hosting.zip_site(p, "public")
+
     def test_promotion_packet_rejects_wrong_deployed_artifact(self):
         with tempfile.TemporaryDirectory() as root:
             p = Path(root)
