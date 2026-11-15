@@ -5,7 +5,12 @@ from urllib.error import HTTPError
 from urllib.parse import urlencode, urlsplit
 from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener
 
-HOSTS = {"api.openaq.org", "data.sensor.community", "air-quality-api.open-meteo.com"}
+HOSTS = {
+    "api.openaq.org",
+    "data.sensor.community",
+    "archive.sensor.community",
+    "air-quality-api.open-meteo.com",
+}
 UA = "AirLake Hanoi air-quality pilot (university project)"
 
 
@@ -20,7 +25,7 @@ class NoRedirect(HTTPRedirectHandler):
         return None
 
 
-def get(url, params=None, headers=None, timeout=10):
+def get(url, params=None, headers=None, timeout=10, text=False):
     if urlsplit(url).scheme != "https" or urlsplit(url).hostname not in HOSTS:
         raise ValueError("Unexpected upstream host")
     request = Request(
@@ -38,4 +43,4 @@ def get(url, params=None, headers=None, timeout=10):
         raise UpstreamError("network_error") from None
     if len(body) > 2_000_000:
         raise UpstreamError("response_too_large")
-    return json.loads(body)
+    return body.decode() if text else json.loads(body)

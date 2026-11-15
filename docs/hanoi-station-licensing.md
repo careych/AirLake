@@ -24,3 +24,14 @@ Findings:
   permission.
 
 Re-run before any publication change; licence metadata can change.
+
+## Other networks (checked 2026-11-15)
+
+| Network | Query | Result |
+|---|---|---|
+| Sensor.Community | `airrohr/v1/filter/area=21.03,105.85,60` | #99385 (outdoor, SDS011, active, used); #44434 at Linh Đàm flagged indoor (not used) |
+| openSenseMap (PDDL) | `boxes?bbox=105.28,20.56,106.02,21.39` | 9 boxes: "Swimlake" is the same device and place as #99385; Linh Đàm box PM2.5 silent since 2026-10-14; Thủy Lợi University boxes silent since 2025-12; others indoor/old |
+| AirGradient direct map, PurpleAir, IQAir, WAQI, PAM Air, moitruongthudo | not queried | no licence permitting redistribution; not scraped |
+
+Result: two active, outdoor, legally publishable PM2.5 sources in Hanoi.
+The count is not padded with model points or duplicate devices.

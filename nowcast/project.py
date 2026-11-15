@@ -7,12 +7,23 @@ written), model_run_at / model_available_at (CAMS), valid_at (forecast hour).
 from datetime import timedelta
 
 from ingestion.openaq import stamp, utc
-from live_data.contract import freshness
 from nowcast import sensor_community
+
+# Freshness by source cadence and measured delivery delay (2026-11-15, 24
+# stored projections): Dragon's hourly value (stamped at the END of the hour)
+# reached AirLake 16-20 min after the hour, so with a 15-minute refresh a
+# normal age is ~16-80 min; Sensor.Community readings (~150 s apart) arrived
+# 2-4 min after measurement, so a normal age is under ~22 min.
+POLICY = {
+    6123215: {"fresh_seconds": 5400, "stale_seconds": 10800},  # 1.5 h / 3 h
+    99385: {"fresh_seconds": 1500, "stale_seconds": 3600},  # 25 min / 1 h
+}
 
 DRAGON = {
     "station_id": 6123215,
     "name": "Dragon (AirGradient)",
+    "place": "Gia Lâm · Ocean Park",
+    "area": "Xã Gia Lâm, Hà Nội",
     "provider": "AirGradient via OpenAQ",
     "licence": "CC BY 4.0",
     "licence_url": "https://creativecommons.org/licenses/by/4.0/",
@@ -23,13 +34,17 @@ DRAGON = {
     "longitude": 105.9441,
     "station_type": "low_cost",
     "cadence_seconds": 3600,
+    "observed_at_meaning": "end of the averaging hour",
 }
 COMMUNITY = {
     "station_id": 99385,
     **sensor_community.SENSORS[99385],
     "provider": "Sensor.Community",
+    "place": "Tây Hồ · cảm biến cộng đồng",
+    "area": "Phường Tây Hồ, Hà Nội (vị trí gần đúng)",
     **sensor_community.LICENCE,
     "cadence_seconds": 150,
+    "observed_at_meaning": "time of a single ~150-second reading",
 }
 
 
@@ -44,10 +59,37 @@ def openaq_latest(body, sensor_id=14581375):
     return None
 
 
+def freshness(station_id, observed_at, now):
+    """fresh / delayed / stale by observation age; never by fetch or publish time."""
+    policy = POLICY[station_id]
+    base = {
+        **policy,
+        "threshold_seconds": policy["fresh_seconds"],  # alert eligibility (bot)
+        "criterion": "observation age: fresh <= fresh_seconds < delayed <= stale_seconds < stale",
+    }
+    if observed_at is None:
+        return {**base, "status": "no_data", "age_seconds": None}
+    age = (utc(now) - utc(observed_at)).total_seconds()
+    status = (
+        "invalid_future"
+        if age < -300
+        else "fresh"
+        if age <= policy["fresh_seconds"]
+        else "delayed"
+        if age <= policy["stale_seconds"]
+        else "stale"
+    )
+    return {**base, "status": status, "age_seconds": age}
+
+
 def observation(meta, source, now):
     """source: {status, reading, fetched_at, error}; failed fetches keep the last reading."""
     reading = source.get("reading") or {}
-    item = {k: v for k, v in meta.items() if k != "cadence_seconds"}
+    item = {
+        k: v
+        for k, v in meta.items()
+        if k not in ("cadence_seconds", "observed_at_meaning")
+    }
     item.update(
         kind="observed",
         observed_at=reading.get("observed_at"),
@@ -56,7 +98,8 @@ def observation(meta, source, now):
         fetch_status=source["status"],
         fetch_error=source.get("error"),
     )
-    item["freshness"] = freshness(item["observed_at"], now, meta["cadence_seconds"])
+    item["freshness"] = freshness(meta["station_id"], item["observed_at"], now)
+    item["observed_at_meaning"] = meta["observed_at_meaning"]
     return item
 
 

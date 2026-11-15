@@ -139,7 +139,7 @@ class ProjectionTests(unittest.TestCase):
         )
         dragon, sc = value["observations"]
         self.assertEqual(
-            (dragon["kind"], dragon["freshness"]["status"]), ("observed", "recent")
+            (dragon["kind"], dragon["freshness"]["status"]), ("observed", "fresh")
         )
         self.assertEqual(sc["freshness"]["status"], "no_data")
         self.assertIsNone(sc["pm25"])
@@ -476,25 +476,25 @@ class PublicApiTests(unittest.TestCase):
     def test_history_is_pinned_to_licensed_station(self):
         from nowcast import public_api
 
+        archive = public_api.ARCHIVE
         self.assertEqual(
-            public_api.history_event(self.event("/v1/history", "granularity=daily"))[
+            public_api.history_event(self.event(archive, "granularity=daily"))[
                 "rawQueryString"
             ],
             "granularity=daily&station_id=6123215",
         )
-        for q in (
-            "station_id=4946812",
-            "location_id=4946813",
-            "sensor_id=13502151",
+        for path, q, code in (
+            (archive, "station_id=4946812", 404),
+            (archive, "location_id=4946813", 404),
+            (archive, "sensor_id=13502151", 404),
+            ("/v1/history", "station_id=4946812", 404),
+            ("/v1/history", "station_id=4946813&granularity=daily", 404),
+            ("/v1/history", "location_id=4946813", 400),
+            ("/v1/history", "station_id=6123215&station_id=4946812", 400),
+            (archive, "station_id=6123215&station_id=4946812", 400),
         ):
-            r = public_api.handler(self.event("/v1/history", q), None, store=object())
-            self.assertEqual(r["statusCode"], 404, q)
-        dup = public_api.handler(
-            self.event("/v1/history", "station_id=6123215&station_id=4946812"),
-            None,
-            store=object(),
-        )
-        self.assertEqual(dup["statusCode"], 400)
+            r = public_api.handler(self.event(path, q), None, store=object())
+            self.assertEqual(r["statusCode"], code, (path, q))
 
     def test_read_only_cors_and_safe_errors(self):
         from nowcast import public_api
