@@ -11,7 +11,7 @@ Base URL: `https://npe6uhbknh4qojnmylv3w436mi0epxfb.lambda-url.ap-southeast-2.on
 | `GET /v1/now` | Current projection: the two sensors' latest observations with `observed_at`, `fetched_at`, freshness and licence; the CAMS model estimate and forecast; `model_areas` (CAMS estimate for each of the 126 phường/xã, grouped by native 0.4° cell). No parameters. |
 | `GET /v1/stations` | Public stations, licence, location precision and history availability. No parameters. |
 | `GET /v1/history` | Rolling hourly or daily history for one station since 2026-09-01 (Vietnam time), with coverage. |
-| `GET /v1/archive/september-2026` | Frozen Glue/Athena export for Dragon, September 2026. |
+| `GET /v1/archive/september-2026` | Glue/Athena export for Gia Lâm, September 2026. |
 
 ## `/v1/history` parameters
 
@@ -48,7 +48,7 @@ curl "$API/v1/history?station_id=99385&start=2026-10-16&end=2026-11-15&granulari
 curl "$API/v1/history?station_id=6123215&start=2026-11-14T00:00:00Z&end=2026-11-15T00:00:00Z"
 ```
 
-Verified on 2026-11-15 (live): Tây Hồ since 2026-09-01 returned 1,761 hourly
+Results on 2026-11-15: Tây Hồ since 2026-09-01 returned 1,761 hourly
 rows in two pages (7 provisional); Gia Lâm 30-day daily CSV returned 30 rows
 (28 valid, 27 complete).
 

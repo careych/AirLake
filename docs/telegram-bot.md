@@ -1,7 +1,7 @@
 # Telegram bot @AirLakeHanoiBot
 
-Source: `telegram_bot/` (one Lambda). Deployed 2026-11-15; end-to-end
-acceptance in `tests/evidence/telegram_release_2026-11-15.json`.
+Source: `telegram_bot/` (one Lambda). Release receipt:
+`tests/evidence/telegram_release_2026-11-15.json`.
 
 ## Triggers
 
@@ -28,15 +28,16 @@ Thresholds: 25, 35, 50, 75, 100 µg/m³ or a custom value from 5 to 500.
 - One alert per crossing: after an alert the subscription re-arms only when a
   reading falls below 80 % of the threshold, and at most one alert per 3 hours.
 
-## Status
+## Testing
 
-- End-to-end acceptance passed on 2026-11-15 (subscribe, one real alert,
-  no duplicate, unsubscribe, no further alert).
-- Defect found on 2026-11-15 during the documentation audit: after the
-  projection's freshness states changed from `recent` to `fresh`/`delayed`/
-  `stale`, the policy still required `recent`, so no alert could fire. Fixed
-  in commit `30b8535` (accepts `fresh`, keeps `recent` for older projections)
-  and deployed the same day (bot code `/adfqOaq…`,
-  `tests/evidence/bot_policy_fix_2026-11-15.json`). The deployed code was
-  checked offline against the live projection; the next scheduled evaluation
-  ran without errors. No new end-to-end Telegram delivery was run.
+- End-to-end test on 2026-11-15 with a team member's account: subscribe to
+  Gia Lâm at 25 µg/m³, one real alert (43.8 µg/m³), no duplicate on the next
+  evaluation, no message after unsubscribing; DLQ empty.
+- In the final review the team found that the alert policy still expected the
+  old freshness state `recent` after the projection switched to
+  `fresh`/`delayed`/`stale`, so no alert could be sent. The policy was fixed
+  with a regression test and deployed the same day
+  (`tests/evidence/bot_policy_fix_2026-11-15.json`). The deployed code gives
+  the expected result on the live projection and the next scheduled
+  evaluation ran without errors. A full message delivery has not been re-run
+  since the fix.

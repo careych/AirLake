@@ -1,9 +1,7 @@
-# Hanoi coverage, model forecast and live publication
+# Coverage, model estimate and refresh
 
-Status: deployed on 2026-11-15. Since the final release the CAMS estimate is
-published for every one of the 126 phường/xã, grouped by native 0.4° cell (5
-cells), in `model_areas` of `/v1/now`. Labels: VERIFIED (checked against the
-source on 2026-11-15).
+The CAMS estimate is published for each of the 126 phường/xã, grouped by
+native 0.4° cell (5 cells), in `model_areas` of `/v1/now`.
 
 ## 1. Source inventory
 
@@ -58,19 +56,7 @@ applied. The forecast is labelled external and used for relative higher/lower
 periods and day-to-day comparison. Archived values are short-lead, so this does
 not measure 3-5 day skill.
 
-## 3. Citizen website (implemented)
-
-- Hôm nay: one card per licensed sensor (value, observed time, age, sensor
-  type, source/licence, reference band) and a separate dashed model card;
-  a sentence compares the model with live observations.
-- Dự báo: 24-hour model chart, daily means/ranges, relative 3-hour windows only
-  when they differ by at least 20%, validation summary and limitations.
-- Lịch sử: Athena-verified September history, unchanged.
-- Bản đồ: Leaflet (self-hosted) with licensed stations and the model scale.
-- Tình trạng: observed/ingested times per sensor; model run/available times;
-  projection generated time.
-
-## 4. AWS refresh and serving (deployed, `nowcast/refresh.py`, `nowcast/public_api.py`)
+## 3. Refresh and serving (`nowcast/refresh.py`, `nowcast/public_api.py`)
 
 EventBridge Scheduler (every 15 min) -> Lambda refresh -> S3
 `nowcast/v1/` (immutable observations per source, one raw object per CAMS run,
@@ -91,20 +77,19 @@ Amplify deployment is needed for new data.
 Public API controls: the Function URL is public regardless of CORS. GET/HEAD
 only; exact paths and strict query allowlists (see [public-api.md](public-api.md));
 licensed stations only; at most 100 days, 1,000 rows and 1 MB per response;
-generic 400/404/405/503; reserved concurrency 10 (raised from 2 on 2026-11-15
-after throttling was observed); alarms on >2,000 invocations/hour, any
+generic 400/404/405/503; reserved concurrency 10 (raised from 2 after throttling
+was seen in acceptance testing); alarms on >2,000 invocations/hour, any
 throttle, and refresh errors.
 
 Publication safety: every immutable object is written with `If-None-Match: *`
 and the pointer with `If-Match: <etag read at start>`, sent as raw headers in
-a botocore before-call hook (works with any SDK version in the Lambda runtime;
-S3 enforces them). Keys are `published_at` plus a content hash. A projection
+a botocore before-call hook (S3 enforces them). Keys are `published_at` plus a content hash. A projection
 must pass validation (licensed stations only, schema, 24-hour forecast) and be
 newer than the current one before the pointer moves; one object is kept per
 source observation.
 
 Traffic and cost (estimates from list prices, not a cap; free tier not assumed):
-reserved concurrency 10 (2 until 2026-11-15) limits parallel executions, and
+reserved concurrency 10 limits parallel executions, and
 excess requests are throttled with 429. It is not a per-client rate limit and
 not a spending cap. `/v1/now` returns an ETag and 304 for repeat polls, a
 60-second container cache and `max-age=60`; history series are cached for
@@ -122,28 +107,9 @@ deleted.
 Calls per day: 96 metadata + ~2 forecast (Open-Meteo), 96 OpenAQ, 96
 Sensor.Community. Lambda/S3 cost is within the free tier for this volume.
 
-## 5. Research access
+## 4. Research access
 
-`/v1/history` (public, no credentials): Dragon hourly/daily, JSON or CSV,
-UTC `start`/`end`, `limit` 1-1000, `offset` 0-3000; any other station returns
-404. `/v1` returns the schema. The IAM-protected private API is unchanged and
-remains the only route to restricted stations.
-
-## 6. Telegram contract (with Khuê's PR #19)
-
-Observed alerts: trigger on a licensed sensor's new hourly observation above
-the subscriber threshold, keyed by (subscriber, station, observed hour) for
-deduplication; text states the observation time. Forecast alerts (optional):
-once per model run when the next-24-h model maximum exceeds the threshold,
-worded as a model forecast. Commands: /start, choose station, set threshold,
-/status, /stop. Not deployed or verified; no messages sent.
-
-## 7. Five-minute demo checklist
-
-1. Phone: public HTTPS URL, Hôm nay with two observed cards and model card.
-2. Dự báo: 24 h chart and validation limits.
-3. Lịch sử: 7/30-day September trends, heatmap, WHO reference days.
-4. Researcher: `/v1/history?granularity=daily&format=csv` download.
-5. AWS console: Scheduler, Lambda logs, S3 `nowcast/v1/`, Glue run 2,
-   Athena query IDs, Amplify job, CloudWatch.
-6. Telegram only if E2E is verified.
+`/v1/history` (public, no credentials) serves Gia Lâm and Tây Hồ hourly or
+daily data as JSON or CSV; any other station returns 404. `/v1` returns the
+schema ([public-api.md](public-api.md)). The IAM-protected private API is the
+only route to the restricted stations.

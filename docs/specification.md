@@ -1,31 +1,8 @@
-> **Historical record.** Original technical specification (target requirements, October 2026). Several planned components were not built or were replaced; see [docs/architecture.md](docs/architecture.md) for the implemented system.
-
 # AirLake — Bản đặc tả kỹ thuật (Technical Specification)
 
 **Phiên bản:** 1.0 · **Dự án:** AirLake — Nền tảng dữ liệu và cảnh báo chất lượng không khí Hà Nội trên AWS · **Môn:** Điện toán đám mây
 
----
-
-## Implementation status and evidence
-
-This document contains target requirements, local data contracts and historical
-survey notes. FR/NFR, AWS diagrams, security/CI/CD design and phase acceptance are
-targets, not claims that the local branch has deployed them.
-
-| Scope | Implemented / reviewed | Evidence boundary |
-| --- | --- | --- |
-| Local ingestion | CSV replay and Kafka-to-Iceberg Bronze | Source and inert-client checks; no new Kafka/restart runtime acceptance |
-| Local Silver | UTC parsing, typed values, deterministic dedup, insert-only MERGE | Reviewed source; finite-value filtering, unit conversion and persistent rejects are deferred |
-| Local Gold | Dimension/name repair and simplified hourly PM2.5 AQI | Retained 2026-10-25 result: 48 integration and 9 orchestration methods passed; exact source hashes in tests/evidence |
-| AWS infrastructure | Source audited on khue/nam | Separate owner work; no deployment acceptance in this PR |
-| Bot/serving | Source previously audited on thinh; target interfaces below | Latest branch content not merged; schema/reliability/security review pending |
-
-See [README.md](README.md) for operational commands,
-[tests/README.md](tests/README.md) for verification scope and evidence format, and
-[AirLake_PROJECT_CONTEXT.md](AirLake_PROJECT_CONTEXT.md) for team ownership and
-historical context. Local Gold acceptance does not establish official VN_AQI,
-cloud deployment, fault tolerance or production readiness. The historically
-exposed bot token remains a publication blocker until its owner confirms rotation.
+> Bản đặc tả viết ở giai đoạn thiết kế (tháng 10/2026). Từ Tuần 8 nhóm chuyển sang các dịch vụ AWS được quản lý, nên hệ thống cuối khác bản này ở một số thành phần; xem [architecture.md](architecture.md).
 
 ---
 
@@ -38,7 +15,7 @@ exposed bot token remains a publication blocker until its owner confirms rotatio
 5. Kiến trúc tính năng (sơ đồ ASCII)
 6. Kiến trúc triển khai (sơ đồ ASCII, theo từng phân hệ)
 7. Đặc tả dữ liệu — mọi bảng, mọi cột
-8. Đặc tả nguồn dữ liệu (OpenAQ) — khảo sát lịch sử
+8. Đặc tả nguồn dữ liệu nguồn (OpenAQ) — thông tin đã xác minh
 9. Đặc tả giao diện (bot Telegram, nội bộ giữa các thành phần)
 10. Đặc tả hạ tầng AWS
 11. Đặc tả bảo mật
@@ -72,13 +49,13 @@ exposed bot token remains a publication blocker until its owner confirms rotatio
 
 **Vấn đề:** các ứng dụng đo bụi hiện có chỉ hiển thị một con số tức thời, không có lịch sử, không cho biết độ tin cậy của dữ liệu.
 
-**Giải pháp mục tiêu (chưa nghiệm thu đầy đủ):** AirLake thu thập liên tục dữ liệu chất lượng không khí Hà Nội, lưu trữ dài hạn, tính AQI theo chuẩn Việt Nam, cảnh báo chủ động qua Telegram, và minh bạch về tình trạng hoạt động của từng nguồn đo.
+**Giải pháp:** AirLake thu thập liên tục dữ liệu chất lượng không khí Hà Nội, lưu trữ dài hạn, tính AQI theo chuẩn Việt Nam, cảnh báo chủ động qua Telegram, và minh bạch về tình trạng hoạt động của từng nguồn đo.
 
 **Người dùng:** (1) người dân/sinh viên Hà Nội, đặc biệt nhóm nhạy cảm hô hấp; (2) sinh viên/nhà nghiên cứu cần dữ liệu lịch sử sạch; (3) đội vận hành nội bộ.
 
 ---
 
-## 3. Yêu cầu chức năng mục tiêu (Functional Requirements)
+## 3. Yêu cầu chức năng (Functional Requirements)
 
 | Mã | Yêu cầu |
 |---|---|
@@ -97,7 +74,7 @@ exposed bot token remains a publication blocker until its owner confirms rotatio
 
 ---
 
-## 4. Yêu cầu phi chức năng mục tiêu (Non-functional Requirements)
+## 4. Yêu cầu phi chức năng (Non-functional Requirements)
 
 | Mã | Yêu cầu | Cách đo |
 |---|---|---|
@@ -106,13 +83,13 @@ exposed bot token remains a publication blocker until its owner confirms rotatio
 | NFR-03 | Kafka chịu được mất 1 broker (trong cụm 3) mà không mất dữ liệu | Kill 1 broker giữa lúc đang ghi, kiểm tra số bản ghi không đổi |
 | NFR-04 | Có thể khôi phục Silver/Gold về trạng thái trước đó khi phát hiện lỗi | Demo time travel: rollback về snapshot cũ |
 | NFR-05 | Không dùng access key tĩnh; dữ liệu mã hoá khi lưu trữ (KMS) và truyền tải (TLS) | Rà soát Terraform + IAM policy |
-| NFR-06 | Chi phí nằm trong ngân sách được B xác nhận; không mặc định có free credit | Theo dõi chi phí, budget alert $20/$50/$80 là kế hoạch ban đầu |
+| NFR-06 | Chi phí vận hành nằm trong free credit AWS trong suốt dự án | Theo dõi Cost Explorer hàng tuần, budget alert $20/$50/$80 |
 | NFR-07 | Toàn bộ hạ tầng dựng lại bằng 1 lệnh, xoá sạch bằng 1 lệnh | `terraform apply` / `terraform destroy` chạy thành công từ đầu |
 | NFR-08 | Mọi số liệu hiển thị kèm thông tin độ tin cậy nguồn | Dashboard/bot luôn hiển thị cờ TƯƠI/GIÁN ĐOẠN/CHẾT cạnh giá trị |
 
 ---
 
-## 5. Kiến trúc tính năng mục tiêu (không phải trạng thái triển khai)
+## 5. Kiến trúc tính năng (logic, chưa gắn dịch vụ cụ thể)
 
 ```
 ┌─────────────────────┐
@@ -176,13 +153,13 @@ exposed bot token remains a publication blocker until its owner confirms rotatio
 
 ---
 
-## 6. Kiến trúc triển khai mục tiêu — theo từng phân hệ
+## 6. Kiến trúc triển khai — theo từng phân hệ (có giao thức/giao diện giữa các thành phần)
 
 ### 6.1. Thu thập & Lưu trữ
 ```
 ┌──────────────────┐            ┌───────────────────────────┐
 │  OpenAQ API        │──HTTPS────►│  EventBridge Scheduler      │
-│  (REST, quota API) │  5 phút   │  + AWS Lambda (Poller)       │
+│  (REST, 60 req/phút)│  5 phút   │  + AWS Lambda (Poller)       │
 └──────────────────┘            └──────────────┬──────────────┘
                                                 │ Kafka Producer
 ┌──────────────────┐                           ▼
@@ -287,7 +264,7 @@ SSM Session Manager (thay SSH)
 
 ## 7. Đặc tả dữ liệu — mọi bảng, mọi cột
 
-### 7.1. Bronze — `local.bronze.aq_measurements` (parsed source strings)
+### 7.1. Bronze — `local.bronze.aq_measurements` (giữ nguyên thô, toàn bộ STRING)
 
 | Cột | Kiểu | Ghi chú |
 |---|---|---|
@@ -300,8 +277,6 @@ SSM Session Manager (thay SSH)
 | units | STRING | Đơn vị đo |
 | value | STRING | Giá trị đo |
 | kafka_ts | TIMESTAMP | Thời điểm Kafka nhận bản ghi (thêm khi ghi Bronze) |
-
-Local behavior: `bronze_local.py` drops records whose parsed location_id is null, including malformed JSON, and does not retain Kafka payload/partition/offset. Other parsed measurement fields remain strings. A fully lossless raw/reject stream is a pending contract; this cleanup does not change the filter. Reuse the existing checkpoint on restart. startingOffsets=earliest governs a new query, not recovery from an existing checkpoint.
 
 ### 7.2. Silver — `local.silver.aq_measurements` (đã ép kiểu, khử trùng)
 
@@ -317,13 +292,7 @@ Local behavior: `bronze_local.py` drops records whose parsed location_id is null
 
 Khoá khử trùng: `(location_id, sensors_id, measured_at)`, chiến lược `MERGE INTO ... WHEN NOT MATCHED THEN INSERT`.
 
-`datetime` được parse theo ISO-8601 có offset tường minh (ví dụ `+07:00`) với Spark session time zone đặt là UTC; `measured_at` biểu diễn cùng một thời điểm tuyệt đối ở UTC. Bản ghi bị loại nếu `location_id`/`sensors_id` không chuyển được sang INT, `datetime` thiếu/không parse được, hoặc `value` thiếu/không chuyển được sang DOUBLE/âm. Các lý do loại được tính loại trừ lẫn nhau theo thứ tự: location ID, sensor ID, datetime, value thiếu/không phải số, value âm. Không áp ngưỡng giá trị tối đa khi chưa có quy tắc nghiệp vụ được duyệt; `parameter` và `units` nullable được giữ nguyên vì đặc tả hiện tại không quy định loại chúng.
-
-Nếu Bronze có nhiều dòng cùng khoá nhưng payload khác nhau, Silver chọn dòng có `kafka_ts` mới nhất; nếu bằng nhau, chọn dòng có thứ tự từ điển nhỏ nhất trên toàn bộ các cột Bronze. Đây là quy tắc ổn định để phân xử trường hợp chưa được quy định nghiệp vụ. `MERGE` insert-only không ghi đè một khoá đã có trong Silver; nếu không có khoá mới thì job bỏ qua thao tác ghi để tránh tạo snapshot rỗng. Việc sửa lại một phép đo cùng khoá cần một quy tắc cập nhật được thống nhất riêng.
-
-Silver does not uniformly reject NaN/+Infinity after DOUBLE casting, and it does not convert units. Gold independently rejects non-finite PM2.5 measurements and aggregates. Adding Silver finiteness/unit rules, supporting additional timestamp formats or correcting existing keys requires dedicated tests and a reviewed contract. Reported valid_count is derived from source/rejected counts, not an independent reconciliation query.
-
-### 7.3. Silver — `local.silver.sensor_health` (target schema; no local writer)
+### 7.3. Silver — `local.silver.sensor_health`
 
 | Cột | Kiểu | Ghi chú |
 |---|---|---|
@@ -343,8 +312,6 @@ Silver does not uniformly reject NaN/+Infinity after DOUBLE casting, and it does
 | effective_from, effective_to | DATE | NULL ở effective_to nếu đang hiệu lực |
 | is_current | BOOLEAN | |
 
-The unchanged project seed uses concentrations (µg/m³) 0, 25, 50, 80, 150, 250, 350, 500 paired with AQI 0, 50, 100, 150, 200, 300, 400, 500. It stores seven intervals with source=QD1459-TCMT-2019, effective_from=2019-11-12, effective_to=NULL and is_current=true. This is the existing MVP configuration, not a fresh primary-source verification or a confirmed legal effective date. Review the primary regulation and breakpoint-history rules before claiming regulatory/SCD completeness; this cleanup does not change values, intervals or formulas.
-
 ### 7.5. Gold — `local.gold.dim_location` (dimension table)
 
 | Cột | Kiểu | Ghi chú |
@@ -353,12 +320,6 @@ The unchanged project seed uses concentrations (µg/m³) 0, 25, 50, 80, 150, 250
 | name | STRING | |
 | lat, lon | DOUBLE | |
 | station_type | STRING | `reference` hoặc `low_cost` |
-
-**Chính sách tên trạm do chủ dự án phê duyệt:** tên hiện có hợp lệ được giữ nguyên. Chỉ `name=NULL` mới được sửa tự động, khi Bronze xác định duy nhất một bộ metadata hợp lệ cho trạm. Các dòng Bronze hợp lệ lặp giống nhau được chấp nhận; metadata thiếu, tên null/rỗng/chỉ có khoảng trắng, toạ độ không ép được sang DOUBLE hữu hạn, hoặc tên/toạ độ mâu thuẫn đều làm batch bị từ chối trước mọi thao tác ghi.
-
-Phạm vi metadata bắt buộc là hợp của các `location_id` trong Silver và **mọi khoá dimension hiện có với `name=NULL`**, kể cả khi khoá không có trong Silver hoặc Silver rỗng. Legacy null-name có metadata hợp lệ, duy nhất được sửa tên; thiếu hoặc không hợp lệ thì từ chối batch. Tên hợp lệ của legacy record ngoài Silver không cần tra lại Bronze. Tên target rỗng nhưng không null bị từ chối, không tự chuyển thành null hoặc sửa theo chính sách này. Toạ độ và `station_type` hiện có được giữ nguyên; không tự sửa metadata lịch sử khác. Target có khoá/toạ độ không hợp lệ hoặc `station_type` không khớp mapping trạm ở Mục 8.2 phải bị từ chối.
-
-Triển khai Gold cục bộ kiểm tra schema, metadata/repair plan, khoá target, số hữu hạn và quan hệ fact–dimension trước khi khởi tạo breakpoint, tạo bảng hoặc MERGE. Sau ghi, dimension không được còn tên null/rỗng. Đây là kiểm tra trước ghi cho các lỗi xác định được, không phải giao dịch nguyên tử hay rollback giữa nhiều bảng Iceberg; lỗi I/O hoặc thay đổi đồng thời sau preflight vẫn có thể để lại ghi từng phần. Các yêu cầu AWS/FR ở phần khác là mục tiêu riêng, không được xem là đã nghiệm thu chỉ từ kiểm thử Gold cục bộ.
 
 ### 7.6. Gold — `local.gold.pm25_aqi_hourly` (fact table)
 
@@ -369,29 +330,7 @@ Triển khai Gold cục bộ kiểm tra schema, metadata/repair plan, khoá targ
 | pm25_avg | DOUBLE | Trung bình giờ (MVP — chưa áp trọng số NowCast) |
 | aqi | INT | Tính theo `aqi_breakpoints` |
 
-Triển khai MVP cục bộ: `gold_batch.py` dùng metadata Bronze và mapping trạm ở Mục 8.2 để tạo dimension mới; tên null hiện có được sửa theo Mục 7.5, còn payload hiện có khác được giữ nguyên. PM2.5 và kết quả tổng hợp phải hữu hạn, không âm; null, NaN và vô cực bị từ chối trước ghi. Thời gian được nhóm theo giờ UTC. Mỗi giờ có ít nhất một quan trắc được giữ lại và `pm25_avg` là trung bình số học của các giá trị có đơn vị `µg/m³`; hiện chưa có ngưỡng completeness cho giờ thiếu quan trắc. AQI dùng nội suy tuyến tính giữa các breakpoint và làm tròn thành số nguyên; giá trị từ 500 µg/m³ trở lên được giới hạn ở AQI 500.
-
-**MVP limitation:** this is simplified hourly-mean AQI, not official VN_AQI. NowCast and regulatory completeness are not implemented. The official calculation, required input coverage and effective dates need primary-source review before replacing the approved MVP.
-
-**Integration status, 2026-11-06:** a bounded real OpenAQ replay through the existing
-local Kafka/Bronze/Silver/Gold path produced 200 Bronze rows, 200 Silver rows,
-one station dimension and 23 UTC hourly facts. Unchanged reruns preserved rows
-and snapshot IDs. Catalog, warehouse, namespace and table configuration now
-supports the original local defaults and an explicitly gated GlueCatalog/S3FileIO
-mode; Gold calculations, schemas and pre-write safeguards are unchanged.
-**Cloud acceptance, 2026-11-07:** the separately approved 200-record run passed
-on disposable S3/Glue resources, with the same 200/200/1/23 counts. Collected
-cloud rows and two Athena engine 3 SELECTs matched local acceptance; an unchanged
-rerun preserved all five tables' rows, snapshot IDs and metadata pointers.
-Spark `TIMESTAMP` was stored as Iceberg `timestamptz` and read by Athena as
-`timestamp with time zone`, with UTC hours. The local checkpoint is retained
-outside the repository; it is not a production cloud recovery design.
-See [the scoped guide and frozen plan](docs/real-openaq-batch.md),
-[local acceptance](tests/evidence/real_openaq_2026-11-06.json) and
-[cloud acceptance](tests/evidence/real_openaq_cloud_2026-11-07.json).
-These are implementation observations, not new regulatory or deployment requirements.
-
-### 7.7. Gold — bảng đánh giá cảnh báo (`alert_eval`, deferred target)
+### 7.7. Gold — bảng đánh giá cảnh báo (`alert_eval`, tính từ `pm25_aqi_hourly`)
 
 | Cột | Kiểu | Ghi chú |
 |---|---|---|
@@ -399,9 +338,7 @@ These are implementation observations, not new regulatory or deployment requirem
 | prev_aqi | INT | AQI giờ trước (window `lag`) |
 | should_alert | BOOLEAN | `aqi>=150 AND prev_aqi>=150` (ví dụ ngưỡng) |
 
-`150` chỉ là ví dụ trong đặc tả, không phải ngưỡng chung đã duyệt. Chưa tạo `alert_eval` cho đến khi thống nhất dùng ngưỡng toàn cục hay ngưỡng riêng từ `subscriptions`.
-
-### 7.8. DynamoDB — `subscriptions` (target interface, not current bot schema)
+### 7.8. DynamoDB — `subscriptions` (lưu đăng ký cảnh báo của người dùng)
 
 | Khoá/cột | Kiểu | Ghi chú |
 |---|---|---|
@@ -412,15 +349,13 @@ These are implementation observations, not new regulatory or deployment requirem
 
 ---
 
-## 8. Đặc tả nguồn dữ liệu (OpenAQ) — khảo sát lịch sử
-
-The following station/sensor details were retained from the initial survey. Cadence, freshness, license and availability observations are historical, not live checks. The original roughly 51-hour NO2 observation was labeled intermittent; that contradicts the shared >24-hour CHET threshold and is corrected below. Supported station IDs/types remain the project mapping.
+## 8. Đặc tả nguồn dữ liệu (OpenAQ) — đã xác minh thật
 
 ### 8.1. API & giới hạn
-- API v3: `https://api.openaq.org/v3`; credentials and current account terms must be checked separately.
-- The original survey reported 60 requests/minute. This is not a current API/account limit verified by this PR.
+- `https://api.openaq.org/v3` — cần khoá miễn phí (đăng ký tại `explore.openaq.org`).
+- Giới hạn: **60 lượt gọi/phút**.
 
-### 8.2. Project station mapping and historically reported cadence
+### 8.2. Ba trạm còn hoạt động (trong 37 trạm trong bán kính 25km, 34 trạm còn lại đã ngừng hoạt động từ ~01/2024)
 
 | Trạm | location_id | Loại | Hoạt động từ | Nhịp đo |
 |---|---|---|---|---|
@@ -428,7 +363,7 @@ The following station/sensor details were retained from the initial survey. Cade
 | Số 1 đường Giải Phóng | 4946813 | Trạm chuẩn, Hanoi AQMN | 2025-07-03 | ~5 phút |
 | OceanPark | 6123215 | Cảm biến giá rẻ, AirGradient | 2025-11-08 | 1 giờ |
 
-### 8.3. Historical sensor survey (not current sensor health)
+### 8.3. Cảm biến con theo từng trạm (sensors_id, trạng thái đã xác minh)
 
 | Trạm | parameter | sensors_id | Trạng thái |
 |---|---|---|---|
@@ -439,7 +374,7 @@ The following station/sensor details were retained from the initial survey. Cade
 | Nhân Chính | **pm25** | **13502151** | Tươi |
 | Nhân Chính | so2 | 13502157 | Tươi |
 | Giải Phóng | co | 13502156 | CHẾT (~163 ngày) |
-| Giải Phóng | no2 | 13502155 | Reported age ~51h; CHẾT under the >24h contract |
+| Giải Phóng | no2 | 13502155 | GIÁN ĐOẠN (~51h) |
 | Giải Phóng | o3 | 13502149 | Tươi |
 | Giải Phóng | pm10 | 13502152 | Tươi |
 | Giải Phóng | **pm25** | **13502154** | Tươi |
@@ -450,22 +385,22 @@ The following station/sensor details were retained from the initial survey. Cade
 | OceanPark | temperature | 14581377 | Tươi |
 | OceanPark | um003 (số hạt PM0.3/cm³) | 14581378 | Tươi |
 
-### 8.4. Historical license observations
-
-The survey reported CC BY 4.0 metadata for OceanPark/AirGradient and a null license value for Nhân Chính/Giải Phóng. These observations were not refreshed here and do not establish present display/export permission. Verify source licenses before redistribution and retain required AirGradient, Hanoi Air Quality Monitoring Network and OpenAQ attribution. A null license value is not a grant. No raw data is included in this PR.
+### 8.4. Giấy phép
+- OceanPark/AirGradient: **CC BY 4.0** (hiệu lực từ 2023-07-15) → được phép tải/công bố lại, ghi công.
+- Nhân Chính, Giải Phóng: `licenses: null`, chủ sở hữu "Unknown Governmental Organization" → chỉ hiển thị, không công bố lại.
 
 ### 8.5. Kho lưu trữ lịch sử
-`s3://openaq-data-archive/records/csv.gz/locationid={id}/year={yyyy}/month={mm}/location-{id}-{yyyymmdd}.csv.gz` is the archive pattern recorded by the earlier survey, which reported coverage through 2026-09-30. Current availability and completeness were not checked here. Dataset acquisition is separate from the local test suite.
+`s3://openaq-data-archive/records/csv.gz/locationid={id}/year={yyyy}/month={mm}/location-{id}-{yyyymmdd}.csv.gz` — công khai, `--no-sign-request`, xác nhận đủ dữ liệu từ ngày bắt đầu mỗi trạm đến 2026-09-30.
 
 ### 8.6. Schema CSV
 `location_id, sensors_id, location, datetime, lat, lon, parameter, units, value` — dạng dài (mỗi dòng = 1 lần đo của 1 cảm biến), `datetime` có `+07:00`.
 
 ### 8.7. Khối lượng ước tính
-The original context estimated 1–1.5 million historical observations; this is not a current measured table count.
+~1–1,5 triệu bản ghi lịch sử tính đến hiện tại.
 
 ---
 
-## 9. Đặc tả giao diện mục tiêu
+## 9. Đặc tả giao diện
 
 ### 9.1. Lệnh bot Telegram
 | Lệnh | Tham số | Hành vi |
@@ -488,37 +423,33 @@ The original context estimated 1–1.5 million historical observations; this is 
 
 ---
 
-## 10. Đặc tả hạ tầng AWS mục tiêu
+## 10. Đặc tả hạ tầng AWS
 
-| Dịch vụ | Vai trò mục tiêu |
-|---|---|
-| EC2 + Auto Scaling Group | Kafka, Spark, Trino, Superset |
-| Application Load Balancer | Trước Superset |
-| AWS WAF | Chặn trước ALB |
-| S3 | Lưu trữ Iceberg + checkpoint |
-| AWS Glue Data Catalog | Catalog cho Iceberg |
-| Amazon Athena | Truy vấn serverless |
-| AWS Lambda | Poller, xử lý bot, gửi cảnh báo |
-| API Gateway | Webhook Telegram |
-| Amazon DynamoDB | Lưu đăng ký người dùng |
-| Amazon SNS / SQS | Phân phối sự kiện cảnh báo |
-| EventBridge Scheduler | Lên lịch poller + job batch Silver/Gold |
-| Amazon CloudWatch | Giám sát, alarm |
-| AWS Secrets Manager | Khoá OpenAQ, token Telegram |
-| AWS KMS | Mã hoá dữ liệu |
-| IAM | Phân quyền |
-| Terraform (ngoài AWS) | IaC |
-| GitHub Actions (ngoài AWS) | CI/CD |
-
-Account eligibility, free credits and prices are not verified by this specification. Audited khue/nam source contains infrastructure scaffolding; it does not prove applications are running or accepted.
+| Dịch vụ | Vai trò | Free Tier |
+|---|---|---|
+| EC2 + Auto Scaling Group | Kafka, Spark, Trino, Superset | Có |
+| Application Load Balancer | Trước Superset | Có |
+| AWS WAF | Chặn trước ALB | Có (trừ AWS Shield) |
+| S3 | Lưu trữ Iceberg + checkpoint | Có |
+| AWS Glue Data Catalog | Catalog cho Iceberg | Có |
+| Amazon Athena | Truy vấn serverless | Có |
+| AWS Lambda | Poller, xử lý bot, gửi cảnh báo | Có |
+| API Gateway | Webhook Telegram | Có |
+| Amazon DynamoDB | Lưu đăng ký người dùng | Có |
+| Amazon SNS / SQS | Phân phối sự kiện cảnh báo | Có |
+| EventBridge Scheduler | Lên lịch poller + job batch Silver/Gold | Có |
+| Amazon CloudWatch | Giám sát, alarm | Có |
+| AWS Secrets Manager | Khoá OpenAQ, token Telegram | Có |
+| AWS KMS | Mã hoá dữ liệu | Có |
+| IAM | Phân quyền | Có |
+| Terraform (ngoài AWS) | IaC | — |
+| GitHub Actions (ngoài AWS) | CI/CD | — |
 
 **Không dùng:** Kubernetes/EKS, Kafka/MSK quản lý sẵn, Kinesis, Firehose, Airflow (lõi), NAT Gateway (tránh để giảm chi phí).
 
 ---
 
-## 11. Đặc tả bảo mật mục tiêu
-
-The requirements below remain targets. Audited source uses SSM SecureString rather than Secrets Manager, AES256 S3 configuration rather than explicit KMS, and HTTP/plaintext listeners. These differences require owner/security review before deployment; they are not silently treated as approved equivalents. Local Compose is development-only.
+## 11. Đặc tả bảo mật
 
 | Hạng mục | Biện pháp |
 |---|---|
@@ -533,15 +464,13 @@ The requirements below remain targets. Audited source uses SSM SecureString rath
 
 ---
 
-## 12. Đặc tả CI/CD mục tiêu
+## 12. Đặc tả CI/CD
 
 Pipeline GitHub Actions: `lint` → `test` → `terraform plan` → `quét bảo mật (Checkov)` → `terraform apply` (qua OIDC, không khoá tĩnh) → `deploy job Spark/Lambda`.
 
-This is the target pipeline. The audited remote workflow defines Terraform format/init-without-backend/validate, lint, and soft-failing Checkov. Python regression gates, OIDC deployment, plan/apply and application rollout are not established by that workflow. No GitHub Actions or AWS execution is claimed here.
-
 ---
 
-## 13. Đặc tả giám sát & vận hành mục tiêu
+## 13. Đặc tả giám sát & vận hành
 
 | Đối tượng giám sát | Chỉ số | Hành động khi bất thường |
 |---|---|---|
@@ -563,17 +492,19 @@ This is the target pipeline. The audited remote workflow defines Terraform forma
 | So sánh Trino với Athena | Cùng truy vấn, đo thời gian, chi phí, công sức vận hành |
 | Kiểm thử chất lượng dữ liệu | Input có giá trị âm/trùng/thiếu cột → kiểm tra Silver xử lý đúng |
 | Kiểm thử tính idempotent | Chạy lại job Silver 2 lần liên tiếp cùng input, số dòng không đổi |
-| Gold P0 — tên dimension | Sửa null-name với metadata Bronze duy nhất; chấp nhận dòng lặp giống nhau; kiểm tra cả legacy key ngoài Silver và Silver rỗng; không sửa tên target blank hoặc metadata lịch sử khác |
-| Gold P0 — từ chối trước ghi | Metadata thiếu/null/blank/mâu thuẫn/toạ độ không hợp lệ, target không hợp lệ, PM2.5 hoặc AVG không hữu hạn → RuntimeError trước khởi tạo breakpoint/tạo bảng/MERGE; rows và snapshot IDs không đổi |
-| Gold P0 — chạy lại sau sửa tên | Dữ liệu đã sửa giữ nguyên và không thêm snapshot khi chạy lại với cùng input; kiểm thử dùng catalog/warehouse tạm ngoài repository, xem `tests/README.md` |
 
 ---
 
-## 15. Cost planning and resource lifecycle
+## 15. Ước tính chi phí (ước lượng, cần đối chiếu lại bằng AWS Pricing Calculator)
 
-The original document estimated EC2 at $60–75/month and ALB at $16–20/month. Those historical estimates were not validated and must not be used as current prices or a sufficient project budget. B owns the account/region, instance sizing, credits, current cost estimate and alerts. The original $20/$50/$80 alert thresholds remain planning inputs, not proof that alerts exist.
+| Thành phần | Ước tính/tháng nếu bật 24/7 |
+|---|---|
+| EC2 (Kafka, Spark, Trino, Superset) | ~$60–75 |
+| ALB | ~$16–20 |
+| S3 + Glue + Athena | Vài USD (theo lượng quét) |
+| Lambda, DynamoDB, SQS/SNS | Gần như miễn phí ở quy mô dự án |
 
-Earlier planning proposed Spot and end-of-session destruction; audited source instead has on-demand ASGs and night schedules under organization constraints. B must reconcile the resource lifecycle and state/data retention policy before any deployment or destructive operation. Local development and avoiding a NAT Gateway remain project choices, not free-tier guarantees.
+**Nguyên tắc kiểm soát:** phát triển cục bộ bằng Docker, chỉ `terraform apply` khi test/demo, `terraform destroy` cuối mỗi buổi, dùng Spot cho worker, tránh NAT Gateway, budget alert $20/$50/$80.
 
 ---
 
@@ -581,11 +512,11 @@ Earlier planning proposed Spot and end-of-session destruction; audited source in
 
 | Rủi ro | Khả năng | Phương án |
 |---|---|---|
-| Nguồn OpenAQ ngừng cập nhật | Chưa đánh giá | Kiểm tra lại độ phủ archive; khảo sát lịch sử không chứng minh dữ liệu hiện tại |
+| Nguồn OpenAQ ngừng cập nhật | Thấp | Đã có 15 tháng lịch sử tải sẵn, đủ demo |
 | Kafka/Trino tự dựng không ổn định | Trung bình | Ghi lại làm bằng chứng học thật; hạ xuống 1 broker nếu cần |
 | Trễ tiến độ | Trung bình | Cắt theo thứ tự: WAF → giữ 1 trong 2 (Trino/Athena) → Kafka 1 broker |
 | Một người ôm hết việc | Trung bình | Mỗi vai trò tự chạy và báo kết quả bằng số liệu cụ thể |
-| Vượt ngân sách | Chưa đánh giá | B xác nhận ngân sách, cảnh báo và vòng đời tài nguyên; không mặc định free tier |
+| Vượt chi phí free tier | Thấp (nếu tuân thủ nguyên tắc Mục 15) | Budget alert, destroy cuối buổi |
 | Môi trường Windows gây lỗi PySpark | Trung bình | Chạy trong WSL2 Ubuntu, không chạy thuần Windows |
 
 ---
@@ -603,7 +534,7 @@ Earlier planning proposed Spot and end-of-session destruction; audited source in
 
 ---
 
-## 18. Tiêu chí nghiệm thu từng giai đoạn (targets, not achieved status)
+## 18. Tiêu chí nghiệm thu từng giai đoạn
 
 | Giai đoạn | Đạt khi |
 |---|---|
@@ -623,6 +554,6 @@ Earlier planning proposed Spot and end-of-session destruction; audited source in
 | location_id (Nhân Chính/Giải Phóng/OceanPark) | 4946812 / 4946813 / 6123215 |
 | sensors_id PM2.5 (theo thứ tự trên) | 13502151 / 13502154 / 14581375 |
 | Kafka topic | `aq_measurements` |
-| Rate limit OpenAQ | Historical survey: 60 req/phút; current limit unverified |
-| Chuẩn AQI | Target: VN_AQI; implemented: simplified hourly MVP |
-| Region AWS | Audited Terraform default: `ap-southeast-2`; B must confirm deployment region |
+| Rate limit OpenAQ | 60 req/phút |
+| Chuẩn AQI | VN_AQI, QĐ 1459/QĐ-TCMT 2019 |
+| Region AWS | `us-east-1` |

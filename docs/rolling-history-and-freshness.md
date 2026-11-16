@@ -1,13 +1,8 @@
-# Rolling history, freshness and location (released 2026-11-15)
+# Rolling history, freshness and location
 
-## Why
-
-On 2026-11-15 the public site's history page showed only September 2026
-(the first licensed backfill). Its "7 ngày" / "30 ngày" buttons meant "the
-last 7/30 days of that September file", the home 24-hour chart had 4–6 real
-points on a 24-hour axis, and the only interpretation was an experimental
-AQI ("91 (chỉ số thử nghiệm)") and a QĐ 1459 category applied to a single
-hourly reading.
+The first public site only showed the September 2026 backfill, and its 24-hour
+chart had few real points. The rolling history gives each public sensor a
+cleaned hourly series from 2026-09-01 that grows after every refresh.
 
 ## Data
 
@@ -30,7 +25,7 @@ before, never blocking it): Dragon `/hours` for the last 72 h when an hour is
 due; #99385 provisional hours from the projection's 24-hour sample list, and
 the previous two UTC days' archive files once per hour until they appear.
 
-### Hour labels: defect found in the September lakehouse export
+### Hour labels
 
 OpenAQ stamps an hourly value with the **end** of the hour (verified: archive
 `2026-11-11T01:00+07:00` == `/hours` period `17:00Z–18:00Z`). The September
@@ -42,7 +37,7 @@ the Glue window selected records by their end stamp, so it holds the OpenAQ
 record `2026-09-01T00:00+07:00` = 63.1 (really 31/08 23:00–24:00) and lacks
 `2026-10-01T00:00+07:00` = 24.1 (really 30/09 23:00–24:00); the new series
 holds the latter and not the former.
-The frozen export is not rewritten; the site describes its convention.
+The verified export is kept unchanged and its convention is documented.
 
 OpenAQ `/hours` rounds values ≥ 100 µg/m³ to whole numbers (12/720 September
 hours, ≤ 0.5 µg/m³), so archive values replace `/hours` values when available.
@@ -108,7 +103,7 @@ GET /v1/stations
 GET /v1/history?station_id=6123215                       # last 7 complete Vietnam days
 GET /v1/history?station_id=99385&start=2026-10-16&end=2026-11-15&granularity=daily&format=csv
 GET /v1/history?station_id=6123215&start=2026-11-14T00:00:00Z&end=2026-11-15T00:00:00Z
-GET /v1/archive/september-2026?format=csv                # frozen Glue export
+GET /v1/archive/september-2026?format=csv                # September Glue export
 ```
 
 At most 100 days, 1,000 rows per page (`offset` up to 3,000), ETag/304,
