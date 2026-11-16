@@ -3,8 +3,8 @@
 import argparse
 import hashlib
 import json
-import re
 import math
+import re
 import shutil
 from datetime import timedelta
 from pathlib import Path

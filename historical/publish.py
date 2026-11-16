@@ -444,7 +444,7 @@ def publish_site(c, p, packet, digest, amendment=None):
     for path, h in p["publication_input_sha256"].items():
         if sha(Path(path).read_bytes()) != h:
             raise ValueError("Private prepared input changed")
-    # Owner decision 2026-11-15: the protected demo stays Dragon-only until the
+    # The protected demo stays Dragon-only until the
     # two network stations' display/redistribution rights are verified.
     for output, mode in ((pub, "public"), (demo, p["demo_mode"])):
         build(

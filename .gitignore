@@ -10,13 +10,13 @@ env/
 .ipynb_checkpoints/
 *.jar
 
-# Local credentials; publish placeholders only
+# Local credentials
 .env
 .env.*
 !.env.example
 .aws/
 
-# Terraform runtime state and private inputs; retain provider lockfiles
+# Terraform state
 .terraform/
 *.tfstate
 *.tfstate.*
@@ -51,7 +51,7 @@ crash.*.log
 /artifacts/
 /spark-????????-????-????-????-????????????/
 
-# Generated reports; curated tests/evidence files stay publishable
+# Generated reports
 /result.txt
 /freshness_result.txt
 /probe_result.txt
@@ -61,13 +61,5 @@ crash.*.log
 .coverage.*
 coverage.xml
 
-# Private website viewer credentials are never publication assets
+# Website preview credentials
 preview-login.json
-
-# Local AI-agent instructions, handoffs and progress notes (kept outside Git)
-CLAUDE.md
-CLAUDE.local.md
-CLAUDE_START_PROMPT.md
-.claude/
-docs/CLAUDE_PROGRESS.md
-docs/AIRLAKE_CLAUDE_HANDOFF.md
