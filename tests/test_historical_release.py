@@ -1,6 +1,7 @@
 """Mocked release safety; no AWS calls or source measurements in fixtures."""
 
 import base64
+import hashlib
 import io
 import json
 import subprocess
@@ -517,14 +518,10 @@ class HistoricalReleaseTests(unittest.TestCase):
                 list(a["website_source_sha256_overrides"]), ["historical/publish.py"]
             )
             self.assertEqual(a["remaining_signed_gets"], 3)
-        recorded = subprocess.run(
-            ["git", "show", "abcccb0:historical/cloud.py"],
-            capture_output=True,
-            check=True,
-            cwd=Path(__file__).resolve().parents[1],
-        ).stdout
         self.assertEqual(
-            recorded, (Path(cloud.__file__)).read_bytes(), "frozen plan pins cloud.py"
+            hashlib.sha256(Path(cloud.__file__).read_bytes()).hexdigest(),
+            "c6c762faea90cbcfa314ead5731cfb32e5a588f04f62f90f9e6dc7587c068828",
+            "the run-2 plan pins cloud.py",
         )
 
 
